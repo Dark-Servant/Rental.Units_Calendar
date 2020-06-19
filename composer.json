@@ -1,0 +1,13 @@
+{
+    "name": "infoservice/rental_unit_calendar",
+    "authors": [
+        {
+            "name": "Infoservice",
+            "email": "web@infoservice.ru"
+        }
+    ],
+    "require": {
+        "php-activerecord/php-activerecord": "^1.2",
+        "php-database-migration/php-database-migration": "^3.8"
+    }
+}

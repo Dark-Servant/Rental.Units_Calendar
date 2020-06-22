@@ -2,7 +2,12 @@
 !*.php
 !*.json
 !*.lock
+!/css
+!/js
+!/lang
 !/models
+!/viewers
+!/lib
 !/.php-database-migration
 !.gitignore
 !README.md

@@ -1,0 +1,54 @@
+-- // Creating project tables
+-- Migration SQL that makes the change goes here.
+
+CREATE TABLE IF NOT EXISTS `days` (
+ `iD` int(11) NOT NULL AUTO_INCREMENT,
+ `VALUE` datetime NOT NULL,
+ PRIMARY KEY (`iD`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `technic` (
+ `ID` int(11) NOT NULL AUTO_INCREMENT,
+ `NAME` varchar(250) CHARACTER SET utf16 COLLATE utf16_unicode_ci NOT NULL,
+ `STATE_NUMBER` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
+ `LOADING_CAPACITY` int(11) NOT NULL,
+ `PARTNER_ID` int(11) NOT NULL,
+ `PARTNER_NAME` varchar(250) COLLATE utf8_unicode_ci NOT NULL,
+ `IS_MY` int(11) NOT NULL DEFAULT '0',
+ `VISIBILITY` int(11) NOT NULL DEFAULT '1',
+ PRIMARY KEY (`ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `contents` (
+ `ID` int(11) NOT NULL AUTO_INCREMENT,
+ `DAY_ID` int(11) NOT NULL,
+ `SPECIFICATION_ID` int(11) NOT NULL,
+ `TECHNIC_ID` int(11) NOT NULL,
+ `BEGIN_DATE` date NOT NULL,
+ `FINISH_DATE` date NOT NULL,
+ `DEAL_URL` varchar(500) COLLATE utf8_unicode_ci NOT NULL,
+ `DEAL_RESPONSIBLE_NAME` varchar(250) COLLATE utf8_unicode_ci NOT NULL,
+ `CUSTOMER` varchar(250) COLLATE utf8_unicode_ci NOT NULL,
+ `WORK_ADDRESS` varchar(500) COLLATE utf8_unicode_ci NOT NULL,
+ `DEAL_STATUS` int(11) NOT NULL,
+ `IS_CLOSED` int(11) NOT NULL DEFAULT '0',
+ PRIMARY KEY (`ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+
+CREATE TABLE IF NOT EXISTS `coments` (
+ `ID` int(11) NOT NULL AUTO_INCREMENT,
+ `DAY_ID` int(11) NOT NULL,
+ `RESPONSIBLE_NAME` varchar(250) COLLATE utf8_unicode_ci NOT NULL,
+ `VALUE` text COLLATE utf8_unicode_ci NOT NULL,
+ `CREATED_AT` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ PRIMARY KEY (`ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+-- @UNDO
+-- SQL to undo the change goes here.
+
+DROP TABLE IF EXISTS `days`;
+DROP TABLE IF EXISTS `technic`;
+DROP TABLE IF EXISTS `contents`;
+DROP TABLE IF EXISTS `coments`;

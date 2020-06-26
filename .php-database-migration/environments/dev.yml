@@ -1,0 +1,11 @@
+connection:
+    host:     localhost
+    driver:   mysql
+    port:     3307
+    username: rentaluser
+    password: 1xHBdAeX1F4p4Dox
+    database: rental_calendar
+    charset:  utf8
+
+changelog: changelog
+default_editor: vim

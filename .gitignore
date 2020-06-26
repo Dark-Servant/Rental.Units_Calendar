@@ -1,0 +1,8 @@
+/*
+!*.php
+!*.json
+!*.lock
+!/models
+!/.php-database-migration
+!.gitignore
+!README.md

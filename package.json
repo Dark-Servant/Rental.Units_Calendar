@@ -1,5 +1,5 @@
 {
-  "name": "Rental Unit Calendar",
+  "name": "RentalUnitCalendar",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -13,6 +13,8 @@
   "author": "Infoservice <web@infoservice.ru>",
   "license": "ISC",
   "dependencies": {
+    "jquery": "^3.5.1",
+    "js-datepicker": "^5.14.2",
     "vue": "^2.6.11"
   }
 }

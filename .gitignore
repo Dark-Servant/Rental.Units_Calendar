@@ -2,6 +2,7 @@
 !*.php
 !*.json
 !*.lock
+!/configs
 !/css
 !/js
 !/lang

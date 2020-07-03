@@ -1,0 +1,125 @@
+html, body {
+    height:100%;
+}
+
+.rc-table {
+    border-collapse: collapse;
+    border: 1px solid;
+}
+
+.rc-table td {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.rc-filter {
+    background-color: #E5E5E5;
+    padding: 5px 15px;
+    width: 280px;
+}
+
+.rc-filter > * {
+    margin-bottom: 5px;
+}
+
+.rc-filter-date-area {
+    position: relative;
+}
+
+.rc-filter-date-area label::before {
+    content: '\1F4C5';
+    position: absolute;
+    left: 88px;
+}
+
+.rc-filter-date-input {
+    padding: 3px;
+    width: 100px;
+}
+
+.rc-button {
+    padding: 3px;
+}
+
+.rc-day {
+    background-color: #FFFFC3;
+    padding: 15px 10px;
+    text-align: center;
+    border: 1px solid;
+    width: 200px;
+}
+
+.rc-day-value {
+    display: block;
+}
+
+.rc-day-week-name {
+    font-weight: bold;
+}
+
+.rc-technic-unit {
+    height: 100px;
+    border: 1px solid;
+    padding: 10px;
+    position: relative;
+}
+
+.rc-technic-unit-area::before {
+    content: "\2606";
+    font-size: 30px;
+    position: absolute;
+    top: -5px;
+    left: 0px;
+}
+
+.rc-technic-unit-area.rc-my::before {
+    content: "\2605";
+    color: yellow;
+}
+
+.rc-technic-name {
+    color: #161616;
+}
+
+.rc-content {
+    border: 1px solid #e2e0e0;
+}
+
+.rc-content-area {
+    border: 1px solid;
+    padding: 5px;
+    border-radius: 3px;
+}
+
+.rc-content-waiting {
+    background-color: #f0f7ff;
+    border-color: #cbe3ff;
+}
+
+.rc-content-process {
+    background-color: #adcdf3;
+    border-color: #80a7d6;
+}
+
+.rc-content-final {
+    background-color: #ffc7ff;
+    border-color: #e09ae0;
+}
+
+.rc-content-closed {
+    background-color: #81f581;
+    border-color: #5bb95b;
+}
+
+.rc-content-many {
+    background-color: #ffc965;
+    border-color: #daad5a;
+}
+
+.rc-content-deal-link {
+    color: black;
+    text-decoration: none;
+    font-weight: bold;
+}
+

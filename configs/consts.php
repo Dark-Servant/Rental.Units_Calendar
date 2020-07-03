@@ -6,10 +6,11 @@ if (!defined('SESSION_CONTANTS') || !SESSION_CONTANTS || empty($_SESSION['CONST_
 
     define('APPPATH', preg_replace('/[\/\\\\][^\/\\\\]*$/', '', $_SERVER['SCRIPT_NAME']));
     define('MAIN_SERVER_URL', $_SERVER['HTTP_REFERER'] ?? '');
-    define('VERSION', time()); //'1.0.0');
+    define('VERSION', '1.0.0');
     define('LANG', 'ru');
     define('ENV_CODE', 'dev');
     define('SHOW_VIEW', 'calendar');
+    define('DAY_FORMAT', 'Y-m-d');
 
     $_SESSION['CONST_LIST'] = array_filter(
                     get_defined_constants(),

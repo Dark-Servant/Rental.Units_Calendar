@@ -1,7 +1,4 @@
 <?
-require_once __DIR__ . '/../consts.php';
-require_once __DIR__ . '/../lang/' . LANG . '.php';
-
 class BX24RestAPI
 {
     private $authorizationData;

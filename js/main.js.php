@@ -4,6 +4,9 @@ error_reporting(E_ERROR);
 define('SESSION_CONTANTS', true);
 
 $setting = require $_SERVER['DOCUMENT_ROOT'] . '/configs/settings.php';
+$dayPeriod = Day::getPeriod(date(DAY_FORMAT), 7);
+$days = $dayPeriod['data'];
+$technics = Technic::getWithContentsByDayPeriod($dayPeriod);
 
 header('Content-Type: application/javascript');?>
 ;$(() => {

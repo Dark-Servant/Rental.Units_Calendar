@@ -1,7 +1,12 @@
 var selector = {
     calendar: '#rental-calendar',
+    filterArea: '.rc-filter',
     filterDateInput: '.rc-filter-date-input'
 };
+var classList = {
+    noReaction: 'rc-no-reaction'
+};
+var ajaxURL = document.location.origin + '?ajaxaction=';
 
 window.calendar = new Vue({
     el: selector.calendar,
@@ -9,7 +14,13 @@ window.calendar = new Vue({
         days: <?=json_encode($days)?>,
         technics: <?=json_encode($technics)?>
     },
-    mounted: () => {
+
+    /**
+     * Срабатывает после готовности Vue-приложения
+     * 
+     * @return void
+     */
+    mounted() {
         this.filterDateInput = datepicker(selector.filterDateInput, {
             showAllDates: true,
             startDay: 1,
@@ -38,7 +49,41 @@ window.calendar = new Vue({
             ],
             overlayPlaceholder: LANG_VALUES.DATE_CHOOOSING_YEAR,
 
-            formatter: (input, date, instance) => input.value = date.toLocaleDateString()
+            formatter: (input, date, instance) => input.value = date.toLocaleDateString(),
+            onSelect: () => this.showData()
         });
+    },
+    methods: {
+        /**
+         * Получает данные фильтра, отправляет на сервер, выводит данные согласно
+         * параметрам фильтра
+         * 
+         * @return void
+         */
+        showData() {
+            var data = {};
+            $(selector.filterArea).find('[name]').each((paramNum, paramObj) => {
+                data[$(paramObj).attr('name')] = paramObj.type == 'checkbox' ? paramObj.checked : paramObj.value;
+            });
+            $(selector.filterArea).addClass(classList.noReaction);
+            $.get(ajaxURL + 'getcontents', data, answer => {
+                $(selector.filterArea).removeClass(classList.noReaction);
+                if (!answer.result) return;
+
+                this.days = answer.data.days;
+                this.technics = answer.data.technics;
+            });
+        },
+
+        /**
+         * Обработчик нажатия кнопки "Сегодня"
+         * 
+         * @param event - данные события
+         * @return void
+         */
+        setToday(event) {
+            this.filterDateInput.setDate(new Date());
+            this.showData();
+        }
     }
 });

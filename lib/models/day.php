@@ -27,7 +27,6 @@ class Day extends ActiveRecord\Model
         global $langValues;
 
         $currentTime = strtotime($startDay);
-        echo 'currentTime: ' . $currentTime . PHP_EOL;
         if (!$currentTime) return [];
 
         $dayFullNames = array_values($langValues['DATE_CHOOOSING']['DAYS']['FULL']);

@@ -6,7 +6,7 @@ define('SESSION_CONTANTS', true);
 $setting = require $_SERVER['DOCUMENT_ROOT'] . '/configs/settings.php';
 $dayPeriod = Day::getPeriod(date(DAY_FORMAT), 7);
 $days = $dayPeriod['data'];
-$technics = Technic::getWithContentsByDayPeriod($dayPeriod);
+$technics = Technic::getWithContentsByDayPeriod($dayPeriod, [], TECHNIC_SORTING);
 
 header('Content-Type: application/javascript');?>
 ;$(() => {

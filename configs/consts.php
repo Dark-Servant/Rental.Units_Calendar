@@ -24,6 +24,8 @@ if (!defined('SESSION_CONTANTS') || !SESSION_CONTANTS || empty($_SESSION['CONST_
     define('CONTENT_CLOSED_DEAL_STATUS', array_search('closed', CONTENT_DEAL_STATUS));
     define('CONTENT_MAX_DEAL_STATUS', CONTENT_CLOSED_DEAL_STATUS - 1);
     define('CONTENT_MANY_DEAL_STATUS', CONTENT_CLOSED_DEAL_STATUS + 1);
+    
+    define('TECHNIC_SORTING', ['IS_MY DESC, LOADING_CAPACITY ASC, PARTNER_NAME ASC']);
 
     $_SESSION['CONST_LIST'] = array_filter(
                     get_defined_constants(),

@@ -6,6 +6,9 @@ class Technic extends ActiveRecord\Model
         ['contents']
     ];
 
+    const MIN_DEAL_COUNT = 1;
+    const MAX_DEAL_COUNT = 3;
+
     /**
      * Возвращает массив техники с привязынными к каждой контенту. Возвращаемое значение представляет
      * из себя массив, где каждый элемент хранит следующие данные:
@@ -31,55 +34,63 @@ class Technic extends ActiveRecord\Model
      * параметр с ключом "content", то он будет восприниматься как фильтр для контента, остальные
      * параметры и ключи будут считаться как фильтр для техники
      * 
+     * @param array $orders - дополнительные условия для сортировки данных из БД. Если указан
+     * параметр с ключом "content", то он будет восприниматься как сортировка для контента, остальные
+     * параметры и ключи будут считаться сотрировкой у техники
+     * 
      * @return array
      */
-    public static function getWithContentsByDayPeriod(array $dayPeriod, array $conditions = [])
+    public static function getWithContentsByDayPeriod(array $dayPeriod, array $conditions = [], array $orders = [])
     {
         $dayTimestamps = array_keys(is_array($dayPeriod['data']) ? $dayPeriod['data'] : []);
         if (empty($dayTimestamps)) return [];
 
-        $dayIds = array_keys(is_array($dayPeriod['timestamps']) ? $dayPeriod['timestamps'] : []);
         $contentConditions = is_array($conditions['content']) ? $conditions['content'] : [];
-        return array_map(
-                function($technic) use($dayPeriod, $dayTimestamps, $dayIds, $contentConditions) {
-                    $dayContents = array_fill_keys($dayTimestamps, false);
-                    foreach (
-                        Content::find(
-                            'all',
-                            [
-                                'conditions' => [
-                                    'technic_id' => $technic->id,
-                                    'day_id' => $dayIds
-                                ] + $contentConditions
-                            ]
-                        ) as $content
-                    ) {
-                        if ($content->is_closed) {
-                            $contentStatus = CONTENT_CLOSED_DEAL_STATUS;
+        if (is_array($dayPeriod['timestamps']) && !empty($dayPeriod['timestamps']))
+            $contentConditions['day_id'] = array_keys($dayPeriod['timestamps']);
 
-                        } else {
-                            $contentStatus = $content->status >= CONTENT_MAX_DEAL_STATUS
-                                           ? CONTENT_MAX_DEAL_STATUS
-                                           : $content->status;
+        $contentOrders = is_string($orders['content']) ? $orders['content'] : '';
+        return array_map(
+                function($technic) use($dayPeriod, $dayTimestamps, $contentConditions, $contentOrders) {
+                    $dayContents = array_fill_keys($dayTimestamps, false);
+                    if (!empty($contentConditions['day_id'])) {
+                        foreach (
+                            Content::find(
+                                'all',
+                                [
+                                    'conditions' => $contentConditions + ['technic_id' => $technic->id],
+                                    'order' => $contentOrders
+                                ]
+                            ) as $content
+                        ) {
+                            if ($content->is_closed) {
+                                $contentStatus = CONTENT_CLOSED_DEAL_STATUS;
+
+                            } else {
+                                $contentStatus = $content->status >= CONTENT_MAX_DEAL_STATUS
+                                               ? CONTENT_MAX_DEAL_STATUS
+                                               : $content->status;
+                            }
+                            $dayTimestamp = $dayPeriod['timestamps'][$content->day_id];
+                            if (!$dayContents[$dayTimestamp]) {
+                                $dayContents[$dayTimestamp]['STATUS'] = $contentStatus;
+                                $dayContents[$dayTimestamp]['STATUS_CLASS'] = CONTENT_DEAL_STATUS[$contentStatus];
+                                
+                            } elseif ($dayContents[$dayTimestamp]['STATUS'] != $content->status) {
+                                $dayContents[$dayTimestamp]['STATUS'] = CONTENT_MANY_DEAL_STATUS;
+                                $dayContents[$dayTimestamp]['STATUS_CLASS'] = CONTENT_DEAL_STATUS[CONTENT_MANY_DEAL_STATUS];
+                            }
+                            ++$dayContents[$dayTimestamp]['DEAL_COUNT'];
+                            $dayContents[$dayTimestamp]['IS_ONE'] = $dayContents[$dayTimestamp]['DEAL_COUNT'] == self::MIN_DEAL_COUNT;
+                            $dayContents[$dayTimestamp]['VERY_MANY'] = $dayContents[$dayTimestamp]['DEAL_COUNT'] > self::MAX_DEAL_COUNT;
+                            $dayContents[$dayTimestamp]['DEALS'][] = [
+                                'ID' => $content->id,
+                                'DEAL_URL' => strtr(DEAL_URL_TEMPLATE, ['#ID#' => $content->deal_id]),
+                                'RESPONSIBLE_NAME' => $content->responsible->name,
+                                'CUSTOMER_NAME' => $content->customer->name,
+                                'WORK_ADDRESS' => $content->work_address,
+                            ];
                         }
-                        $dayTimestamp = $dayPeriod['timestamps'][$content->day_id];
-                        if (!$dayContents[$dayTimestamp]) {
-                            $dayContents[$dayTimestamp]['STATUS'] = $contentStatus;
-                            $dayContents[$dayTimestamp]['STATUS_CLASS'] = CONTENT_DEAL_STATUS[$contentStatus];
-                            
-                        } elseif ($dayContents[$dayTimestamp]['STATUS'] != $content->status) {
-                            $dayContents[$dayTimestamp]['STATUS'] = CONTENT_MANY_DEAL_STATUS;
-                            $dayContents[$dayTimestamp]['STATUS_CLASS'] = CONTENT_DEAL_STATUS[CONTENT_MANY_DEAL_STATUS];
-                        }
-                        ++$dayContents[$dayTimestamp]['DEAL_COUNT'];
-                        $dayContents[$dayTimestamp]['DEAL_IS_ONE'] = $dayContents[$dayTimestamp]['DEAL_COUNT'] == 1;
-                        $dayContents[$dayTimestamp]['DEALS'][] = [
-                            'ID' => $content->id,
-                            'DEAL_URL' => strtr(DEAL_URL_TEMPLATE, ['#ID#' => $content->deal_id]),
-                            'RESPONSIBLE_NAME' => $content->responsible->name,
-                            'CUSTOMER_NAME' => $content->customer->name,
-                            'WORK_ADDRESS' => $content->work_address,
-                        ];
                     }
                     return [
                         'ID' => $technic->id,
@@ -93,11 +104,18 @@ class Technic extends ActiveRecord\Model
                     [
                         'conditions' => array_merge(
                                             array_filter($conditions,
-                                                function($key) { return !in_array($key, ['content']); },
+                                                function($key) { return !in_array($key, ['content'], true); },
                                                 ARRAY_FILTER_USE_KEY
                                             ),
-                                            ['visibility <> 0']
+                                            ['visibility' => '1']
+                                        ),
+                        'order' => implode(
+                                        ', ',
+                                        array_filter($orders,
+                                            function($key) { return !in_array($key, ['content'], true); },
+                                            ARRAY_FILTER_USE_KEY
                                         )
+                                    )
                     ]
                 )
             );

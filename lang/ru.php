@@ -5,6 +5,7 @@ $langValues = [
 
 // lib/helpers/ajax.php
 $langValues['ERROR_BAD_ACTION'] = 'Запрос не обработан';
+$langValues['ERROR_DATE_VALUE'] = 'Неправильный формат даты. Нужен формат ' . DAY_CALENDAR_FORMAT;
 
 // lib/helpers/bx24.restapi.class.php
 $langValues['ERROR_EMPTY_PARAMS'] = 'Не указаны параметры domain, а так же либо access_token для обычного REST-запоса, '

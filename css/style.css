@@ -2,6 +2,10 @@ html, body {
     height:100%;
 }
 
+.rc-no-reaction {
+    pointer-events: none !important;
+}
+
 .rc-table {
     border-collapse: collapse;
     border: 1px solid;
@@ -25,9 +29,10 @@ html, body {
 
 .rc-filter-date-area {
     position: relative;
+    width: 180px;
 }
 
-.rc-filter-date-area label::before {
+.rc-filter-date-area::before {
     content: '\1F4C5';
     position: absolute;
     left: 88px;
@@ -47,7 +52,10 @@ html, body {
     padding: 15px 10px;
     text-align: center;
     border: 1px solid;
-    width: 200px;
+}
+
+.rc-day-area {
+    width: 180px;
 }
 
 .rc-day-value {
@@ -59,9 +67,9 @@ html, body {
 }
 
 .rc-technic-unit {
-    height: 100px;
+    height: 125px;
     border: 1px solid;
-    padding: 10px;
+    padding: 10px 20px 10px 10px;
     position: relative;
 }
 
@@ -80,41 +88,66 @@ html, body {
 
 .rc-technic-name {
     color: #161616;
+    display: inline-block;
+    height: 55px;
+    overflow: hidden;
 }
 
 .rc-content {
     border: 1px solid #e2e0e0;
+    text-align: center;
 }
 
 .rc-content-area {
     border: 1px solid;
     padding: 5px;
     border-radius: 3px;
+    height: 125px;
+    overflow: hidden;
+    position: relative;
 }
 
-.rc-content-waiting {
+.rc-content-waiting, .rc-content-waiting .rc-content-deal-responsible {
     background-color: #f0f7ff;
     border-color: #cbe3ff;
 }
 
-.rc-content-process {
+.rc-content-process, .rc-content-process .rc-content-deal-responsible {
     background-color: #adcdf3;
-    border-color: #80a7d6;
+    border-color: #577ba7;
 }
 
-.rc-content-final {
+.rc-content-final, .rc-content-final .rc-content-deal-responsible {
     background-color: #ffc7ff;
-    border-color: #e09ae0;
+    border-color: #bf70bf;
 }
 
-.rc-content-closed {
+.rc-content-closed, .rc-content-closed .rc-content-deal-responsible {
     background-color: #81f581;
-    border-color: #5bb95b;
+    border-color: #50a250;
 }
 
-.rc-content-many {
+.rc-content-many, .rc-content-many .rc-content-deal-responsible {
     background-color: #ffc965;
     border-color: #daad5a;
+}
+
+.rc-content-is-not-one .rc-content-deals:first-child {
+    margin-top: 30px;
+}
+
+.rc-content-many-deals {
+    font-weight: bold;
+    display: block;
+    margin: 45px 0;
+}
+
+.rc-content-deals > * {
+    display: inline-block;
+    width: 185px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .rc-content-deal-link {
@@ -123,3 +156,11 @@ html, body {
     font-weight: bold;
 }
 
+.rc-content-deal-responsible {
+    width: 186px;
+    position: absolute;
+    bottom: 0px;
+    left: 0;
+    padding: 5px;
+    border-top: 1px solid;
+}

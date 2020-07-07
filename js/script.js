@@ -6,9 +6,9 @@ var selector = {
 var classList = {
     noReaction: 'rc-no-reaction'
 };
-var ajaxURL = document.location.origin + '?ajaxaction=';
+var ajaxURL = document.location.origin + '/' + SERVER_CONSTANTS.APPPATH + '?ajaxaction=';
 
-window.calendar = new Vue({
+new Vue({
     el: selector.calendar,
     data: {
         days: <?=json_encode($days)?>,

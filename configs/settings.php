@@ -13,7 +13,8 @@ ActiveRecord\Config::initialize(
                     . $dbSettings['connection']['username'] . ':'
                     . $dbSettings['connection']['password'] . '@'
                     . 'localhost:' . $dbSettings['connection']['port'] . '/'
-                    . $dbSettings['connection']['database'];
+                    . $dbSettings['connection']['database']
+                    . '?charset=' . $dbSettings['connection']['charset'];
 
         $cfg->set_connections([
             'development' => $connection,

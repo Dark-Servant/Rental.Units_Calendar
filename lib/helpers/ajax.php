@@ -32,5 +32,5 @@ try {
     $answer = array_merge($answer, ['result' => false, 'message' => $error->GetMessage()]);
 }
 
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
 die(json_encode($answer));

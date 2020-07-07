@@ -25,14 +25,14 @@
         <link rel="shortcut icon" href="index.php">
         <link rel="apple-touch-icon" href="index.php">
 
-        <link rel="stylesheet" href="<?=APPPATH?>/css/style.css?<?=VERSION?>">
-        <link rel="stylesheet" href="<?=APPPATH?>/node_modules/js-datepicker/dist/datepicker.min.css?<?=VERSION?>">
+        <link rel="stylesheet" href="//<?=$_SERVER['HTTP_HOST'] . APPPATH?>/css/style.css?<?=VERSION?>">
+        <link rel="stylesheet" href="//<?=$_SERVER['HTTP_HOST'] . APPPATH?>/node_modules/js-datepicker/dist/datepicker.min.css?<?=VERSION?>">
 
-        <script src="<?=APPPATH?>/node_modules/vue/dist/vue.min.js?<?=VERSION?>"></script>
+        <script src="//<?=$_SERVER['HTTP_HOST'] . APPPATH?>/node_modules/vue/dist/vue.min.js?<?=VERSION?>"></script>
 
-        <script src="<?=APPPATH?>/node_modules/jquery/dist/jquery.min.js?<?=VERSION?>"></script>
-        <script src="<?=APPPATH?>/node_modules/js-datepicker/dist/datepicker.min.js?<?=VERSION?>"></script>
-        <script src="<?=APPPATH?>/js/main.js.php?<?=VERSION?>"></script>
+        <script src="//<?=$_SERVER['HTTP_HOST'] . APPPATH?>/node_modules/jquery/dist/jquery.min.js?<?=VERSION?>"></script>
+        <script src="//<?=$_SERVER['HTTP_HOST'] . APPPATH?>/node_modules/js-datepicker/dist/datepicker.min.js?<?=VERSION?>"></script>
+        <script src="//<?=$_SERVER['HTTP_HOST'] . APPPATH?>/js/main.js.php?<?=VERSION?>"></script>
     </head>
     <body><?
     include_once __DIR__ . '/' . SHOW_VIEW . '.php'; ?>

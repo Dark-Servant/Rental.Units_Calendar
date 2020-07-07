@@ -6,7 +6,7 @@ var selector = {
 var classList = {
     noReaction: 'rc-no-reaction'
 };
-var ajaxURL = document.location.origin + '/' + SERVER_CONSTANTS.APPPATH + '?ajaxaction=';
+var ajaxURL = document.location.origin + SERVER_CONSTANTS.APPPATH + '?ajaxaction=';
 
 new Vue({
     el: selector.calendar,

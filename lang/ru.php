@@ -52,3 +52,41 @@ $langValues['DATE_CHOOOSING']['MONTHS']['NOVEMBER'] = 'Ноябрь';
 $langValues['DATE_CHOOOSING']['MONTHS']['DECEMBER'] = 'Декабрь';
 // Подсказка для указания года
 $langValues['DATE_CHOOOSING_YEAR'] = 'Укажите год';
+
+/**
+ * Описание действий для БП в lib/bp.activities/*
+ *
+ * Основной заголовок списка с неутановленными действиями
+ */
+$langValues['BP_ACTIVITIES_INSTALLED_TITLE'] = 'Были установлены следующие действия для Бизнес-процессов';
+$langValues['BP_ACTIVITIES_EMPTY_TITLE'] = 'Необходимо установить следующие действия для Бизнес-процессов';
+$langValues['ACTIVITY_LIST_REMOVE_BUTTON'] = 'Удалить';
+$langValues['ACTIVITY_LIST_INSTALL_BUTTON'] = 'Установить';
+$langValues['ACTIVITY_LIST_CANCEL_BUTTON'] = 'Показать календарь';
+
+// Действие БП для добавления контента
+$langValues['BPA_CONTENT_ADD_TITLE'] = 'Календарь. Добавление контента';
+$langValues['BPA_CONTENT_ADD_DESCRIPTION'] = 'Добавляет или обновляет данные контента';
+$langValues['BPA_CONTENT_ADD_PARAM_TECHNIC_ID'] = 'ID техники';
+$langValues['BPA_CONTENT_ADD_PARAM_SPECIFICATION_ID'] = 'ID элемента спецификации';
+$langValues['BPA_CONTENT_ADD_PARAM_BEGIN_DATE'] = 'Дата начала';
+$langValues['BPA_CONTENT_ADD_PARAM_FINISH_DATE'] = 'Дата окончания';
+$langValues['BPA_CONTENT_ADD_PARAM_DEAL_URL'] = 'Ссылка на сделку';
+$langValues['BPA_CONTENT_ADD_PARAM_RESPONSIBLE_NAME'] = 'Ответственный за сделку';
+$langValues['BPA_CONTENT_ADD_PARAM_CUSTOMER_NAME'] = 'Заказчик';
+$langValues['BPA_CONTENT_ADD_PARAM_WORK_ADDRESS'] = 'Адрес проведения работ';
+$langValues['BPA_CONTENT_ADD_PARAM_STATUS'] = 'Статус сделки';
+$langValues['BPA_CONTENT_ADD_PARAM_IS_CLOSED'] = 'Закрыты документы';
+
+// Действие БП для добавления техники
+$langValues['BPA_TECHNIC_ADD_TITLE'] = 'Календарь. Добавление техники';
+$langValues['BPA_TECHNIC_ADD_DESCRIPTION'] = 'Добавляет или обновляет данные техники';
+$langValues['BPA_CONTENT_ADD_PARAM_TECHNIC_ID'] = 'ID Техники';
+$langValues['BPA_CONTENT_ADD_PARAM_NAME'] = 'Наименование';
+$langValues['BPA_CONTENT_ADD_PARAM_STATE_NUMBER'] = 'Гос. Номер';
+$langValues['BPA_CONTENT_ADD_PARAM_LOADING_CAPACITY'] = 'Грузоподъёмность';
+$langValues['BPA_CONTENT_ADD_PARAM_PARTNER_ID'] = 'ID партнёра';
+$langValues['BPA_CONTENT_ADD_PARAM_PARTNER_NAME'] = 'Наименование партнёра';
+$langValues['BPA_CONTENT_ADD_PARAM_IS_MY'] = 'Своя/чужая';
+$langValues['BPA_CONTENT_ADD_PARAM_VISIBILITY'] = 'Видимость в календаре';
+ 

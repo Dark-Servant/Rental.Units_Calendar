@@ -21,6 +21,7 @@ html, body {
     background-color: #E5E5E5;
     padding: 5px 15px;
     width: 280px;
+    position: relative;
 }
 
 .rc-filter > * {
@@ -44,7 +45,52 @@ html, body {
 }
 
 .rc-button {
+    user-select: none;
+    cursor: pointer;
     padding: 3px;
+    text-align: center;
+    text-decoration: none;
+    background: #eaeef1;
+    display: inline-block;
+    background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, .1));
+    border-radius: 3px;
+    color: rgba(0, 0, 0, 0.75);
+    text-shadow: 0 1px 1px rgba(255, 255, 255,.7);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, .2),  0 1px 2px rgba(0, 0, 0, .2),  inset 0 1px 2px rgba(255, 255, 255, .7);
+}
+
+.rc-button + .rc-button {
+    margin-left: 10px;
+}
+
+.rc-button:hover {
+    background: #fff;
+}
+
+.rc-button:active {
+    background: #d0d3d6;
+    background-image: linear-gradient(rgba(0,0,0,.1), rgba(0,0,0,0));
+    box-shadow: inset 0 0 2px rgba(0, 0, 0, .2),  inset 0 2px 5px rgba(0, 0, 0, .2),  0 1px rgba(255, 255, 255, .2);
+}
+
+.rc-activity-list-back {
+    display: inline-block;
+    width: 15px;
+    height: 21px;
+    border: 1px solid #989494;
+    cursor: pointer;
+    position: absolute;
+    right: 2px;
+    top: 2px;
+    opacity: 0.25;
+}
+
+.rc-activity-list-back::before {
+    content: '\2630';
+}
+
+.rc-activity-list-back:hover {
+    opacity: 1;
 }
 
 .rc-day {
@@ -164,3 +210,52 @@ html, body {
     padding: 5px;
     border-top: 1px solid;
 }
+
+.rc-activity-list-title {
+    padding: 5px 0;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.rc-activity-list-data {
+    margin: 10px 40px;
+}
+
+.rc-activity-unit {
+    display: list-item;
+    list-style-type: decimal;
+}
+
+.rc-activity-unit + .rc-activity-unit {
+    margin-top: 10px;
+}
+
+.rc-activity-list-button {
+    width: 140px;
+}
+
+.rc-activity-list-install-button {
+    background-color: #73fd52;
+}
+
+.rc-activity-list-install-button:hover {
+    background-color: #9cff84;
+}
+
+.rc-activity-list-install-button:active {
+    background-color: #ceffc3;
+}
+
+.rc-activity-list-remove-button {
+    background-color: #ff2121;
+    color: white;
+}
+
+.rc-activity-list-remove-button:hover {
+    background-color: #fd4040;
+}
+
+.rc-activity-list-remove-button:active {
+    background-color: #fd7d7d;
+}
+

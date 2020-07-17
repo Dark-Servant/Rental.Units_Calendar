@@ -17,7 +17,7 @@
     </div>
 </script>
 
-<div id="rental-calendar">
+<script id="calendar-table-component" data-props="bx24inited, technics, days" type="text/vue-component">
     <table class="rc-table">
         <tr class="rc-header">
             <td class="rc-filter">
@@ -25,20 +25,20 @@
                     <label>
                         <span class="rc-filter-my-technic-title"><?=$langValues['FILTER_MY_TECHNIC']?></span>
                         <input class="rc-filter-my-technic-checkbox"
-                            name="my-technic" v-on:change="showData"
+                            name="my-technic" v-on:change="$emit('show-data')"
                             type="checkbox">
                     </label>
                 </div>
                 <div class="rc-filter-date-area">
                     <input class="rc-filter-date-input"
                         name="date" value="<?=date(DAY_CALENDAR_FORMAT)?>"
-                        v-on:change="showData"
+                        v-on:change="$emit('show-data')"
                         type="text" readonly>
-                    <input
+                    <div
                         class="rc-button rc-filter-button rc-filter-date-today"
-                        type="button" v-on:click="setToday"
-                        value="<?=$langValues['FILTER_TODAY_BUTTON']?>">
+                        v-on:click="$emit('set-today')"><?=$langValues['FILTER_TODAY_BUTTON']?></div>
                 </div>
+                <span class="rc-activity-list-back" v-on:click="$emit('show-activities')" v-if="bx24inited"></span>
             </td>
             <td class="rc-day" v-for="day in days">
                 <div class="rc-day-area">
@@ -60,4 +60,45 @@
         </tr>
 
     </table>
+</script>
+
+<script id="activity-list-component" data-props="installed, activities" type="text/vue-component">
+    <div class="rc-activity-list">
+        <div class="rc-activity-list-title" v-if="installed"><?=$langValues['BP_ACTIVITIES_INSTALLED_TITLE']?></div>
+        <div class="rc-activity-list-title" v-else><?=$langValues['BP_ACTIVITIES_EMPTY_TITLE']?></div>
+        <div class="rc-activity-list-data">
+            <div class="rc-activity-unit" v-for="activity in activities">
+                <span>{{activity.data.NAME.<?=LANG?>}}</span>
+            </div>
+        </div>
+        <div class="rc-activity-list-buttons">
+            <template v-if="installed">
+            <div class="rc-button rc-activity-list-button rc-activity-list-remove-button"
+                v-on:click="$emit('remove-activities')"><?=$langValues['ACTIVITY_LIST_REMOVE_BUTTON']?></div><!--
+            --><div class="rc-button rc-activity-list-button rc-activity-list-cancel-button"
+                v-on:click="$emit('show-table')"><?=$langValues['ACTIVITY_LIST_CANCEL_BUTTON']?></div>
+            </template><!--
+            --><div class="rc-button rc-activity-list-button rc-activity-list-install-button"
+                v-on:click="$emit('add-activities')"
+                v-else><?=$langValues['ACTIVITY_LIST_INSTALL_BUTTON']?></div>
+        </div>
+    </div>
+</script>
+
+<div id="rental-calendar">
+    <calendar-table
+        v-on:show-data="showData"
+        v-on:set-today="setToday"
+        v-on:show-activities="showActivities"
+        v-bind:bx24inited="bx24inited"
+        v-bind:technics="technics"
+        v-bind:days="days"
+        v-if="calendarShow"></calendar-table>
+    <activity-list
+        v-on:remove-activities="removeActivities"
+        v-on:show-table="showTable"
+        v-on:add-activities="addActivities"
+        v-bind:installed="activityInstalled"
+        v-bind:activities="activities"
+        v-else></activity-list>
 </div>

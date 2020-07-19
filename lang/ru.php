@@ -11,6 +11,9 @@ $langValues['ERROR_DATE_VALUE'] = 'Неправильный формат дат�
 $langValues['ERROR_EMPTY_PARAMS'] = 'Не указаны параметры domain, а так же либо access_token для обычного REST-запоса, '
                                   . 'либо webhook_token и webhook_userid для рабты через вебхук';
 $langValues['ERROR_BAD_RESTAPI_METHOD_NAME'] = 'Для методов REST API надо использовать конструкцию call<СamelСase названия метода>(<параметры метода>)';
+$langValues['ERROR_ACTIVITY_CODE'] = 'Этот запрос не может быть обработан этим действием БП';
+$langValues['ERROR_EMPTY_ACTIVITY_PROPERTY'] = 'Не был указан параметр #PROPERTY#';
+$langValues['ERROR_PARENT_TECHNIC_OF_CONTENT'] = 'В БД нет информации о техники с внешним ID равным #ID#';
 
 // lib/viewers/calendar.php
 $langValues['FILTER_MY_TECHNIC'] = 'Своя техника';

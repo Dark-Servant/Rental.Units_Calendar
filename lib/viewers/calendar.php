@@ -31,7 +31,7 @@
                 </div>
                 <div class="rc-filter-date-area">
                     <input class="rc-filter-date-input"
-                        name="date" value="<?=date(DAY_CALENDAR_FORMAT)?>"
+                        name="date" value="<?=date(Day::DAY_CALENDAR_FORMAT)?>"
                         v-on:change="$emit('show-data')"
                         type="text" readonly>
                     <div

@@ -13,11 +13,11 @@ try {
             $startDate = date_create_from_format(DAY_CALENDAR_FORMAT, $_REQUEST['date']);
             if ($startDate === false) throw new Exception($langValues['ERROR_DATE_VALUE']);
 
-            $dayPeriod = Day::getPeriod(date(DAY_FORMAT, $startDate->getTimestamp()), 7);
+            $days = Day::getPeriod(date(DAY_FORMAT, $startDate->getTimestamp()), 7);
             $answer['data'] = [
-                'days' => $dayPeriod['data'],
+                'days' => $days,
                 'technics' => Technic::getWithContentsByDayPeriod(
-                                    $dayPeriod,
+                                    $days,
                                     ['IS_MY' => intval($_REQUEST['my-technic'] == 'true')],
                                     TECHNIC_SORTING
                                 ),

@@ -1,12 +1,9 @@
 <?
-error_reporting(E_ERROR);
-
 define('SESSION_CONTANTS', true);
 
 $setting = require dirname(__DIR__) . '/configs/settings.php';
-$dayPeriod = Day::getPeriod(date(DAY_FORMAT), 7);
-$days = $dayPeriod['data'];
-$technics = Technic::getWithContentsByDayPeriod($dayPeriod, [], TECHNIC_SORTING);
+$days = Day::getPeriod(date(Day::DAY_FORMAT), 7);
+$technics = Technic::getWithContentsByDayPeriod($days, [], TECHNIC_SORTING);
 
 $activities = [];
 foreach (glob(dirname(__DIR__) . '/lib/bp.activities/*') as $activityPath) {

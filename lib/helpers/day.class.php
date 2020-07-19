@@ -1,12 +1,10 @@
 <?
 
-class Day extends ActiveRecord\Model
+class Day
 {
     const DAY_SECOND_COUNT = 86400;
-
-    static $has_many = [
-        ['contents']
-    ];
+    const DAY_FORMAT = 'Y-m-d';
+    const DAY_CALENDAR_FORMAT = 'd.m.Y';
 
     /**
      * Возвращает массив с данными о днях на конкретный период, длиной равной значению в параметре
@@ -22,7 +20,7 @@ class Day extends ActiveRecord\Model
      * @param array $conditions - дополнительные условия для полученния данных о датах
      * @return array
      */
-    public static function getPeriod(string $startDay, int $nextDayCount, array $conditions = [])
+    public static function getPeriod(string $startDay, int $nextDayCount)//, array $conditions = [])
     {
         global $langValues;
 
@@ -30,30 +28,14 @@ class Day extends ActiveRecord\Model
         if (!$currentTime) return [];
 
         $dayFullNames = array_values($langValues['DATE_CHOOOSING']['DAYS']['FULL']);
-        $dayTimestamps = [];
+        // $dayTimestamps = [];
         $days = [];
         foreach (range($currentTime, $currentTime + self::DAY_SECOND_COUNT * $nextDayCount, self::DAY_SECOND_COUNT) as $dateValue) {
             $days[$dateValue] = [
-                'VALUE' => date(DAY_CALENDAR_FORMAT, $dateValue),
+                'VALUE' => date(self::DAY_CALENDAR_FORMAT, $dateValue),
                 'WEEK_DAY_NAME' => $dayFullNames[date('w', $dateValue)]
             ];
         }
-        foreach (
-            self::find(
-                'all',
-                [
-                    'conditions' => [
-                        'VALUE' => array_map(function($date) { return date(DAY_FORMAT, $date); }, array_keys($days))
-                    ] + $conditions
-                ]
-            ) as $day
-        ) {
-            $dayTimestamps[$day->id] = $day->value->getTimestamp();
-        }
-
-        return [
-            'timestamps' => $dayTimestamps,
-            'data' => $days
-        ];
+        return $days;
     }
 };

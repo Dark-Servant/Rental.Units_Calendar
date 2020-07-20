@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS `responsibles` (
 CREATE TABLE IF NOT EXISTS `technics` (
  `ID` int(11) NOT NULL AUTO_INCREMENT,
  `EXTERNAL_ID` int(11) NOT NULL,
- `NAME` varchar(250) CHARACTER SET utf16 COLLATE utf16_unicode_ci NOT NULL,
+ `NAME` varchar(250) COLLATE utf8_unicode_ci NOT NULL,
  `STATE_NUMBER` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
  `LOADING_CAPACITY` int(11) NOT NULL,
  `PARTNER_ID` int(11) NOT NULL,

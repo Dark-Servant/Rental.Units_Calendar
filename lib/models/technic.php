@@ -55,81 +55,98 @@ class Technic extends InfoserviceModel
                                 );
 
         $contentOrders = is_string($orders['content']) ? $orders['content'] : '';
-        return array_map(
-                function($technic) use($dayPeriod, $dayTimestamps, $contentConditions, $contentOrders) {
-                    $dayContents = array_fill_keys($dayTimestamps, false);
-                    foreach (
-                        Content::find(
-                            'all',
-                            [
-                                'conditions' => self::getWithAddedConditions($contentConditions, ['technic_id' => $technic->id]),
-                                'order' => $contentOrders
-                            ]
-                        ) as $content
-                    ) {
-                        if ($content->is_closed) {
-                            $contentStatus = CONTENT_CLOSED_DEAL_STATUS;
-
-                        } else {
-                            $contentStatus = $content->status >= CONTENT_MAX_DEAL_STATUS
-                                           ? CONTENT_MAX_DEAL_STATUS
-                                           : $content->status;
-                        }
-                        foreach (
-                            range(
-                                $content->begin_date->getTimestamp(),
-                                $content->finish_date->getTimestamp(),
-                                Day::DAY_SECOND_COUNT
-                            ) as $dayTimestamp
-                        ) {
-                            if (!isset($dayContents[$dayTimestamp])) continue;
-
-                            if (!isset($dayContents[$dayTimestamp]['STATUS'])) {
-                                $dayContents[$dayTimestamp]['STATUS'] = $contentStatus;
-                                $dayContents[$dayTimestamp]['STATUS_CLASS'] = Content::CONTENT_DEAL_STATUS[$contentStatus];
-                                
-                            } elseif ($dayContents[$dayTimestamp]['STATUS'] != $content->status) {
-                                $dayContents[$dayTimestamp]['STATUS'] = CONTENT_MANY_DEAL_STATUS;
-                                $dayContents[$dayTimestamp]['STATUS_CLASS'] = Content::CONTENT_DEAL_STATUS[CONTENT_MANY_DEAL_STATUS];
-                            }
-                            ++$dayContents[$dayTimestamp]['DEAL_COUNT'];
-                            $dayContents[$dayTimestamp]['IS_ONE'] = $dayContents[$dayTimestamp]['DEAL_COUNT'] == self::MIN_DEAL_COUNT;
-                            $dayContents[$dayTimestamp]['VERY_MANY'] = $dayContents[$dayTimestamp]['DEAL_COUNT'] > self::MAX_DEAL_COUNT;
-                            $dayContents[$dayTimestamp]['DEALS'][] = [
-                                'ID' => $content->id,
-                                'DEAL_URL' => $content->deal_url,
-                                'RESPONSIBLE_NAME' => $content->responsible->name,
-                                'CUSTOMER_NAME' => $content->customer->name,
-                                'WORK_ADDRESS' => $content->work_address,
-                            ];
-                        }
-                    }
-                    return [
-                        'ID' => $technic->id,
-                        'NAME' => $technic->name,
-                        'IS_MY' => $technic->is_my,
-                        'CONTENTS' => array_values($dayContents)
-                    ];
-                },
-                self::find(
-                    'all',
-                    [
-                        'conditions' => self::getWithAddedConditions(
-                                            ['is_visibility = 1'],
-                                            array_filter($conditions,
-                                                function($key) { return !in_array($key, ['content'], true); },
-                                                ARRAY_FILTER_USE_KEY
-                                            )
-                                       ),
-                        'order' => implode(
-                                        ', ',
-                                        array_filter($orders,
+        $technics = [];
+        foreach (
+            self::find(
+                'all',
+                [
+                    'conditions' => self::getWithAddedConditions(
+                                        ['is_visibility = 1'],
+                                        array_filter($conditions,
                                             function($key) { return !in_array($key, ['content'], true); },
                                             ARRAY_FILTER_USE_KEY
                                         )
+                                   ),
+                    'order' => implode(
+                                    ', ',
+                                    array_filter($orders,
+                                        function($key) { return !in_array($key, ['content'], true); },
+                                        ARRAY_FILTER_USE_KEY
                                     )
+                                )
+                ]
+            ) as $technic 
+        ) {
+            if ($technic->is_my) {
+                $key = 'T' . $technic->id;
+                $technics[$key] = [
+                    'NAME' => $technic->name,
+                    'STATE_NUMBER' => $technic->state_number,
+                    'IS_CHOSEN' => false,
+                    'CONTENTS' => array_fill_keys($dayTimestamps, false)
+                ];
+            
+            } else {
+                $key = 'P' . $technic->partner_id;
+                if (!$technics[$key])
+                    $technics[$key] = [
+                        'NAME' => preg_replace('/\[[^\[\]]+\]/', '', strip_tags($technic->partner_name)),
+                        'IS_PARTNER' => true,
+                        'IS_CHOSEN' => false,
+                        'CONTENTS' => array_fill_keys($dayTimestamps, false)
+                    ];
+            }
+            $dayContents = &$technics[$key]['CONTENTS'];
+
+            foreach (
+                Content::find(
+                    'all',
+                    [
+                        'conditions' => self::getWithAddedConditions($contentConditions, ['technic_id' => $technic->id]),
+                        'order' => $contentOrders
                     ]
-                )
-            );
+                ) as $content
+            ) {
+                if ($content->is_closed) {
+                    $contentStatus = CONTENT_CLOSED_DEAL_STATUS;
+
+                } else {
+                    $contentStatus = $content->status >= CONTENT_MAX_DEAL_STATUS
+                                   ? CONTENT_MAX_DEAL_STATUS
+                                   : $content->status;
+                }
+                foreach (
+                    range(
+                        $content->begin_date->getTimestamp(),
+                        $content->finish_date->getTimestamp(),
+                        Day::DAY_SECOND_COUNT
+                    ) as $dayTimestamp
+                ) {
+                    if (!isset($dayContents[$dayTimestamp])) continue;
+
+                    if (!isset($dayContents[$dayTimestamp]['STATUS'])) {
+                        $dayContents[$dayTimestamp]['STATUS'] = $contentStatus;
+                        $dayContents[$dayTimestamp]['STATUS_CLASS'] = Content::CONTENT_DEAL_STATUS[$contentStatus];
+                        
+                    } elseif ($dayContents[$dayTimestamp]['STATUS'] != $content->status) {
+                        $dayContents[$dayTimestamp]['STATUS'] = CONTENT_MANY_DEAL_STATUS;
+                        $dayContents[$dayTimestamp]['STATUS_CLASS'] = Content::CONTENT_DEAL_STATUS[CONTENT_MANY_DEAL_STATUS];
+                    }
+                    ++$dayContents[$dayTimestamp]['DEAL_COUNT'];
+                    $dayContents[$dayTimestamp]['IS_ONE'] = $dayContents[$dayTimestamp]['DEAL_COUNT'] == self::MIN_DEAL_COUNT;
+                    $dayContents[$dayTimestamp]['VERY_MANY'] = $dayContents[$dayTimestamp]['DEAL_COUNT'] > self::MAX_DEAL_COUNT;
+                    $dayContents[$dayTimestamp]['DEALS'][] = [
+                        'ID' => $content->id,
+                        'DEAL_URL' => $content->deal_url,
+                        'RESPONSIBLE_NAME' => $content->responsible->name,
+                        'CUSTOMER_NAME' => $content->customer->name,
+                        'WORK_ADDRESS' => $content->work_address,
+                        'LAST_COMMENT' => ''
+                    ];
+                }
+            }
+        }
+
+        return array_values($technics);
     }
 };

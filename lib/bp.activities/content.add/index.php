@@ -37,7 +37,7 @@ try {
     foreach ($activitySetting['PROPERTIES'] as $propertyCode => $propertyParams) {
         if (
             (strtolower($propertyParams['Required']) == 'y')
-            && empty($_REQUEST['properties'][$propertyCode])
+            && !isset($_REQUEST['properties'][$propertyCode])
         ) throw new Exception(strtr($langValues['ERROR_EMPTY_ACTIVITY_PROPERTY'], ['#PROPERTY#' => $propertyCode]));
     }
     $technic = Technic::find('first', ['external_id' => $_REQUEST['properties']['TECHNIC_ID']]);

@@ -10,16 +10,17 @@ set_time_limit(0);
 try {
     switch ($action) {
         case 'getcontents';
-            $startDate = date_create_from_format(DAY_CALENDAR_FORMAT, $_REQUEST['date']);
+            $startDate = date_create_from_format(Day::DAY_CALENDAR_FORMAT, $_REQUEST['date']);
             if ($startDate === false) throw new Exception($langValues['ERROR_DATE_VALUE']);
 
-            $days = Day::getPeriod(date(DAY_FORMAT, $startDate->getTimestamp()), 7);
+            $days = Day::getPeriod(date(Day::DAY_FORMAT, $startDate->getTimestamp()), 7);
+            $filter = [];
+            if ($_REQUEST['my-technic'] == 'true') $filter['IS_MY'] = 1;
+
             $answer['data'] = [
                 'days' => $days,
                 'technics' => Technic::getWithContentsByDayPeriod(
-                                    $days,
-                                    ['IS_MY' => intval($_REQUEST['my-technic'] == 'true')],
-                                    TECHNIC_SORTING
+                                    $days, $filter, TECHNIC_SORTING
                                 ),
             ];
             break;

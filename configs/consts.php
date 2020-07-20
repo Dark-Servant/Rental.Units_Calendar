@@ -10,10 +10,6 @@ if (!defined('SESSION_CONTANTS') || !SESSION_CONTANTS || empty($_SESSION['CONST_
     define('LANG', 'ru');
     define('ENV_CODE', 'dev');
     define('SHOW_VIEW', 'calendar');
-
-    define('DAY_FORMAT', 'Y-m-d');
-    define('DAY_CALENDAR_FORMAT', 'd.m.Y');
-
     define('CONTENT_CLOSED_DEAL_STATUS', array_search('closed', Content::CONTENT_DEAL_STATUS));
     define('CONTENT_MAX_DEAL_STATUS', CONTENT_CLOSED_DEAL_STATUS - 1);
     define('CONTENT_MANY_DEAL_STATUS', CONTENT_CLOSED_DEAL_STATUS + 1);

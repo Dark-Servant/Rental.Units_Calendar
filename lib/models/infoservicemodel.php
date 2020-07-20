@@ -2,6 +2,13 @@
 
 class InfoserviceModel extends ActiveRecord\Model
 {
+    /**
+     * [getWithAddedConditions description]
+     * 
+     * @param  array  $main       [description]
+     * @param  array  $conditions [description]
+     * @return [type]             [description]
+     */
     public static function getWithAddedConditions(array $main, array $conditions)
     {
         $mainConditions = '';

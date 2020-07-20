@@ -9,8 +9,8 @@
         <div class="rc-content-deals" v-for="deal in content.DEALS" v-else>
             <a class="rc-content-deal-link" v-bind:title="deal.CUSTOMER_NAME" v-bind:href="deal.DEAL_URL" target=__bind>{{deal.CUSTOMER_NAME}}</a>
             <template v-if="content.IS_ONE">
-                <div class="rc-content-deal-addr" v-bind:title="deal.WORK_ADDRESS">{{deal.WORK_ADDRESS}}</div>
-                <div class="rc-content-deal-comment" v-bind:title="deal.LAST_COMMENT">{{deal.LAST_COMMENT}}</div>
+                <div class="rc-content-deal-addr" v-bind:class="{'rc-no-comment-addr': !deal.LAST_COMMENT}" v-bind:title="deal.WORK_ADDRESS">{{deal.WORK_ADDRESS}}</div>
+                <div class="rc-content-deal-comment" v-bind:title="deal.LAST_COMMENT" v-if="deal.LAST_COMMENT">{{deal.LAST_COMMENT}}</div>
                 <div class="rc-content-deal-responsible" v-bind:title="deal.RESPONSIBLE_NAME">{{deal.RESPONSIBLE_NAME}}</div>
             </template>
         </div>
@@ -50,8 +50,14 @@
 
         <tr class="rc-technic" v-for="technic in technics">
             <td class="rc-technic-unit">
-                <div class="rc-technic-unit-area" v-bind:class="{'rc-my': technic.IS_MY}">
-                    <span class="rc-technic-name" v-bind:title="technic.NAME">{{technic.NAME}}</span>
+                <div class="rc-technic-unit-area" v-bind:class="{'rc-chosen': technic.IS_CHOSEN}">
+                    <span
+                        class="rc-technic-name"
+                        v-bind:title="technic.NAME">{{technic.NAME}}</span>
+                    <span
+                        class="rc-technic-state-number"
+                        v-bind:title="technic.STATE_NUMBER"
+                        v-if="!technic.IS_PARTNER">{{technic.STATE_NUMBER}}</span>
                 </div>
             </td>
             <td class="rc-content" v-for="content in technic.CONTENTS">

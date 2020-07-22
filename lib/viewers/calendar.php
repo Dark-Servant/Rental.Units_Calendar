@@ -17,7 +17,7 @@
     </div>
 </script>
 
-<script id="calendar-table-component" data-props="bx24inited, technics, days" type="text/vue-component">
+<script id="calendar-table-component" data-props="bx24inited, backtoactivities, technics, days" type="text/vue-component">
     <table class="rc-table">
         <tr class="rc-header">
             <td class="rc-filter">
@@ -31,14 +31,14 @@
                 </div>
                 <div class="rc-filter-date-area">
                     <input class="rc-filter-date-input"
-                        name="date" value="<?=date(Day::DAY_CALENDAR_FORMAT)?>"
+                        name="date" value="<?=date(Day::CALENDAR_FORMAT)?>"
                         v-on:change="$emit('show-data')"
                         type="text" readonly>
                     <div
                         class="rc-button rc-filter-button rc-filter-date-today"
                         v-on:click="$emit('set-today')"><?=$langValues['FILTER_TODAY_BUTTON']?></div>
                 </div>
-                <span class="rc-activity-list-back" v-on:click="$emit('show-activities')" v-if="bx24inited"></span>
+                <span class="rc-activity-list-back" v-on:click="$emit('show-activities')" v-if="backtoactivities"></span>
             </td>
             <td class="rc-day" v-for="day in days">
                 <div class="rc-day-area">
@@ -48,9 +48,13 @@
             </td>
         </tr>
 
-        <tr class="rc-technic" v-for="technic in technics">
+        <tr class="rc-technic" v-for="(technic, technicIndex) in technics">
             <td class="rc-technic-unit">
                 <div class="rc-technic-unit-area" v-bind:class="{'rc-chosen': technic.IS_CHOSEN}">
+                    <span
+                        class="rc-technic-chosen"
+                        v-on:click="$emit('set-chosen', technicIndex, $event.target)"
+                        v-if="bx24inited"></span>
                     <span
                         class="rc-technic-name"
                         v-bind:title="technic.NAME">{{technic.NAME}}</span>
@@ -74,7 +78,7 @@
         <div class="rc-activity-list-title" v-else><?=$langValues['BP_ACTIVITIES_EMPTY_TITLE']?></div>
         <div class="rc-activity-list-data">
             <div class="rc-activity-unit" v-for="activity in activities">
-                <span>{{activity.data.NAME.<?=LANG?>}}</span>
+                <span>{{activity.NAME.<?=LANG?>}}</span>
             </div>
         </div>
         <div class="rc-activity-list-buttons">
@@ -96,7 +100,9 @@
         v-on:show-data="showData"
         v-on:set-today="setToday"
         v-on:show-activities="showActivities"
+        v-on:set-chosen="setChosen"
         v-bind:bx24inited="bx24inited"
+        v-bind:backtoactivities="backtoactivities"
         v-bind:technics="technics"
         v-bind:days="days"
         v-if="calendarShow"></calendar-table>

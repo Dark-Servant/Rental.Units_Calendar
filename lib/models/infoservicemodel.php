@@ -3,11 +3,22 @@
 class InfoserviceModel extends ActiveRecord\Model
 {
     /**
-     * [getWithAddedConditions description]
+     * Объединяет фильтр, описанный как
+     *     "<строка с условиями>", <значение параметра 1>, <значение параметра 2>, ..., <значение параметра N>
+     * где
+     *     <строка с условиями> - общее описание условия с OR, AND, вложенными условиями. Может уже содержать
+     *     готовое условие с подставленными значениями или быть со знаками вопроса, на место которых потом будут
+     *     подставлены по порядку значения каждого парамера, указанных после этого условия
+     * с фильтром из $conditions, который может быть описан так же как и $main или иметь описание вроде
+     *     <поле 1> => <значение 1>, ...
+     * или иметь и то и другое вперемешку. Результат будет возвращен как готовый фильтр в том виде, в которым
+     * должен быть описан фильтр из $main
      * 
-     * @param  array  $main       [description]
-     * @param  array  $conditions [description]
-     * @return [type]             [description]
+     * @param array $main - основная часть фильтра, не подтвергается изменению,
+     * ее содержимое дополненяется условиями из $conditions
+     * 
+     * @param array $conditions - дополнительные условия для фильтра
+     * @return array
      */
     public static function getWithAddedConditions(array $main, array $conditions)
     {
@@ -29,10 +40,13 @@ class InfoserviceModel extends ActiveRecord\Model
         foreach ($addConditions as $field => $value) {
             $mainConditions .= (empty($mainConditions) ? '' : ' AND ');
             if (is_string($field)) {
-                $mainConditions .= '(' . $field . ' = ?)';
+                $mainConditions .= '(' . $field . (is_array($value) ? ' IN (?)' : ' = ?') . ')';
+
+            } elseif (!is_array($value)) {
+                $mainConditions .= '(?)';
 
             } else {
-                $mainConditions .= '(?)';
+                continue;
             }
 
             $main[] = $value;
@@ -41,34 +55,40 @@ class InfoserviceModel extends ActiveRecord\Model
     }
 
     /**
-     * [correctBooleanValue description]
+     * Проверяет название поля. Если оно начинается с is_*, то значение будет приведено
+     * к числовому. Для числовых значений ничего не изменится, а строковые со значением
+     * 'y', 'yes' или 'true' будут приведены к 1, остальные значения будут приниматься
+     * как нуль.
      * 
-     * @param  [type] $name   [description]
-     * @param  [type] &$value [description]
+     * @param $name - название поля
+     * @param &$value - значение поля
      * @return boolean
      */
     protected function correctBooleanValue($name, &$value)
     {
         if (preg_match('/^is_/i', $name)) {
-            if (is_string($value)) $value = intval(preg_match('/^y(?:es)?$/i', $value));
+            $value = intval(is_string($value) ? preg_match('/^(?:y(?:es)?|true)$/i', $value) : $value);
             return true;
         }
         return false;
     }
 
     /**
-     * [correctDateValue description]
+     * Проверяет название поля. Если оно оканчивается на *_date, то значение заменяется
+     * экземпляром класса DateTime. Само значение для этого должно быть строкового типа
+     * и иметь значние даты в формате, описанном в константах Day::CALENDAR_FORMAT или
+     * Day::FORMAT
      * 
-     * @param  [type] $name   [description]
-     * @param  [type] &$value [description]
+     * @param $name - название поля
+     * @param &$value - значение поля
      * @return boolean
      */
     protected function correctDateValue($name, &$value)
     {
         if (!preg_match('/_date$/i', $name) || !is_string($value)) return false;
 
-        $newValue = date_create_from_format(DAY_CALENDAR_FORMAT, $value);
-        if (!$newValue) $newValue = date_create_from_format(DAY_FORMAT, $value);
+        $newValue = date_create_from_format(Day::CALENDAR_FORMAT, $value);
+        if (!$newValue) $newValue = date_create_from_format(Day::FORMAT, $value);
 
         if (isset($newValue)) {
             $value = $newValue;
@@ -78,10 +98,15 @@ class InfoserviceModel extends ActiveRecord\Model
     }
 
     /**
-     * [__set description]
+     * Для случаев вроде присваивания
+     *     <экземпляр>-><поле> = <значение>;
+     * прогоняет по каждому методу класса, имеющего название по шаблону
+     *     correct<Допольнительный текст>Value
+     * до тех пор, пока кто-то из таких методов не вернет true или все не
+     * получат нзвание и значение поля     * 
      * 
-     * @param [type] $name  [description]
-     * @param [type] $value [description]
+     * @param $name - название поля
+     * @param &$value - значение поля
      * @return void
      */
     public function __set($name, $value)

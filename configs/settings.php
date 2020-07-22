@@ -52,7 +52,7 @@ ActiveRecord\Config::initialize(
             'test' => $connection,
             'production' => $connection,
         ]);
-        ActiveRecord\Connection::$datetime_format = Day::DAY_FORMAT . ' H:i:s';
+        ActiveRecord\Connection::$datetime_format = Day::FORMAT . ' H:i:s';
     }
 );
 

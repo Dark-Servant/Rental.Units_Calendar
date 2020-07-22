@@ -3,7 +3,8 @@
     data: {
         calendarShow: startCalendar,
         activityInstalled: startCalendar,
-        bx24inited: BX24 !== null,
+        bx24inited: bx24inited,
+        backtoactivities: backtoactivities,
         activities: activities,
         days: <?=json_encode($days)?>,
         technics: <?=json_encode($technics)?>,
@@ -91,6 +92,7 @@
             $(selector.filterArea).find('[name]').each((paramNum, paramObj) => {
                 data[$(paramObj).attr('name')] = paramObj.type == 'checkbox' ? paramObj.checked : paramObj.value;
             });
+            data.user = {...currentUserData};
             $(selector.filterArea).addClass(classList.noReaction);
             $.get(ajaxURL + 'getcontents', data, answer => {
                 $(selector.filterArea).removeClass(classList.noReaction);
@@ -131,6 +133,30 @@
          */
         showActivities() {
             this.calendarShow = false;
+        },
+
+        /**
+         * Устанавливает или снимает избранность пользователя с техники или партнера
+         * 
+         * @param index - порядковый номер техники или партнеры в списке technics
+         * @param starObj - объект, указывающий на звезду для выбора избранноси
+         *
+         * @return void
+         */
+        setChosen(index, starObj) {
+            var technic = this.technics[index];
+            technic.IS_CHOSEN = !technic.IS_CHOSEN;
+            
+            var cellUnit = $(starObj).closest(selector.technicUnit);
+            cellUnit.addClass(classList.noReaction);
+
+            $.post(ajaxURL + 'setchosen', {
+                technic: {...technic},
+                user: {...currentUserData}
+            }, answer => {
+                cellUnit.removeClass(classList.noReaction);
+                if (!answer.result) return;
+            });
         }
     }
 }

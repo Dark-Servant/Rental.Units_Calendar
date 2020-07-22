@@ -17,3 +17,8 @@ migrate migrate:up dev
 - **PHP ActiveRecord**: https://koenpunt.github.io/php-activerecord/, https://www.phpactiverecord.xyz/docs/ActiveRecord;
 - **php-database-migration**: https://packagist.org/packages/php-database-migration/php-database-migration;
 - **js-datepicker**: https://www.npmjs.com/package/js-datepicker
+
+При создании приложения на портале Битрикс24 необдимо выбрать следующие права доступа:
+- Бизнес-процессы (**bizproc**);
+- Пользователи (**user**);
+- CRM (**crm**)

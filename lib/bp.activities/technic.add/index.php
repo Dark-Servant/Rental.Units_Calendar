@@ -40,6 +40,21 @@ try {
             && !isset($_REQUEST['properties'][$propertyCode])
         ) throw new Exception(strtr($langValues['ERROR_EMPTY_ACTIVITY_PROPERTY'], ['#PROPERTY#' => $propertyCode]));
     }
+
+    $partner = null;
+    if (($partnerId = intval($_REQUEST['properties']['PARTNER_ID']))) {
+        $partner = Partner::find_by_external_id($partnerId);
+        if (!$partner) $partner = new Partner;
+
+        $partner->external_id = $partnerId;
+        $partner->name = preg_replace(
+                                '/\[[^\[\]]+\]/', '',
+                                strip_tags($_REQUEST['properties']['PARTNER_NAME'])
+                            );
+        $partner->save();
+    }
+
+
     $technic = Technic::find('first', ['external_id' => $_REQUEST['properties']['TECHNIC_ID']]);
     if (FROM_CMD) var_dump($technic);
 
@@ -48,8 +63,9 @@ try {
     $technic->name = $_REQUEST['properties']['NAME'];
     $technic->state_number = $_REQUEST['properties']['STATE_NUMBER'];
     $technic->loading_capacity = $_REQUEST['properties']['LOADING_CAPACITY'];
-    $technic->partner_id = $_REQUEST['properties']['PARTNER_ID'];
-    $technic->partner_name = $_REQUEST['properties']['PARTNER_NAME'];
+
+    if ($partner) $technic->partner_id = $partner->id;
+
     $technic->is_my = $_REQUEST['properties']['IS_MY'];
     $technic->is_visibility = $_REQUEST['properties']['VISIBILITY'];
     $technic->save();

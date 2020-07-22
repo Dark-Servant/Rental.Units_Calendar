@@ -119,15 +119,19 @@ html, body {
     position: relative;
 }
 
-.rc-technic-unit-area::before {
-    content: "\2606";
+.rc-technic-chosen {
     font-size: 30px;
     position: absolute;
     top: -5px;
     left: 0px;
+    cursor: pointer;    
 }
 
-.rc-technic-unit-area.rc-chosen::before {
+.rc-technic-chosen::before {
+    content: "\2606";
+}
+
+.rc-technic-unit-area.rc-chosen .rc-technic-chosen::before {
     content: "\2605";
     color: yellow;
 }

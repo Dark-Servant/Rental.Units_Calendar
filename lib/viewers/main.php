@@ -30,8 +30,11 @@
 
         <script src="//<?=$_SERVER['HTTP_HOST'] . APPPATH?>/node_modules/vue/dist/vue.min.js?<?=VERSION?>"></script>
         <script src="//<?=$_SERVER['HTTP_HOST'] . APPPATH?>/node_modules/jquery/dist/jquery.min.js?<?=VERSION?>"></script>
-        <script src="//<?=$_SERVER['HTTP_HOST'] . APPPATH?>/node_modules/js-datepicker/dist/datepicker.min.js?<?=VERSION?>"></script>
-        <script src="//api.bitrix24.com/api/v1/"></script>
+        <script src="//<?=$_SERVER['HTTP_HOST'] . APPPATH?>/node_modules/js-datepicker/dist/datepicker.min.js?<?=VERSION?>"></script><?
+        
+        if (defined('DOMAIN')):?>
+        <script src="//api.bitrix24.com/api/v1/"></script><?
+        endif;?>
         <script src="//<?=$_SERVER['HTTP_HOST'] . APPPATH?>/js/main.js.php?<?=VERSION?>"></script>
     </head>
     <body><?

@@ -1,93 +1,34 @@
 <?
-$setting = require __DIR__ . '/../../../configs/settings.php';
+$technic = Technic::find_by_external_id($this->values['TECHNIC_ID']);
+if (!$technic) throw new Exception(strtr(
+                    $langValues['ERROR_PARENT_TECHNIC_OF_CONTENT'],
+                    ['#ID#' => $this->values['TECHNIC_ID']]
+                ));
 
-$answer = ['result' => true];
-$folder = __DIR__ . '/requests';
-$dateLink = date('YmdHis');
-if (!is_dir($folder)) mkdir($folder);
+$content = Content::find_by_specification_id($this->values['SPECIFICATION_ID']);
+if (!$content) $content = new Content();
 
+$content->specification_id = $this->values['SPECIFICATION_ID'];
+$content->technic_id = $technic->id;
+$content->begin_date = $this->values['BEGIN_DATE'];
+$content->finish_date = $this->values['FINISH_DATE'];
+$content->deal_url = $this->values['DEAL_URL'];
 
-define('FROM_CMD', empty($_SERVER['HTTP_HOST']));
-
-if (FROM_CMD) {
-    require __DIR__ . '/data.php';
-
-} else {
-    file_put_contents($folder . '/' . $dateLink . '.request.txt', 
-        print_r($_SERVER, true) . PHP_EOL .
-        print_r($_REQUEST, true) . PHP_EOL .
-        print_r($_SESSION['CONST_LIST'], true) . PHP_EOL .
-        '-------' . PHP_EOL .
-        json_encode($_SERVER) . PHP_EOL .
-        '-------' . PHP_EOL .
-        json_encode($_REQUEST) . PHP_EOL
-    );
+$responsible = Responsible::find_by_name($this->values['RESPONSIBLE_NAME']);
+if (!$responsible) {
+    $responsible = new Responsible(['name' => $this->values['RESPONSIBLE_NAME']]);
+    $responsible->save();
 }
 
-try {
-    $activityCode = preg_replace_callback(
-                        '/(\w)\W(\w)/',
-                        function($parts) { return $parts[1] . strtoupper($parts[2]); },
-                        basename(__DIR__)
-                    );
-    if ($activityCode != $_REQUEST['code'])
-        throw new Exception($langValues['ERROR_ACTIVITY_CODE']);
-    
-    $activitySetting = require __DIR__ . '/params.php';
-    foreach ($activitySetting['PROPERTIES'] as $propertyCode => $propertyParams) {
-        if (
-            (strtolower($propertyParams['Required']) == 'y')
-            && !isset($_REQUEST['properties'][$propertyCode])
-        ) throw new Exception(strtr($langValues['ERROR_EMPTY_ACTIVITY_PROPERTY'], ['#PROPERTY#' => $propertyCode]));
-    }
-    $technic = Technic::find('first', ['external_id' => $_REQUEST['properties']['TECHNIC_ID']]);
-    if (FROM_CMD) var_dump($technic);
-
-    if (!$technic) throw new Exception(strtr(
-                        $langValues['ERROR_PARENT_TECHNIC_OF_CONTENT'],
-                        ['#ID#' => $_REQUEST['properties']['TECHNIC_ID']]
-                    ));
-
-    $content = Content::find('first', ['specification_id' => $_REQUEST['properties']['SPECIFICATION_ID']]);
-    if (!$content) $content = new Content();
-    
-    $content->specification_id = $_REQUEST['properties']['SPECIFICATION_ID'];
-    $content->technic_id = $technic->id;
-    $content->begin_date = $_REQUEST['properties']['BEGIN_DATE'];
-    $content->finish_date = $_REQUEST['properties']['FINISH_DATE'];
-    $content->deal_url = $_REQUEST['properties']['DEAL_URL'];
-    $responsible = Responsible::find('first', ['name' => $_REQUEST['properties']['RESPONSIBLE_NAME']]);
-    if (!$responsible) {
-        $responsible = new Responsible(['name' => $_REQUEST['properties']['RESPONSIBLE_NAME']]);
-        $responsible->save();
-    }
-    $customer = Customer::find('first', ['name' => $_REQUEST['properties']['CUSTOMER_NAME']]);
-    if (!$customer) {
-        $customer = new Customer(['name' => $_REQUEST['properties']['CUSTOMER_NAME']]);
-        $customer->save();
-    }
-    $content->responsible_id = $responsible->id;
-    $content->customer_id = $customer->id;
-    $content->work_address = $_REQUEST['properties']['WORK_ADDRESS'];
-    $content->status = $_REQUEST['properties']['STATUS'];
-    $content->is_closed = $_REQUEST['properties']['IS_CLOSED'];
-    $content->save();
-
-    if (!FROM_CMD) {
-        $restAPIUnit = new BX24RestAPI($_REQUEST['auth'], $folder . '/' . $dateLink . '.log.txt');
-        $restAPIUnit->callBizprocEventSend(['EVENT_TOKEN' => $_REQUEST['event_token']]);
-    }
-
-} catch (Exception $error) {
-    $answer = array_merge($answer, ['result' => false, 'message' => $error->GetMessage()]);
+$customer = Customer::find_by_name($this->values['CUSTOMER_NAME']);
+if (!$customer) {
+    $customer = new Customer(['name' => $this->values['CUSTOMER_NAME']]);
+    $customer->save();
 }
 
-file_put_contents($folder . '/' . $dateLink . '.result.txt', print_r($answer, true));
-
-if (FROM_CMD) {
-    echo print_r($answer, true) . PHP_EOL;
-
-} else {
-    header('Content-Type: application/json; charset=utf-8');
-    die(json_encode($answer));
-}
+$content->responsible_id = $responsible->id;
+$content->customer_id = $customer->id;
+$content->work_address = $this->values['WORK_ADDRESS'];
+$content->status = $this->values['STATUS'];
+$content->is_closed = $this->values['IS_CLOSED'];
+$content->save();

@@ -155,13 +155,24 @@ class Technic extends InfoserviceModel
      */
     protected static function setChosenStatus(int $externalUserId, array&$technics, array&$partners)
     {
-        file_put_contents($_SERVER['DOCUMENT_ROOT'] . '/aasf.txt', 'externalUserId: ' . $externalUserId);
+        if (
+            !$externalUserId || empty($user = Responsible::find_by_external_id($externalUserId))
+            || (empty($technics) && empty($partners))
+        ) return;
 
-        if (!$externalUserId || empty($user = Responsible::find_by_external_id($externalUserId)))
-            return;
+        $values = [];
+        $conditions = '';
+        foreach ([array_keys($technics), array_keys($partners)] as $number => $ids) {
+            if (empty($ids)) continue;
+
+            $conditions .= ($conditions ? ' OR ' : '') . '((is_partner = ' . $number . ') AND (entity_id IN (?)))';
+            $values[] = $ids;
+        }
+        $conditions = '(' . $conditions . ') AND (is_active = 1) AND (user_id = ?)';
+        $values[] = $user->id;
 
         foreach (
-            ChosenTechnics::find('all', ['conditions' => ['is_active = 1 and user_id = ?', $user->id]]) as $chosen
+            ChosenTechnics::find('all', ['conditions' => array_merge([$conditions], $values)]) as $chosen
         ) {
             if ($chosen->is_partner) {
                 $partners[$chosen->entity_id]['IS_CHOSEN'] = true;
@@ -216,7 +227,7 @@ class Technic extends InfoserviceModel
         $partners = [];
         foreach (self::visibilityUnits($dayTimestamps, $conditions, $orders) as $technic) {
             $dayContents = &self::initUnitAndGetContents($technic, $dayTimestamps, $technics, $partners);
-            
+
             foreach (self::contentsWithInitedFilter($technic->id) as $content) {
                 if ($content->is_closed) {
                     $contentStatus = CONTENT_CLOSED_DEAL_STATUS;
@@ -264,7 +275,7 @@ class Technic extends InfoserviceModel
         if (!empty($partners)) {
             foreach (Partner::find('all', ['conditions' => ['id' => array_keys($partners)], 'order' => 'name ASC']) as $partner) {
                 $technicResult[] = [
-                    'NAME' => preg_replace('/\[[^\[\]]+\]/', '', strip_tags($partner->name)),
+                    'NAME' => $partner->name,
                     'IS_PARTNER' => true
                 ] + $partners[$partner->id];
             }

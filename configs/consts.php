@@ -1,7 +1,14 @@
 <?
+define('SESSION_CONTANTS', false);
+
+/**
+ * Из-за использования прокси может случиться, что скрипты *.js.php
+ * будут использовать другие сессии
+ */
+if (SESSION_CONTANTS && !empty($_REQUEST['sid'])) session_id($_REQUEST['sid']);
 session_start();
 
-if (!defined('SESSION_CONTANTS') || !SESSION_CONTANTS || empty($_SESSION['CONST_LIST'])) {
+if (!SESSION_CONTANTS || empty($_SESSION['CONST_LIST'])) {
     $_SESSION['CONST_LIST'] = array_keys(get_defined_constants());
 
     define('APPPATH', preg_replace('/[\/\\\\][^\/\\\\]*$/', '/', $_SERVER['SCRIPT_NAME']));
@@ -13,6 +20,8 @@ if (!defined('SESSION_CONTANTS') || !SESSION_CONTANTS || empty($_SESSION['CONST_
     }
 
     define('VERSION', time());//'1.0.0');
+    define('URL_SCRIPT_FINISH', 'sid=' . session_id() . '&' . VERSION);
+
     define('LANG', 'ru');
     define('ENV_CODE', 'dev');
     define('SHOW_VIEW', 'calendar');

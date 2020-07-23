@@ -11,20 +11,7 @@ if (defined('AUTH_ID')) {
 
 $days = Day::getPeriod(date(Day::FORMAT), 7);
 $technics = Technic::getWithContentsByDayPeriod($userData ? $userData['ID'] : 0, $days, [], TECHNIC_SORTING);
-
-$activities = [];
-foreach (glob(dirname(__DIR__) . '/lib/bp.activities/*') as $activityPath) {
-    if (!is_dir($activityPath) || !file_exists($activityPath . '/params.php'))
-        continue;
-
-    $activityFolder = basename($activityPath);
-    $activityCode = preg_replace_callback(
-                        '/(\w)\W(\w)/',
-                        function($parts) { return $parts[1] . strtoupper($parts[2]); },
-                        $activityFolder
-                    );
-    $activities[$activityCode] = require $activityPath . '/params.php';
-}
+$activities = BPActivity::getParams();
 header('Content-Type: application/javascript; charset=utf-8');?>
 ;$(() => {
     var LANG_VALUES = <?=json_encode($langValues)?>;
@@ -39,7 +26,7 @@ header('Content-Type: application/javascript; charset=utf-8');?>
     var classList = {
         noReaction: 'rc-no-reaction'
     };
-    var ajaxURL = document.location.origin + SERVER_CONSTANTS.APPPATH + '?ajaxaction=';
+    var ajaxURL = document.location.origin + SERVER_CONSTANTS.APPPATH + '?ajaxaction=#action#&' + SERVER_CONSTANTS.URL_SCRIPT_FINISH;
     var BX24Auth;
     var bx24inited = typeof SERVER_CONSTANTS.DOMAIN != 'undefined';
     var backtoactivities = bx24inited;

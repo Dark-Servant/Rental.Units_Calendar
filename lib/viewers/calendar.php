@@ -48,12 +48,12 @@
             </td>
         </tr>
 
-        <tr class="rc-technic" v-for="(technic, technicIndex) in technics">
+        <tr class="rc-technic" v-for="technic in technics">
             <td class="rc-technic-unit">
                 <div class="rc-technic-unit-area" v-bind:class="{'rc-chosen': technic.IS_CHOSEN}">
                     <span
                         class="rc-technic-chosen"
-                        v-on:click="$emit('set-chosen', technicIndex, $event.target)"
+                        v-on:click="$emit('set-chosen', technic.index, $event.target)"
                         v-if="bx24inited"></span>
                     <span
                         class="rc-technic-name"
@@ -103,9 +103,10 @@
         v-on:set-chosen="setChosen"
         v-bind:bx24inited="bx24inited"
         v-bind:backtoactivities="backtoactivities"
-        v-bind:technics="technics"
+        v-bind:technics="sortedTechnics"
         v-bind:days="days"
         v-if="calendarShow"></calendar-table>
+
     <activity-list
         v-on:remove-activities="removeActivities"
         v-on:show-table="showTable"

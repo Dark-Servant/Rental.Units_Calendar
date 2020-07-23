@@ -1,4 +1,7 @@
-<!DOCTYPE html>
+<?
+define('URL_SCRIPT_START', '//' . $_SERVER['HTTP_HOST'] . APPPATH);
+
+?><!DOCTYPE html>
 <html lang="ru">
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -25,17 +28,19 @@
         <link rel="shortcut icon" href="index.php">
         <link rel="apple-touch-icon" href="index.php">
 
-        <link rel="stylesheet" href="//<?=$_SERVER['HTTP_HOST'] . APPPATH?>/css/style.css?<?=VERSION?>">
-        <link rel="stylesheet" href="//<?=$_SERVER['HTTP_HOST'] . APPPATH?>/node_modules/js-datepicker/dist/datepicker.min.css?<?=VERSION?>">
+        <link rel="stylesheet" href="<?=URL_SCRIPT_START?>css/style.css?<?=URL_SCRIPT_FINISH?>">
+        <link rel="stylesheet" href="<?=URL_SCRIPT_START?>node_modules/js-datepicker/dist/datepicker.min.css?<?=URL_SCRIPT_FINISH?>">
+        <link rel="stylesheet" href="<?=URL_SCRIPT_START?>node_modules/izimodal/css/iziModal.min.css?<?=URL_SCRIPT_FINISH?>">
 
-        <script src="//<?=$_SERVER['HTTP_HOST'] . APPPATH?>/node_modules/vue/dist/vue.min.js?<?=VERSION?>"></script>
-        <script src="//<?=$_SERVER['HTTP_HOST'] . APPPATH?>/node_modules/jquery/dist/jquery.min.js?<?=VERSION?>"></script>
-        <script src="//<?=$_SERVER['HTTP_HOST'] . APPPATH?>/node_modules/js-datepicker/dist/datepicker.min.js?<?=VERSION?>"></script><?
+        <script src="<?=URL_SCRIPT_START?>node_modules/vue/dist/vue.min.js?<?=URL_SCRIPT_FINISH?>"></script>
+        <script src="<?=URL_SCRIPT_START?>node_modules/jquery/dist/jquery.min.js?<?=URL_SCRIPT_FINISH?>"></script>
+        <script src="<?=URL_SCRIPT_START?>node_modules/js-datepicker/dist/datepicker.min.js?<?=URL_SCRIPT_FINISH?>"></script>
+        <script src="<?=URL_SCRIPT_START?>node_modules/izimodal/js/iziModal.min.js?<?=URL_SCRIPT_FINISH?>"></script><?
         
         if (defined('DOMAIN')):?>
         <script src="//api.bitrix24.com/api/v1/"></script><?
         endif;?>
-        <script src="//<?=$_SERVER['HTTP_HOST'] . APPPATH?>/js/main.js.php?<?=VERSION?>"></script>
+        <script src="<?=URL_SCRIPT_START?>js/main.js.php?<?=URL_SCRIPT_FINISH?>"></script>
     </head>
     <body><?
     include_once __DIR__ . '/' . SHOW_VIEW . '.php'; ?>

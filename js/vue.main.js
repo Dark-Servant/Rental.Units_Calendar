@@ -7,7 +7,8 @@
         backtoactivities: backtoactivities,
         activities: activities,
         days: <?=json_encode($days)?>,
-        technics: <?=json_encode($technics)?>
+        technics: <?=json_encode($technics)?>,
+        contentDetail: null
     },
 
     computed: {
@@ -177,6 +178,36 @@
                 cellUnit.removeClass(classList.noReaction);
                 if (!answer.result) return;
             });
+        },
+
+        /**
+         * заполняет данными свойство contentDetail, что приводит к открытию
+         * модального окна с описанием и комментариями для контента
+         * 
+         * @param technicIndex - порядковый номер техники или партнера в таблице
+         * @param contentDay - timestamp-метка для даты выбранного контента
+         * @return void
+         */
+        showContentDetails(technicIndex, contentDay) {
+            this.contentDetail = {
+                ...this.technics[technicIndex],
+                CONTENTS: undefined,
+                DATE: (new Date(contentDay * 1000)).toLocaleDateString(),
+                DEAL_INDEX: 0,
+                DEALS: this.technics[technicIndex].CONTENTS[contentDay].DEALS
+            };
+
+            setTimeout(() => verticalCenterWindow(), 1);
+        },
+
+        /**
+         * Сбрасывает свойство contentDetail, что приводит к закрытию модального окна
+         * с описанием контента для техники или партнера
+         * 
+         * @return void
+         */
+        closeDetailModal() {
+            this.contentDetail = null;
         }
     }
 }

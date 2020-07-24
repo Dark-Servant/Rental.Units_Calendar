@@ -1,10 +1,12 @@
 <script id="content-cell-component" data-props="content" type="text/vue-component">
     <div class="rc-content-area"
         v-bind:class="{
-            ['rc-content-' + content.STATUS_CLASS]: true,
-            ['rc-content-very-many']: content.VERY_MANY,
-            ['rc-content-is-not-one']: !content.VERY_MANY && !content.IS_ONE,
-        }" v-if="content">
+                ['rc-content-' + content.STATUS_CLASS]: true,
+                ['rc-content-very-many']: content.VERY_MANY,
+                ['rc-content-is-not-one']: !content.VERY_MANY && !content.IS_ONE,
+            }"
+        v-on:click="$emit('show-content-details')"
+        v-if="content">
         <span class="rc-content-many-deals" v-if="content.VERY_MANY"><?=$langValues['MANY_DEAL_STATUS']?></span>
         <div class="rc-content-deals" v-for="deal in content.DEALS" v-else>
             <a class="rc-content-deal-link" v-bind:title="deal.CUSTOMER_NAME" v-bind:href="deal.DEAL_URL" target=__bind>{{deal.CUSTOMER_NAME}}</a>
@@ -64,12 +66,46 @@
                         v-if="!technic.IS_PARTNER">{{technic.STATE_NUMBER}}</span>
                 </div>
             </td>
-            <td class="rc-content" v-for="content in technic.CONTENTS">
-                <content-cell v-bind:content="content"></content-cell>
+            <td class="rc-content" v-for="(content, contentDay) in technic.CONTENTS">
+                <content-cell
+                    v-bind:content="content"
+                    v-on:show-content-details="$emit('show-content-details', technic.index, contentDay)"></content-cell>
             </td>
         </tr>
 
     </table>
+</script>
+
+<script id="deal-detail-modal-component" data-props="deal" type="text/vue-component">
+    <div class="rc-deal-detail">
+        <a class="rc-deal-detail-customer-url" v-bind:href="deal.DEAL_URL">{{deal.CUSTOMER_NAME}}</a>
+        <div class="rc-deal-detail-work-address">{{deal.WORK_ADDRESS}}</div>
+        <div class="rc-deal-detail-technic" v-if="deal.TECHNIC_NAME">
+            <span class="rc-deal-detail-technic-caption"><?=$langValues['MODAL_CONTENT_TECHNIC_CAPTION']?></span>
+            <span class="rc-deal-detail-technic-value">{{deal.TECHNIC_NAME}}</span>
+        </div>
+        <div class="rc-deal-detail-responsible">
+            <span class="rc-deal-detail-responsible-caption"><?=$langValues['MODAL_CONTENT_RESPONSIBLE_CAPTION']?></span>
+            <span class="rc-deal-detail-responsible-value">{{deal.RESPONSIBLE_NAME}}</span>
+        </div>
+    </div>
+</script>
+
+<script id="content-detail-modal-component" data-props="content" type="text/vue-component">
+    <div class="rc-content-detail-modal">
+        <div class="rc-content-detail-window rc-no-visivility">
+            <span class="rc-content-detail-close" v-on:click="$emit('close-detail-modal')"></span>
+            <div class="rc-content-detail-title">
+                <span class="rc-content-detail-title-date">{{content.DATE}}</span><!--
+                --><span class="rc-content-detail-title-value">{{content.NAME}}</span>
+            </div>
+            <div class="rc-deal-details">           
+                <deal-detail-modal
+                    v-bind:deal="deal"
+                    v-for="deal in content.DEALS"></deal-detail-modal>
+            </div>               
+        </div>
+    </div>
 </script>
 
 <script id="activity-list-component" data-props="installed, activities" type="text/vue-component">
@@ -96,16 +132,23 @@
 </script>
 
 <div id="rental-calendar">
-    <calendar-table
-        v-on:show-data="showData"
-        v-on:set-today="setToday"
-        v-on:show-activities="showActivities"
-        v-on:set-chosen="setChosen"
-        v-bind:bx24inited="bx24inited"
-        v-bind:backtoactivities="backtoactivities"
-        v-bind:technics="sortedTechnics"
-        v-bind:days="days"
-        v-if="calendarShow"></calendar-table>
+    <template v-if="calendarShow">
+        <calendar-table
+            v-on:show-data="showData"
+            v-on:set-today="setToday"
+            v-on:show-activities="showActivities"
+            v-on:set-chosen="setChosen"
+            v-on:show-content-details="showContentDetails"
+            v-bind:bx24inited="bx24inited"
+            v-bind:backtoactivities="backtoactivities"
+            v-bind:technics="sortedTechnics"
+            v-bind:days="days"></calendar-table>
+
+        <content-detail-modal
+            v-on:close-detail-modal="closeDetailModal"
+            v-bind:content="contentDetail"
+            v-if="contentDetail"></content-detail-modal>
+    </template>
 
     <activity-list
         v-on:remove-activities="removeActivities"

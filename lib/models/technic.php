@@ -257,7 +257,7 @@ class Technic extends InfoserviceModel
                     ++$dayContents[$dayTimestamp]['DEAL_COUNT'];
                     $dayContents[$dayTimestamp]['IS_ONE'] = $dayContents[$dayTimestamp]['DEAL_COUNT'] == self::MIN_DEAL_COUNT;
                     $dayContents[$dayTimestamp]['VERY_MANY'] = $dayContents[$dayTimestamp]['DEAL_COUNT'] > self::MAX_DEAL_COUNT;
-                    $dayContents[$dayTimestamp]['DEALS'][] = [
+                    $dealUnit = [
                         'ID' => $content->id,
                         'DEAL_URL' => $content->deal_url,
                         'RESPONSIBLE_NAME' => $content->responsible->name,
@@ -265,6 +265,9 @@ class Technic extends InfoserviceModel
                         'WORK_ADDRESS' => $content->work_address,
                         'LAST_COMMENT' => ''
                     ];
+                    if (!$technic->is_my) $dealUnit['TECHNIC_NAME'] = $technic->name;
+
+                    $dayContents[$dayTimestamp]['DEALS'][] = $dealUnit;
                 }
             }
         }

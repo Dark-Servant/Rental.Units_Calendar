@@ -101,4 +101,7 @@ $langValues['BPA_CONTENT_ADD_PARAM_PARTNER_ID'] = 'ID партнёра';
 $langValues['BPA_CONTENT_ADD_PARAM_PARTNER_NAME'] = 'Наименование партнёра';
 $langValues['BPA_CONTENT_ADD_PARAM_IS_MY'] = 'Своя/чужая';
 $langValues['BPA_CONTENT_ADD_PARAM_VISIBILITY'] = 'Видимость в календаре';
- 
+
+// Данные модального окна с данными сделки и контента
+$langValues['MODAL_CONTENT_TECHNIC_CAPTION'] = 'Техника';
+$langValues['MODAL_CONTENT_RESPONSIBLE_CAPTION'] = 'Ответственный';

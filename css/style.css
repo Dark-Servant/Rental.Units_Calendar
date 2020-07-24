@@ -6,6 +6,10 @@ html, body {
     pointer-events: none !important;
 }
 
+.rc-no-visivility {
+    visibility: hidden !important;
+}
+
 .rc-table {
     border-collapse: collapse;
     border: 1px solid;
@@ -304,5 +308,135 @@ html, body {
 
 .rc-activity-list-remove-button:active {
     background-color: #fd7d7d;
+}
+
+.rc-content-detail-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: rgb(0 0 0 / 0.25);
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+}
+
+.rc-content-detail-window {
+    background-color: #e9f4fd;
+    display: inline-block;
+    padding: 10px 5px;
+    width: 700px;
+    min-height: 100px;
+    max-height: 550px;
+    position: absolute;
+    left: calc((100% - 700px) / 2);
+    border-radius: 10px;
+    overflow: hidden;
+}
+}
+
+.rc-content-detail-close::before {
+    content: '\1F5D9';
+    color: #171717;
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    border: 1px solid;
+    top: 5px;
+    right: 5px;
+    border-radius: 10px;
+    cursor: pointer;
+    user-select: none;
+    line-height: 13px;
+    font-size: 15px;
+    text-align: center;
+}
+
+.rc-content-detail-close:hover::before {
+    font-size: 13px;
+}
+
+.rc-content-detail-close:active::before {
+    color: #8c8c8c;
+}
+
+.rc-content-detail-title {
+    padding: 5px 0 10px 0;
+    text-align: center;
+    color: black;
+}
+
+.rc-content-detail-title > * {
+    display: inline-block;
+}
+
+.rc-content-detail-title-date {
+    color: #6d6969;
+}
+
+.rc-content-detail-title-value {
+    margin-left: 5px;
+}
+
+.rc-deal-details {
+    min-height: 100px;
+    max-height: 500px;
+    overflow: hidden;
+    overflow-y: auto;
+}
+
+.rc-deal-details::-webkit-scrollbar {
+  background-color: rgba(255, 255, 255, 0.35);
+  width: 5px;
+  height: 5px;
+}
+
+.rc-deal-details::-webkit-scrollbar-track {
+  background-color: rgba(255, 255, 255, 0.35);
+  width: 5px;
+  height: 5px;
+}
+
+.rc-deal-details::-webkit-scrollbar-thumb {
+  background-color: rgba(137, 199, 255, 0.55);
+}
+
+.rc-deal-detail {
+    background-color: #ffffff;
+    padding: 5px;
+    border-radius: 5px;
+    min-height: 100px;
+}
+
+.rc-deal-detail + .rc-deal-detail {
+    margin-top: 5px;
+}
+
+.rc-deal-detail-customer-url {
+    color: #0000fd;
+    text-decoration: none;
+}
+
+.rc-deal-detail-work-address {
+    margin: 15px 0;
+    max-height: 100px;
+}
+
+.rc-deal-detail-technic {
+    font-weight: bold;
+    color: black;
+    margin-bottom: 10px;
+}
+
+.rc-deal-detail-technic-caption {
+    color: #423f3f;
+}
+
+.rc-deal-detail-responsible {
+    font-weight: bold;
+    color: red;
+}
+
+.rc-deal-detail-responsible-caption {
+    color: #ff5858;
 }
 

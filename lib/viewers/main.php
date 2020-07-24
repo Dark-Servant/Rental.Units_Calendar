@@ -30,12 +30,10 @@ define('URL_SCRIPT_START', '//' . $_SERVER['HTTP_HOST'] . APPPATH);
 
         <link rel="stylesheet" href="<?=URL_SCRIPT_START?>css/style.css?<?=URL_SCRIPT_FINISH?>">
         <link rel="stylesheet" href="<?=URL_SCRIPT_START?>node_modules/js-datepicker/dist/datepicker.min.css?<?=URL_SCRIPT_FINISH?>">
-        <link rel="stylesheet" href="<?=URL_SCRIPT_START?>node_modules/izimodal/css/iziModal.min.css?<?=URL_SCRIPT_FINISH?>">
 
         <script src="<?=URL_SCRIPT_START?>node_modules/vue/dist/vue.min.js?<?=URL_SCRIPT_FINISH?>"></script>
         <script src="<?=URL_SCRIPT_START?>node_modules/jquery/dist/jquery.min.js?<?=URL_SCRIPT_FINISH?>"></script>
         <script src="<?=URL_SCRIPT_START?>node_modules/js-datepicker/dist/datepicker.min.js?<?=URL_SCRIPT_FINISH?>"></script>
-        <script src="<?=URL_SCRIPT_START?>node_modules/izimodal/js/iziModal.min.js?<?=URL_SCRIPT_FINISH?>"></script><?
         
         if (defined('DOMAIN')):?>
         <script src="//api.bitrix24.com/api/v1/"></script><?

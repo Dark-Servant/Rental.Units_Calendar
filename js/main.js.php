@@ -21,10 +21,15 @@ header('Content-Type: application/javascript; charset=utf-8');?>
         filterArea: '.rc-filter',
         filterDateInput: '.rc-filter-date-input',
         activityList: '.rc-activity-list',
-        technicUnit: '.rc-technic-unit'
+        technicUnit: '.rc-technic-unit',
+        contentDetailWindow: '.rc-content-detail-window',
     };
     var classList = {
-        noReaction: 'rc-no-reaction'
+        noReaction: 'rc-no-reaction',
+        noVisivility: 'rc-no-visivility'
+    };
+    var modalSelector = {
+        [selector.contentDetailWindow]: selector.contentDetailWindow
     };
     var ajaxURL = document.location.origin + SERVER_CONSTANTS.APPPATH + '?ajaxaction=#action#&' + SERVER_CONSTANTS.URL_SCRIPT_FINISH;
     var BX24Auth;
@@ -184,6 +189,27 @@ header('Content-Type: application/javascript; charset=utf-8');?>
                     showApplication(notExistActivityCodes.length < 1);
                 }
             )
+    }
+
+    /**
+     * По всем указанным в переменной modalselector селекторам к модальным окнам
+     * берет каждое окно, проверяет его на существование. Если окно существует, то
+     * оно центрируется по вертикали
+     * 
+     * @return void
+     */
+    var verticalCenterWindow = function() {
+        var bodyArea = document.body.getBoundingClientRect();
+        for (var modalCode in modalSelector) {
+            var modalUnit = $(modalSelector[modalCode]);
+            if (!modalUnit.length) continue;
+
+            var modalCodeRect = modalUnit.get(0).getBoundingClientRect();
+            var topvalue = modalCodeRect.height >= bodyArea.height ? 0
+                         : Math.floor((bodyArea.height - modalCodeRect.height) / 2);
+            modalUnit.css('top', topvalue + 'px');
+            modalUnit.removeClass(classList.noVisivility);
+        }
     }
 
     if (bx24inited) {

@@ -3,10 +3,31 @@
     data: {
         calendarShow: startCalendar,
         activityInstalled: startCalendar,
-        bx24inited: BX24 !== null,
+        bx24inited: bx24inited,
+        backtoactivities: backtoactivities,
         activities: activities,
         days: <?=json_encode($days)?>,
-        technics: <?=json_encode($technics)?>,
+        technics: <?=json_encode($technics)?>
+    },
+
+    computed: {
+        /**
+         * Возвращает массив с техникой, где идут сначала вся техника и партнеры, отмеченные
+         * как избранные, а потом обычные, т.е. перемещает все отмеченное как избранное вперед
+         * списка
+         * 
+         * @return array
+         */
+        sortedTechnics() {
+            var technics = this.technics.map((technic, index) => {
+                                return {index: index, ...technic};
+                            });
+            var result = technics.filter(technic => technic.IS_CHOSEN);
+            technics.forEach(technic => {
+                if (!technic.IS_CHOSEN) result.push(technic);
+            });
+            return result;
+        }
     },
 
     /**
@@ -91,8 +112,9 @@
             $(selector.filterArea).find('[name]').each((paramNum, paramObj) => {
                 data[$(paramObj).attr('name')] = paramObj.type == 'checkbox' ? paramObj.checked : paramObj.value;
             });
+            data.user = {...currentUserData};
             $(selector.filterArea).addClass(classList.noReaction);
-            $.get(ajaxURL + 'getcontents', data, answer => {
+            $.get(ajaxURL.replace(/#action#/i, 'getcontents'), data, answer => {
                 $(selector.filterArea).removeClass(classList.noReaction);
                 if (!answer.result) return;
 
@@ -131,6 +153,30 @@
          */
         showActivities() {
             this.calendarShow = false;
+        },
+
+        /**
+         * Устанавливает или снимает избранность пользователя с техники или партнера
+         * 
+         * @param index - порядковый номер техники или партнеры в списке technics
+         * @param starObj - объект, указывающий на звезду для выбора избранноси
+         *
+         * @return void
+         */
+        setChosen(index, starObj) {
+            var technic = this.technics[index];
+            technic.IS_CHOSEN = !technic.IS_CHOSEN;
+            
+            var cellUnit = $(starObj).closest(selector.technicUnit);
+            cellUnit.addClass(classList.noReaction);
+
+            $.post(ajaxURL.replace(/#action#/i, 'setchosen'), {
+                technic: {...technic},
+                user: {...currentUserData}
+            }, answer => {
+                cellUnit.removeClass(classList.noReaction);
+                if (!answer.result) return;
+            });
         }
     }
 }

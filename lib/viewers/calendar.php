@@ -9,15 +9,15 @@
         <div class="rc-content-deals" v-for="deal in content.DEALS" v-else>
             <a class="rc-content-deal-link" v-bind:title="deal.CUSTOMER_NAME" v-bind:href="deal.DEAL_URL" target=__bind>{{deal.CUSTOMER_NAME}}</a>
             <template v-if="content.IS_ONE">
-                <div class="rc-content-deal-addr" v-bind:title="deal.WORK_ADDRESS">{{deal.WORK_ADDRESS}}</div>
-                <div class="rc-content-deal-comment" v-bind:title="deal.LAST_COMMENT">{{deal.LAST_COMMENT}}</div>
+                <div class="rc-content-deal-addr" v-bind:class="{'rc-no-comment-addr': !deal.LAST_COMMENT}" v-bind:title="deal.WORK_ADDRESS">{{deal.WORK_ADDRESS}}</div>
+                <div class="rc-content-deal-comment" v-bind:title="deal.LAST_COMMENT" v-if="deal.LAST_COMMENT">{{deal.LAST_COMMENT}}</div>
                 <div class="rc-content-deal-responsible" v-bind:title="deal.RESPONSIBLE_NAME">{{deal.RESPONSIBLE_NAME}}</div>
             </template>
         </div>
     </div>
 </script>
 
-<script id="calendar-table-component" data-props="bx24inited, technics, days" type="text/vue-component">
+<script id="calendar-table-component" data-props="bx24inited, backtoactivities, technics, days" type="text/vue-component">
     <table class="rc-table">
         <tr class="rc-header">
             <td class="rc-filter">
@@ -31,14 +31,14 @@
                 </div>
                 <div class="rc-filter-date-area">
                     <input class="rc-filter-date-input"
-                        name="date" value="<?=date(DAY_CALENDAR_FORMAT)?>"
+                        name="date" value="<?=date(Day::CALENDAR_FORMAT)?>"
                         v-on:change="$emit('show-data')"
                         type="text" readonly>
                     <div
                         class="rc-button rc-filter-button rc-filter-date-today"
                         v-on:click="$emit('set-today')"><?=$langValues['FILTER_TODAY_BUTTON']?></div>
                 </div>
-                <span class="rc-activity-list-back" v-on:click="$emit('show-activities')" v-if="bx24inited"></span>
+                <span class="rc-activity-list-back" v-on:click="$emit('show-activities')" v-if="backtoactivities"></span>
             </td>
             <td class="rc-day" v-for="day in days">
                 <div class="rc-day-area">
@@ -50,8 +50,18 @@
 
         <tr class="rc-technic" v-for="technic in technics">
             <td class="rc-technic-unit">
-                <div class="rc-technic-unit-area" v-bind:class="{'rc-my': technic.IS_MY}">
-                    <span class="rc-technic-name" v-bind:title="technic.NAME">{{technic.NAME}}</span>
+                <div class="rc-technic-unit-area" v-bind:class="{'rc-chosen': technic.IS_CHOSEN}">
+                    <span
+                        class="rc-technic-chosen"
+                        v-on:click="$emit('set-chosen', technic.index, $event.target)"
+                        v-if="bx24inited"></span>
+                    <span
+                        class="rc-technic-name"
+                        v-bind:title="technic.NAME">{{technic.NAME}}</span>
+                    <span
+                        class="rc-technic-state-number"
+                        v-bind:title="technic.STATE_NUMBER"
+                        v-if="!technic.IS_PARTNER">{{technic.STATE_NUMBER}}</span>
                 </div>
             </td>
             <td class="rc-content" v-for="content in technic.CONTENTS">
@@ -68,7 +78,7 @@
         <div class="rc-activity-list-title" v-else><?=$langValues['BP_ACTIVITIES_EMPTY_TITLE']?></div>
         <div class="rc-activity-list-data">
             <div class="rc-activity-unit" v-for="activity in activities">
-                <span>{{activity.data.NAME.<?=LANG?>}}</span>
+                <span>{{activity.NAME.<?=LANG?>}}</span>
             </div>
         </div>
         <div class="rc-activity-list-buttons">
@@ -90,10 +100,13 @@
         v-on:show-data="showData"
         v-on:set-today="setToday"
         v-on:show-activities="showActivities"
+        v-on:set-chosen="setChosen"
         v-bind:bx24inited="bx24inited"
-        v-bind:technics="technics"
+        v-bind:backtoactivities="backtoactivities"
+        v-bind:technics="sortedTechnics"
         v-bind:days="days"
         v-if="calendarShow"></calendar-table>
+
     <activity-list
         v-on:remove-activities="removeActivities"
         v-on:show-table="showTable"

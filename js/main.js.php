@@ -1,29 +1,17 @@
 <?
-error_reporting(E_ERROR);
-
 define('SESSION_CONTANTS', true);
 
 $setting = require dirname(__DIR__) . '/configs/settings.php';
-$dayPeriod = Day::getPeriod(date(DAY_FORMAT), 7);
-$days = $dayPeriod['data'];
-$technics = Technic::getWithContentsByDayPeriod($dayPeriod, [], TECHNIC_SORTING);
 
-$activities = [];
-foreach (glob(dirname(__DIR__) . '/lib/bp.activities/*') as $activityPath) {
-    if (!is_dir($activityPath) || !file_exists($activityPath . '/params.php'))
-        continue;
-
-    $activityFolder = basename($activityPath);
-    $activityCode = preg_replace_callback(
-                        '/(\w)\W(\w)/',
-                        function($parts) { return $parts[1] . strtoupper($parts[2]); },
-                        $activityFolder
-                    );
-    $activities[$activityCode] = [
-        'path' => $activityFolder,
-        'data' => require $activityPath . '/params.php'
-    ];
+$userData = null;
+if (defined('AUTH_ID')) {
+    $userData = (new BX24RestAPI(['domain' => DOMAIN, 'access_token' => AUTH_ID]))->callUserCurrent();
+    if ($userData) $userData = $userData['result'];
 }
+
+$days = Day::getPeriod(date(Day::FORMAT), 7);
+$technics = Technic::getWithContentsByDayPeriod($userData ? $userData['ID'] : 0, $days, [], TECHNIC_SORTING);
+$activities = BPActivity::getParams();
 header('Content-Type: application/javascript; charset=utf-8');?>
 ;$(() => {
     var LANG_VALUES = <?=json_encode($langValues)?>;
@@ -32,21 +20,67 @@ header('Content-Type: application/javascript; charset=utf-8');?>
         calendar: '#rental-calendar',
         filterArea: '.rc-filter',
         filterDateInput: '.rc-filter-date-input',
-        activityList: '.rc-activity-list'
+        activityList: '.rc-activity-list',
+        technicUnit: '.rc-technic-unit'
     };
     var classList = {
         noReaction: 'rc-no-reaction'
     };
-    var ajaxURL = document.location.origin + SERVER_CONSTANTS.APPPATH + '?ajaxaction=';
+    var ajaxURL = document.location.origin + SERVER_CONSTANTS.APPPATH + '?ajaxaction=#action#&' + SERVER_CONSTANTS.URL_SCRIPT_FINISH;
     var BX24Auth;
-    var bxLinks = [];
-    var bxLinkCount = bxLinks.length;
+    var bx24inited = typeof SERVER_CONSTANTS.DOMAIN != 'undefined';
+    var backtoactivities = bx24inited;
+    var currentUserData = <?=$userData ? json_encode($userData) : '{}'?>;
     
     var activities = <?=json_encode($activities)?>;
     var notExistActivityCodes = [];
     var calendar;<?
 
     include __DIR__ . '/vue.components.js';?>
+
+    /**
+     * Возвращает правильно описанные параметры для запроса
+     * 
+     * @param params - параметры
+     * @param parentCode - название родительского параметра (использовать не стоит,
+     * он нужен только для случаев, если в params будет параметр, чье значение тоже
+     * объект)
+     * 
+     * @return string
+     */
+    var getPreparedParams = function(params, parentCode) {
+        var result = '';
+        for (var code in params) {
+            if (params[code] === null) continue;
+
+            var paramName = code;
+            if (parentCode) paramName = parentCode + '[' + paramName + ']';
+
+            result += (result ? '&' : '') + (params[code] instanceof Object
+                    ? getPreparedParams(params[code], paramName)
+                    : paramName + '=' + encodeURI(params[code]));
+        }
+        return result;
+    }
+
+    /**
+     * Обработчик Bitrix RestAPI запроса
+     * 
+     * @param name - название метода
+     * @param params - параметры метода
+     *
+     * @return Promise
+     */
+    var BXRestAPISend = function(name, params) {
+        var parameters = params instanceof Object ? params : {};
+        return new Promise(success => {
+            var readyParams = getPreparedParams({auth: BX24Auth.access_token, ...parameters});
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', 'https://' + BX24Auth.domain + '/rest/' + name);
+            xhr.onload = () => success(JSON.parse(xhr.response));
+            xhr.send(readyParams);
+        });
+    }
 
     /**
      * Основной метод приложения, с которого начинается работа в нем
@@ -70,23 +104,21 @@ header('Content-Type: application/javascript; charset=utf-8');?>
         }
 
         var activityCode = notExistActivityCodes.shift();
-        BX24.callMethod(
+
+        BXRestAPISend(
             'bizproc.activity.add',
-            Object.assign(
-                {}, activities[activityCode].data,
-                {
-                    CODE: activityCode,
-                    HANDLER: document.location.origin + SERVER_CONSTANTS.APPPATH + '/lib/bp.activities/' + activities[activityCode].path + '/index.php',
-                    AUTH_USER_ID: 1,
-                    USE_SUBSCRIPTION: 'Y',
-                    DOCUMENT_TYPE: ['lists', 'BizprocDocument']
-                }
-            ),
-            result => {
-                console.log(result);
-                addActivity();
+            {
+                ...activities[activityCode],
+                CODE: activityCode,
+                HANDLER: document.location.origin + SERVER_CONSTANTS.APPPATH + '/lib/bp.activities/index.php',
+                AUTH_USER_ID: 1,
+                USE_SUBSCRIPTION: 'Y',
+                DOCUMENT_TYPE: ['lists', 'BizprocDocument']
             }
-        );
+        ).then(answer => {
+            console.log(answer);
+            addActivity();
+        });
     }
 
     /**
@@ -115,7 +147,8 @@ header('Content-Type: application/javascript; charset=utf-8');?>
         var activityCode = activityCodes.shift();
         notExistActivityCodes.push(activityCode);
 
-        BX24.callMethod('bizproc.activity.delete', {code: activityCode}, result => deleteActivity(activityCodes));
+        BXRestAPISend('bizproc.activity.delete', {code: activityCode})
+            .then(() => deleteActivity(activityCodes));
     }
 
     /**
@@ -134,63 +167,29 @@ header('Content-Type: application/javascript; charset=utf-8');?>
      * @return void
      */
     var checkActivities = function() {
-        BX24.callMethod('bizproc.activity.list', {}, result => {
-            for (var code in activities) {
-                if (result.answer.result.indexOf(code) > -1) continue;
+        BXRestAPISend('bizproc.activity.list')
+            .then(
+                answer => {
+                    if (answer.error) {
+                        backtoactivities = false;
+                        showApplication(true);
+                        return;
+                    }
 
-                notExistActivityCodes.push(code);
-            }
-            showApplication(notExistActivityCodes.length < 1);
-       });
+                    for (var code in activities) {
+                        if (answer.result.indexOf(code) > -1) continue;
+
+                        notExistActivityCodes.push(code);
+                    }
+                    showApplication(notExistActivityCodes.length < 1);
+                }
+            )
     }
 
-    /**
-     * Поверяет все ли сторонние библитеки из Битрикса подключены. Если ничего
-     * не надо было подключать или все загрузилось успешно, то запускает
-     * основной метод
-     * 
-     * @return void
-     */
-    var startApplicationWork = function() {
-        if (--bxLinkCount > 0) return;
-
-        checkActivities();
-    }
-
-    /**
-     * Проверяет нужно ли подключить js или css - файлы из коробки. Если ничего не нужно
-     * подключать, то сразу переходит к методу startApplicationWork, иначе запускает подключение
-     * файлов и устанавливает startApplicationWork как обратчик события onload при их успешном
-     * подключении
-     * 
-     * @return void
-     */
-    var prepareBXLibs = function() {
-        if (!bxLinkCount) {
-            startApplicationWork();
-            return;
-        }
-        var currentTime = (new Date()).getTime();
-        bxLinks.forEach(link => {
-            if (/\.css$/i.test(link)) {
-                var linkUnit = $('<link href="https://' + authData.domain + link + '?v=' + currentTime + '" rel="stylesheet" media="screen">');
-
-            } else if (/\.js$/i.test(link)) {
-                var linkUnit = $('<script>');
-                linkUnit.attr({src: 'https://' + authData.domain + link + '?v=' + currentTime, 'async': false});
-
-            } else {
-                return;
-            }
-            linkUnit.on('load', startApplicationWork);
-            document.body.appendChild(linkUnit.get(0));
-        });
-    }
-
-    if (BX24) {
+    if (bx24inited) {
         BX24.init(() => {
             BX24Auth = BX24.getAuth();
-            prepareBXLibs();
+            checkActivities();
         });
 
     } else {

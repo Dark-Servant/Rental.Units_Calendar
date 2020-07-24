@@ -12,3 +12,4 @@
 !/.php-database-migration
 !.gitignore
 !README.md
+*.txt

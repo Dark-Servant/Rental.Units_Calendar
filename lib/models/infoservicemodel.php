@@ -1,0 +1,121 @@
+<?
+
+class InfoserviceModel extends ActiveRecord\Model
+{
+    /**
+     * Объединяет фильтр, описанный как
+     *     "<строка с условиями>", <значение параметра 1>, <значение параметра 2>, ..., <значение параметра N>
+     * где
+     *     <строка с условиями> - общее описание условия с OR, AND, вложенными условиями. Может уже содержать
+     *     готовое условие с подставленными значениями или быть со знаками вопроса, на место которых потом будут
+     *     подставлены по порядку значения каждого парамера, указанных после этого условия
+     * с фильтром из $conditions, который может быть описан так же как и $main или иметь описание вроде
+     *     <поле 1> => <значение 1>, ...
+     * или иметь и то и другое вперемешку. Результат будет возвращен как готовый фильтр в том виде, в которым
+     * должен быть описан фильтр из $main
+     * 
+     * @param array $main - основная часть фильтра, не подтвергается изменению,
+     * ее содержимое дополненяется условиями из $conditions
+     * 
+     * @param array $conditions - дополнительные условия для фильтра
+     * @return array
+     */
+    public static function getWithAddedConditions(array $main, array $conditions)
+    {
+        $mainConditions = '';
+        if (empty($main)) {
+            $main[] = &$mainConditions;
+        
+        } else {
+            $mainConditions = &$main[0];
+        }
+
+        $addConditions = $conditions;
+        $firstKey = current(array_keys($conditions));
+        if (($firstKey !== false) && !is_string($firstKey) && is_string($conditions[$firstKey])) {
+            $mainConditions .= (empty($mainConditions) ? '' : ' AND ') . $conditions[$firstKey];
+            $addConditions = array_slice($conditions, 1);
+        }
+
+        foreach ($addConditions as $field => $value) {
+            $mainConditions .= (empty($mainConditions) ? '' : ' AND ');
+            if (is_string($field)) {
+                $mainConditions .= '(' . $field . (is_array($value) ? ' IN (?)' : ' = ?') . ')';
+
+            } elseif (!is_array($value)) {
+                $mainConditions .= '(?)';
+
+            } else {
+                continue;
+            }
+
+            $main[] = $value;
+        }
+        return $main;
+    }
+
+    /**
+     * Проверяет название поля. Если оно начинается с is_*, то значение будет приведено
+     * к числовому. Для числовых значений ничего не изменится, а строковые со значением
+     * 'y', 'yes' или 'true' будут приведены к 1, остальные значения будут приниматься
+     * как нуль.
+     * 
+     * @param $name - название поля
+     * @param &$value - значение поля
+     * @return boolean
+     */
+    protected function correctBooleanValue($name, &$value)
+    {
+        if (preg_match('/^is_/i', $name)) {
+            $value = intval(is_string($value) ? preg_match('/^(?:y(?:es)?|true)$/i', $value) : $value);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Проверяет название поля. Если оно оканчивается на *_date, то значение заменяется
+     * экземпляром класса DateTime. Само значение для этого должно быть строкового типа
+     * и иметь значние даты в формате, описанном в константах Day::CALENDAR_FORMAT или
+     * Day::FORMAT
+     * 
+     * @param $name - название поля
+     * @param &$value - значение поля
+     * @return boolean
+     */
+    protected function correctDateValue($name, &$value)
+    {
+        if (!preg_match('/_date$/i', $name) || !is_string($value)) return false;
+
+        $newValue = date_create_from_format(Day::CALENDAR_FORMAT, $value);
+        if (!$newValue) $newValue = date_create_from_format(Day::FORMAT, $value);
+
+        if (isset($newValue)) {
+            $value = $newValue;
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Для случаев вроде присваивания
+     *     <экземпляр>-><поле> = <значение>;
+     * прогоняет по каждому методу класса, имеющего название по шаблону
+     *     correct<Допольнительный текст>Value
+     * до тех пор, пока кто-то из таких методов не вернет true или все не
+     * получат нзвание и значение поля     * 
+     * 
+     * @param $name - название поля
+     * @param &$value - значение поля
+     * @return void
+     */
+    public function __set($name, $value)
+    {
+        foreach (get_class_methods($this) as $method) {
+            if (preg_match('/^correct\w+value$/i', $method)) {
+                if ($this->$method($name, $value)) break;
+            }
+        }
+        parent::__set($name, $value);
+    }
+};

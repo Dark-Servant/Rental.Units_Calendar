@@ -7,8 +7,11 @@ if (($partnerId = intval($this->values['PARTNER_ID']))) {
     $partner->external_id = $partnerId;
     $partner->name = trim(
                         preg_replace(
-                            '/\s*(?:\[[^\[\]]+\])+\s*/', ' ',
-                            strip_tags($this->values['PARTNER_NAME'])
+                            '/^\s*компания\s*:\s*/iu', '',
+                            preg_replace(
+                                '/\s*(?:\[[^\[\]]+\])+\s*/u', ' ',
+                                strip_tags($this->values['PARTNER_NAME'])
+                            )
                         )
                     );
     $partner->save();
@@ -20,7 +23,7 @@ if (!$technic) $technic = new Technic();
 $technic->external_id = $this->values['TECHNIC_ID'];
 $technic->name = $this->values['NAME'];
 $technic->state_number = $this->values['STATE_NUMBER'];
-$technic->loading_capacity = $this->values['LOADING_CAPACITY'];
+$technic->loading_capacity = $this->values['LOADING_CAPACITY'] ?? 0;
 $technic->partner_id = $partner ? $partner->id : 0;
 $technic->is_my = $this->values['IS_MY'];
 $technic->is_visibility = $this->values['VISIBILITY'];

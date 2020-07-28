@@ -265,7 +265,11 @@ class Technic extends InfoserviceModel
                         'WORK_ADDRESS' => $content->work_address,
                         'LAST_COMMENT' => ''
                     ];
-                    if (!$technic->is_my) $dealUnit['TECHNIC_NAME'] = $technic->name;
+                    if (!$technic->is_my)
+                        $dealUnit += [
+                            'TECHNIC_ID' => $technic->id,
+                            'TECHNIC_NAME' => $technic->name
+                        ];
 
                     $dayContents[$dayTimestamp]['DEALS'][] = $dealUnit;
                 }

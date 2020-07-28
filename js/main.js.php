@@ -23,6 +23,8 @@ header('Content-Type: application/javascript; charset=utf-8');?>
         activityList: '.rc-activity-list',
         technicUnit: '.rc-technic-unit',
         contentDetailWindow: '.rc-content-detail-window',
+        dealCommentInputArea: '.rc-deal-detail-comment-input-area',
+        dealCommentTextarea: '.rc-deal-detail-comment-textarea',
     };
     var classList = {
         noReaction: 'rc-no-reaction',
@@ -215,6 +217,7 @@ header('Content-Type: application/javascript; charset=utf-8');?>
     if (bx24inited) {
         BX24.init(() => {
             BX24Auth = BX24.getAuth();
+            BX24.resizeWindow(screen.width, screen.height);
             checkActivities();
         });
 

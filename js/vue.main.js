@@ -8,7 +8,27 @@
         activities: activities,
         days: <?=json_encode($days)?>,
         technics: <?=json_encode($technics)?>,
-        contentDetail: null
+        contentDetail: null,
+        isCommentEdit: false,
+        commentID: 0
+    },
+
+    watch: {
+        /**
+         * Следит за изменением переменной contentDetail. Когда она ициализирована как объект, то
+         * появляется модальное окно с информацией о контенте, иначе окно исчезает. В случае сброса
+         * переменной contentDetail этот метод сбрасывает значения в переменных isCommentEdit и commentID,
+         * чтобы при повторном открытии модального окна с информацией о контенте не появлялись поля
+         * ввода комментариев
+         * 
+         * @return void
+         */
+        contentDetail() {
+            if (!this.contentDetail) return;
+
+            this.isCommentEdit = false;
+            this.commentID = 0;
+        }
     },
 
     computed: {
@@ -189,12 +209,14 @@
          * @return void
          */
         showContentDetails(technicIndex, contentDay) {
+            var contents = this.technics[technicIndex].CONTENTS;
+
             this.contentDetail = {
                 ...this.technics[technicIndex],
                 CONTENTS: undefined,
                 DATE: (new Date(contentDay * 1000)).toLocaleDateString(),
-                DEAL_INDEX: 0,
-                DEALS: this.technics[technicIndex].CONTENTS[contentDay].DEALS
+                CONTENTDAY: contentDay,
+                DEALS: contents && contents[contentDay] ? contents[contentDay].DEALS : [{IS_EMPTY: true}]
             };
 
             setTimeout(() => verticalCenterWindow(), 1);
@@ -208,6 +230,72 @@
          */
         closeDetailModal() {
             this.contentDetail = null;
-        }
+        },
+
+        /**
+         * После нажатия кнопки "+" у каждой сделки запоминает порядковый номер сделки
+         * в переменной isCommentEdit, что приводит к скрытию кнопки "+" и появлению поля
+         * ввода комментария
+         * 
+         * @param dealIndex - порядковый номер сделки в контенте
+         * @return void
+         */
+        initCommentAdd(dealIndex) {
+            this.isCommentEdit = dealIndex;
+            verticalCenterWindow();
+        },
+
+        /**
+         * Обработчик нажатия галочки для подтверждения добавления комментария к сделке
+         * 
+         * @param addButton - DOM-объект на кнопку с галочкой в области добавления
+         * комментария 
+         * 
+         * @return void
+         */
+        commentAdd(addButton) {
+            var textArea = $(addButton).closest(selector.dealCommentInputArea).find(selector.dealCommentTextarea);
+            var value = textArea.val().trim();
+            if (!value) return;
+
+            var modalUnit = $(selector.contentDetailWindow);
+            modalUnit.addClass(classList.noReaction);
+
+            $.post(ajaxURL.replace(/#action#/i, 'addcomment'), {
+                technicId: textArea.data('id'),
+                contentDay: this.contentDetail.CONTENTDAY,
+                contentId: this.contentDetail.DEALS[this.isCommentEdit].ID || 0,
+                value: value,
+                user: {...currentUserData}
+            }, answer => {
+                modalUnit.removeClass(classList.noReaction);
+                if (!answer.result) return;
+
+                this.stopCommentAdd();
+            });
+        },
+
+        /**
+         * Обработчик нажатия крестика в области добавления комментария, убирает
+         * значение в переменной isCommentEdit, что приводит к скрытию всех полей
+         * добавления комментария и появлению кнопки "+"
+         * 
+         * @return void
+         */
+        stopCommentAdd() {
+            this.isCommentEdit = false;
+            verticalCenterWindow();
+        },
+
+        /**
+         * Обработчик нажатия кнопки с "мусоркой", который удаляет комментарий
+         * 
+         * @param commentId - идентификатор комментария
+         * @return void
+         */
+        removeComment(commentId) {
+            console.log('removeComment: ' + commentId);
+        },
+
     }
 }

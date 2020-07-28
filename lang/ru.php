@@ -9,7 +9,7 @@ $langValues['ERROR_DATE_VALUE'] = 'Неправильный формат дат�
 $langValues['ERROR_EMPTY_TECHNIC_ID'] = 'В параметре technic не указан ID';
 $langValues['ERROR_BAD_TECHNIC_ID'] = 'Передан неверный ID техники';
 $langValues['ERROR_BAD_PARTNER_ID'] = 'Передан неверный ID партнера';
-$langValues['ERROR_EMPTY_USER_ID'] = 'В параметре user не указан ID';
+$langValues['ERROR_EMPTY_COMMENTV_ALUE'] = 'Не указан комментарий';
 
 // lib/helpers/bx24.restapi.class.php
 $langValues['ERROR_EMPTY_PARAMS'] = 'Не указаны параметры domain, а так же либо access_token для обычного REST-запоса, '
@@ -23,6 +23,9 @@ $langValues['ERROR_NO_ACTIVITY_INDEX_FILE'] = 'Для действия #ACTIVITY
 
 // lib/helpers/bp.activities/content.add/index.php
 $langValues['ERROR_PARENT_TECHNIC_OF_CONTENT'] = 'В БД нет информации о техники с внешним ID равным #ID#';
+
+// lib/models/responsible.php
+$langValues['ERROR_EMPTY_USER_ID'] = 'В параметре user не указан ID';
 
 // lib/viewers/calendar.php
 $langValues['FILTER_MY_TECHNIC'] = 'Своя техника';

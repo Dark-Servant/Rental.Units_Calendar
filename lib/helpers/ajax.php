@@ -36,34 +36,14 @@ try {
             ) throw new Exception($langValues['ERROR_EMPTY_TECHNIC_ID']);
 
             $isNotPartner = $technic['IS_PARTNER'] == 'false';
-            $filter = $isNotPartner
-                    ? ['ID' => $technicId]
-                    : ['PARTNER_ID' => $technicId];
-            if (empty(Technic::find('first', $filter)))
+            $className = $isNotPartner ? 'Technic' : 'Partner';
+            if (empty($className::find($technicId)))
                  throw new Exception(
                             $isNotPartner ? $langValues['ERROR_BAD_TECHNIC_ID']
                                           : $langValues['ERROR_BAD_PARTNER_ID']
                         );
 
-            $user = $_POST['user'];
-            if (
-                !isset($user['ID']) || !($userId = intval($user['ID']))
-            ) throw new Exception($langValues['ERROR_EMPTY_USER_ID']);
-
-            $responsible = Responsible::find_by_external_id($userId);
-            if (!$responsible) $responsible = new Responsible;
-
-            $responsible->external_id = $userId;
-            $nameValue = '';
-            foreach (['LAST_NAME', 'NAME', 'SECOND_NAME'] as $namePart) {
-                $partvalue = trim($user[$namePart]);
-                if (!$partvalue) continue;
-
-                $nameValue .= ($nameValue ? ' ' : '') . $partvalue;
-            }
-            $responsible->name = trim($nameValue) ?: strval($user['EMAIL']);
-            $responsible->save();
-
+            $responsible = Responsible::initialize($_POST['user']);
             $data = [
                 'user_id' => $responsible->id,
                 'entity_id' => $technicId,
@@ -79,6 +59,25 @@ try {
             } else {
                 ChosenTechnics::create($data);
             }
+            break;
+
+        // обработчик добавления комментариев
+        case 'addcomment':
+            $technicId = intval($_POST['technicId']);
+            if (!$technicId) throw new Exception($langValues['ERROR_EMPTY_TECHNIC_ID']);
+
+            $responsible = Responsible::initialize($_POST['user']);
+            $commentValue = trim(strval($_POST['value']));
+            if (empty($commentValue))
+                throw new Exception($langValues['ERROR_EMPTY_COMMENTV_ALUE']);
+
+            $comment = new Comment;
+            $comment->technic_id = $technicId;
+            $comment->content_date = date(Day::FORMAT, intval($_POST['contentDay']));
+            $comment->content_id = intval($_POST['contentId']);
+            $comment->user_id = $responsible->id;
+            $comment->value = $commentValue;
+            $comment->save();
             break;
 
         default:

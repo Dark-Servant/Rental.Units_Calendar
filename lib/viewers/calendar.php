@@ -17,6 +17,9 @@
             </template>
         </div>
     </div>
+    <div class="rc-content-area rc-content-empty"
+        v-on:click="$emit('show-content-details')"
+        v-else></div>
 </script>
 
 <script id="calendar-table-component" data-props="bx24inited, backtoactivities, technics, days" type="text/vue-component">
@@ -76,22 +79,43 @@
     </table>
 </script>
 
-<script id="deal-detail-modal-component" data-props="deal" type="text/vue-component">
+<script id="deal-detail-modal-component" data-props="technicid, deal, editcomment, backtoactivities, commentid" type="text/vue-component">
     <div class="rc-deal-detail">
-        <a class="rc-deal-detail-customer-url" v-bind:href="deal.DEAL_URL">{{deal.CUSTOMER_NAME}}</a>
-        <div class="rc-deal-detail-work-address">{{deal.WORK_ADDRESS}}</div>
-        <div class="rc-deal-detail-technic" v-if="deal.TECHNIC_NAME">
-            <span class="rc-deal-detail-technic-caption"><?=$langValues['MODAL_CONTENT_TECHNIC_CAPTION']?></span>
-            <span class="rc-deal-detail-technic-value">{{deal.TECHNIC_NAME}}</span>
-        </div>
-        <div class="rc-deal-detail-responsible">
-            <span class="rc-deal-detail-responsible-caption"><?=$langValues['MODAL_CONTENT_RESPONSIBLE_CAPTION']?></span>
-            <span class="rc-deal-detail-responsible-value">{{deal.RESPONSIBLE_NAME}}</span>
+        <template v-if="!deal.IS_EMPTY">
+            <a class="rc-deal-detail-customer-url" v-bind:href="deal.DEAL_URL">{{deal.CUSTOMER_NAME}}</a>
+            <div class="rc-deal-detail-work-address">{{deal.WORK_ADDRESS}}</div>
+            <div class="rc-deal-detail-technic" v-if="deal.TECHNIC_NAME">
+                <span class="rc-deal-detail-technic-caption"><?=$langValues['MODAL_CONTENT_TECHNIC_CAPTION']?></span>
+                <span class="rc-deal-detail-technic-value">{{deal.TECHNIC_NAME}}</span>
+            </div>
+            <div class="rc-deal-detail-responsible">
+                <span class="rc-deal-detail-responsible-caption"><?=$langValues['MODAL_CONTENT_RESPONSIBLE_CAPTION']?></span>
+                <span class="rc-deal-detail-responsible-value">{{deal.RESPONSIBLE_NAME}}</span>
+            </div>
+        </template>
+        <div class="rc-deal-detail-comments">
+            <template v-if="backtoactivities">
+                <div class="rc-deal-detail-comment-input-area" v-if="editcomment">
+                    <textarea class="rc-textarea rc-deal-detail-comment-textarea"
+                        v-bind:data-id="deal.TECHNIC_ID || technicid"></textarea>
+                    <div class="rc-deal-detail-comment-input-buttons">
+                        <span class="rc-deal-detail-comment-input-button rc-deal-detail-comment-ok-button"
+                            v-on:click="$emit('comment-add', $event.target)"></span><!--
+                        --><span class="rc-deal-detail-comment-input-button rc-deal-detail-comment-cancel-button"
+                            v-on:click="$emit('stop-comment-add')"></span><!--
+                        --><span class="rc-deal-detail-comment-input-button rc-deal-detail-comment-remove-button"
+                            v-on:click="$emit('remove-comment')"
+                            v-if="commentid"></span>
+                    </div>
+                </div>
+                <span class="rc-deal-detail-add-comment"
+                    v-on:click="$emit('init-comment-add')" v-else></span>
+            </template>
         </div>
     </div>
 </script>
 
-<script id="content-detail-modal-component" data-props="content" type="text/vue-component">
+<script id="content-detail-modal-component" data-props="content, backtoactivities, iscommentedit, commentid" type="text/vue-component">
     <div class="rc-content-detail-modal">
         <div class="rc-content-detail-window rc-no-visivility">
             <span class="rc-content-detail-close" v-on:click="$emit('close-detail-modal')"></span>
@@ -101,8 +125,16 @@
             </div>
             <div class="rc-deal-details">           
                 <deal-detail-modal
+                    v-bind:technicid="content.ID"
                     v-bind:deal="deal"
-                    v-for="deal in content.DEALS"></deal-detail-modal>
+                    v-bind:editcomment="iscommentedit === dealIndex"
+                    v-bind:backtoactivities="backtoactivities"
+                    v-bind:commentid="commentid"
+                    v-on:init-comment-add="$emit('init-comment-add', dealIndex)"
+                    v-on:comment-add="$emit('comment-add', $event)"
+                    v-on:stop-comment-add="$emit('stop-comment-add')"
+                    v-on:remove-comment="$emit('remove-comment')"
+                    v-for="(deal, dealIndex) in content.DEALS"></deal-detail-modal>
             </div>               
         </div>
     </div>
@@ -146,7 +178,14 @@
 
         <content-detail-modal
             v-on:close-detail-modal="closeDetailModal"
+            v-on:init-comment-add="initCommentAdd"
+            v-on:comment-add="commentAdd"
+            v-on:stop-comment-add="stopCommentAdd"
+            v-on:remove-comment="removeComment"
             v-bind:content="contentDetail"
+            v-bind:backtoactivities="backtoactivities"
+            v-bind:iscommentedit="isCommentEdit"
+            v-bind:commentid="commentID"
             v-if="contentDetail"></content-detail-modal>
     </template>
 

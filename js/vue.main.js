@@ -5,30 +5,54 @@
         activityInstalled: startCalendar,
         bx24inited: bx24inited,
         backtoactivities: backtoactivities,
+        userData: currentUserData,
         activities: activities,
         days: <?=json_encode($days)?>,
         technics: <?=json_encode($technics)?>,
         contentDetail: null,
-        isCommentEdit: false,
-        commentID: 0
+        newCommentDealIndex: false,
+        editCommentIndex: false,
     },
 
     watch: {
         /**
          * Следит за изменением переменной contentDetail. Когда она ициализирована как объект, то
          * появляется модальное окно с информацией о контенте, иначе окно исчезает. В случае сброса
-         * переменной contentDetail этот метод сбрасывает значения в переменных isCommentEdit и commentID,
-         * чтобы при повторном открытии модального окна с информацией о контенте не появлялись поля
-         * ввода комментариев
+         * переменной contentDetail этот метод сбрасывает значение в переменных, наличие в которых
+         * значения отличного от false приводит к открытию поля ввода комментария
          * 
          * @return void
          */
         contentDetail() {
-            if (!this.contentDetail) return;
+            if (this.contentDetail) {
+                verticalCenterWindow();
 
-            this.isCommentEdit = false;
-            this.commentID = 0;
-        }
+            } else {            
+                this.newCommentDealIndex = false;
+                this.editCommentIndex = false;
+            }
+        },
+
+        /**
+         * Следит за изменением переменной newCommentDealIndex, наличие в которой значения отличного
+         * от false приводит к появлению поля добавления комментария
+         * 
+         * @return void
+         */
+        newCommentDealIndex() {
+            if (this.contentDetail) verticalCenterWindow();
+        },
+
+        /**
+         * Следит за изменением переменной editCommentIndex, наличие в которой значения отличного
+         * от false приводит к появлению поля редактирования комментария
+         * 
+         * @return void
+         */
+        editCommentIndex() {
+            if (this.contentDetail) verticalCenterWindow();
+        },
+
     },
 
     computed: {
@@ -59,6 +83,7 @@
     mounted() {
         this.initCalendar();
     },
+
     methods: {
 
         /**
@@ -201,7 +226,7 @@
         },
 
         /**
-         * заполняет данными свойство contentDetail, что приводит к открытию
+         * Заполняет данными свойство contentDetail, что приводит к открытию
          * модального окна с описанием и комментариями для контента
          * 
          * @param technicIndex - порядковый номер техники или партнера в таблице
@@ -209,17 +234,20 @@
          * @return void
          */
         showContentDetails(technicIndex, contentDay) {
-            var contents = this.technics[technicIndex].CONTENTS;
+            var technic = this.technics[technicIndex];
+            if (!technic.COMMENTS) Vue.set(technic, 'COMMENTS', {});
+            if (!technic.COMMENTS[contentDay]) Vue.set(technic.COMMENTS, contentDay, []);
 
+            var contents = this.technics[technicIndex].CONTENTS;
             this.contentDetail = {
                 ...this.technics[technicIndex],
                 CONTENTS: undefined,
                 DATE: (new Date(contentDay * 1000)).toLocaleDateString(),
-                CONTENTDAY: contentDay,
-                DEALS: contents && contents[contentDay] ? contents[contentDay].DEALS : [{IS_EMPTY: true}]
+                TECHNIC_INDEX: technicIndex,
+                CONTENT_DAY: contentDay,
+                DEALS: contents && contents[contentDay] ? contents[contentDay].DEALS : [{ID: 0, IS_EMPTY: true}],
+                COMMENTS: technic.COMMENTS[contentDay]
             };
-
-            setTimeout(() => verticalCenterWindow(), 1);
         },
 
         /**
@@ -234,19 +262,42 @@
 
         /**
          * После нажатия кнопки "+" у каждой сделки запоминает порядковый номер сделки
-         * в переменной isCommentEdit, что приводит к скрытию кнопки "+" и появлению поля
+         * в переменной newCommentDealIndex, что приводит к скрытию кнопки "+" и появлению поля
          * ввода комментария
          * 
          * @param dealIndex - порядковый номер сделки в контенте
          * @return void
          */
         initCommentAdd(dealIndex) {
-            this.isCommentEdit = dealIndex;
-            verticalCenterWindow();
+            this.newCommentDealIndex = dealIndex;
+            this.editCommentIndex = false;
         },
 
         /**
-         * Обработчик нажатия галочки для подтверждения добавления комментария к сделке
+         * Обработчик включения редактирования комментария
+         * 
+         * @param commentIndex - порядковый номер комментария в модальном окне
+         * @return void
+         */
+        initEditComment(commentIndex) {
+            this.newCommentDealIndex = false;
+            this.editCommentIndex = commentIndex;
+        },
+
+        /**
+         * Обработчик нажатия крестика в области добавления комментария, убирает
+         * значение в переменной newCommentDealIndex, что приводит к скрытию всех полей
+         * добавления комментария и появлению кнопки "+"
+         * 
+         * @return void
+         */
+        stopCommentAdd() {
+            this.newCommentDealIndex = false;
+            this.editCommentIndex = false;
+        },
+
+        /**
+         * Обработчик нажатия галочки для подтверждения добавления или изменения комментария к сделке
          * 
          * @param addButton - DOM-объект на кнопку с галочкой в области добавления
          * комментария 
@@ -254,6 +305,23 @@
          * @return void
          */
         commentAdd(addButton) {
+
+            var technicId = 0;
+            var contentId = 0;
+            var commentId = 0;
+
+            if (this.editCommentIndex !== false) {
+                commentId = this.contentDetail.COMMENTS[this.editCommentIndex].ID;
+
+            } else if (this.newCommentDealIndex !== false) {
+                technicId = this.contentDetail.DEALS[this.newCommentDealIndex].TECHNIC_ID
+                            || this.contentDetail.ID;
+                contentId = this.contentDetail.DEALS[this.newCommentDealIndex].ID;
+
+            } else {
+                return;
+            }
+
             var textArea = $(addButton).closest(selector.dealCommentInputArea).find(selector.dealCommentTextarea);
             var value = textArea.val().trim();
             if (!value) return;
@@ -262,40 +330,48 @@
             modalUnit.addClass(classList.noReaction);
 
             $.post(ajaxURL.replace(/#action#/i, 'addcomment'), {
-                technicId: textArea.data('id'),
-                contentDay: this.contentDetail.CONTENTDAY,
-                contentId: this.contentDetail.DEALS[this.isCommentEdit].ID || 0,
+                commentId: commentId,
+                technicId: technicId,
+                contentDay: this.contentDetail.CONTENT_DAY,
+                contentId: contentId,
                 value: value,
                 user: {...currentUserData}
             }, answer => {
                 modalUnit.removeClass(classList.noReaction);
                 if (!answer.result) return;
 
+                if (technicId) {
+                    this.technics[this.contentDetail.TECHNIC_INDEX].COMMENTS[this.contentDetail.CONTENT_DAY].push(answer.data);
+
+                } else {
+                    this.contentDetail.COMMENTS[this.editCommentIndex].VALUE = answer.data.VALUE;
+                }
                 this.stopCommentAdd();
             });
         },
 
         /**
-         * Обработчик нажатия крестика в области добавления комментария, убирает
-         * значение в переменной isCommentEdit, что приводит к скрытию всех полей
-         * добавления комментария и появлению кнопки "+"
+         * Обработчик удаления комментария при нажатии иконки с корзинкой
          * 
+         * @param commentIndex - порядковый номер комментария в модальном окне
          * @return void
          */
-        stopCommentAdd() {
-            this.isCommentEdit = false;
-            verticalCenterWindow();
-        },
+        removeComment(commentIndex) {
+            if (!confirm(LANG_VALUES.CONFIRM_MESSAGE_DELETING)) return;
 
-        /**
-         * Обработчик нажатия кнопки с "мусоркой", который удаляет комментарий
-         * 
-         * @param commentId - идентификатор комментария
-         * @return void
-         */
-        removeComment(commentId) {
-            console.log('removeComment: ' + commentId);
-        },
+            var commentId = this.contentDetail.COMMENTS[commentIndex].ID;
+            var modalUnit = $(selector.contentDetailWindow);
+            modalUnit.addClass(classList.noReaction);
 
+            $.post(ajaxURL.replace(/#action#/i, 'removecomment'), {
+                commentId: commentId,
+                user: {...currentUserData}
+            }, answer => {
+                modalUnit.removeClass(classList.noReaction);
+                if (!answer.result) return;
+
+                this.contentDetail.COMMENTS.splice(commentIndex, 1);
+            });
+        },
     }
 }

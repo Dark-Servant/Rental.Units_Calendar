@@ -201,17 +201,23 @@ header('Content-Type: application/javascript; charset=utf-8');?>
      * @return void
      */
     var verticalCenterWindow = function() {
-        var bodyArea = document.body.getBoundingClientRect();
-        for (var modalCode in modalSelector) {
-            var modalUnit = $(modalSelector[modalCode]);
-            if (!modalUnit.length) continue;
+        /**
+         * Делается с ожиданием, чтобы изменения успели отрисоваться и стали доступны
+         * истинные размеры
+         */
+        setTimeout(() => {
+            var bodyArea = document.body.getBoundingClientRect();
+            for (var modalCode in modalSelector) {
+                var modalUnit = $(modalSelector[modalCode]);
+                if (!modalUnit.length) continue;
 
-            var modalCodeRect = modalUnit.get(0).getBoundingClientRect();
-            var topvalue = modalCodeRect.height >= bodyArea.height ? 0
-                         : Math.floor((bodyArea.height - modalCodeRect.height) / 2);
-            modalUnit.css('top', topvalue + 'px');
-            modalUnit.removeClass(classList.noVisivility);
-        }
+                var modalCodeRect = modalUnit.get(0).getBoundingClientRect();
+                var topvalue = modalCodeRect.height >= bodyArea.height ? 0
+                             : Math.floor((bodyArea.height - modalCodeRect.height) / 2);
+                modalUnit.css('top', topvalue + 'px');
+                modalUnit.removeClass(classList.noVisivility);
+            }
+        }, 1);
     }
 
     if (bx24inited) {

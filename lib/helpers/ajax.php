@@ -61,23 +61,56 @@ try {
             }
             break;
 
-        // обработчик добавления комментариев
+        // обработчик добавления/изменения комментариев
         case 'addcomment':
+            $commentId = intval($_POST['commentId']);
             $technicId = intval($_POST['technicId']);
-            if (!$technicId) throw new Exception($langValues['ERROR_EMPTY_TECHNIC_ID']);
+            if (!$commentId && !$technicId) throw new Exception($langValues['ERROR_EMPTY_TECHNIC_AND_COMMENT_IDS']);
 
             $responsible = Responsible::initialize($_POST['user']);
             $commentValue = trim(strval($_POST['value']));
             if (empty($commentValue))
-                throw new Exception($langValues['ERROR_EMPTY_COMMENTV_ALUE']);
+                throw new Exception($langValues['ERROR_EMPTY_COMMENT_VALUE']);
 
-            $comment = new Comment;
-            $comment->technic_id = $technicId;
-            $comment->content_date = date(Day::FORMAT, intval($_POST['contentDay']));
-            $comment->content_id = intval($_POST['contentId']);
-            $comment->user_id = $responsible->id;
+            if ($commentId) {
+                $comment = Comment::find($commentId);
+                if (empty($comment))
+                    throw new Exception($langValues['ERROR_EMPTY_COMMENT_BY_ID']);
+
+                if ($comment->user_id != $responsible->id)
+                    throw new Exception($langValues['ERROR_COMMENT_AUTHOR_EDITING']);
+
+            } else {
+                $day = date(Day::FORMAT, intval($_POST['contentDay']));
+                $comment = new Comment;
+                $comment->technic_id = $technicId;
+                $comment->content_date = $day;
+                $comment->content_id = intval($_POST['contentId']);
+                $comment->user_id = $responsible->id;
+            }
+
             $comment->value = $commentValue;
             $comment->save();
+
+            $answer['data'] = $comment->getData();
+            break;
+
+        // обработчик удаления комментария
+        case 'removecomment':
+            $user = $_POST['user'];
+            if (
+                empty($user['ID'])
+                || empty($responsible = Responsible::find_by_external_id($user['ID']))
+            ) throw new Exception($langValues['ERROR_EMPTY_USER_ID']);
+
+            $commentId = intval($_POST['commentId']);
+            if (!$commentId || empty($comment = Comment::find($commentId)))
+                throw new Exception($langValues['ERROR_EMPTY_COMMENT_BY_ID']);
+            
+            if ($comment->user_id != $responsible->id)
+                throw new Exception($langValues['ERROR_COMMENT_AUTHOR_EDITING']);
+            
+            $comment->delete($commentId);
             break;
 
         default:

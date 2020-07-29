@@ -9,7 +9,10 @@ $langValues['ERROR_DATE_VALUE'] = 'Неправильный формат дат�
 $langValues['ERROR_EMPTY_TECHNIC_ID'] = 'В параметре technic не указан ID';
 $langValues['ERROR_BAD_TECHNIC_ID'] = 'Передан неверный ID техники';
 $langValues['ERROR_BAD_PARTNER_ID'] = 'Передан неверный ID партнера';
-$langValues['ERROR_EMPTY_COMMENTV_ALUE'] = 'Не указан комментарий';
+$langValues['ERROR_EMPTY_TECHNIC_AND_COMMENT_IDS'] = 'Не указаны ни идентификатор техники, ни идентификатор комментария';
+$langValues['ERROR_EMPTY_COMMENT_VALUE'] = 'Не указан комментарий';
+$langValues['ERROR_EMPTY_COMMENT_BY_ID'] = 'Передан неверный идентификатор комментария';
+$langValues['ERROR_COMMENT_AUTHOR_EDITING'] = 'Редактировать комментарий может только автор комментария';
 
 // lib/helpers/bx24.restapi.class.php
 $langValues['ERROR_EMPTY_PARAMS'] = 'Не указаны параметры domain, а так же либо access_token для обычного REST-запоса, '
@@ -31,6 +34,7 @@ $langValues['ERROR_EMPTY_USER_ID'] = 'В параметре user не указа
 $langValues['FILTER_MY_TECHNIC'] = 'Своя техника';
 $langValues['FILTER_TODAY_BUTTON'] = 'Сегодня';
 $langValues['MANY_DEAL_STATUS'] = 'Техника работает на нескольких объектах';
+$langValues['CONFIRM_MESSAGE_DELETING'] = 'Удалить комментарий?';
 
 /**
  * Настройки выбора даты

@@ -58,4 +58,28 @@ class Content extends InfoserviceModel
         $value = isset($newValue) ? $newValue : count($regexValues);
         return true;
     }
+
+    /**
+     * Возвращает массив с данными контента, которые надо использовать
+     * при выводе в календаре
+     * 
+     * @return array
+     */
+    public function getCellData()
+    {
+        $data = [
+            'ID' => $this->id,
+            'DEAL_URL' => $this->deal_url,
+            'RESPONSIBLE_NAME' => $this->responsible->name,
+            'CUSTOMER_NAME' => $this->customer->name,
+            'WORK_ADDRESS' => $this->work_address
+        ];
+        if (!$this->technic->is_my)
+            $data += [
+                'TECHNIC_ID' => $this->technic_id,
+                'TECHNIC_NAME' => $this->technic->name
+            ];
+
+        return $data;
+    }
 };

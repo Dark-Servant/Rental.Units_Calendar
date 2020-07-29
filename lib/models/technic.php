@@ -184,6 +184,38 @@ class Technic extends InfoserviceModel
     }
 
     /**
+     * загружает данные комментариев к каждой техники или парнерам
+     * 
+     * @param array $technicPartners - массив связей техники и парнеров. В "ключе" указан идентификатор техники,
+     * а в "значении" идентификатор партнера или нуль, если техника сама по себе
+     * 
+     * @param array $dayTimestamps - массив unix-меток времени от меньшего к большему
+     * @param array &$technics - массив с загруженными данными единиц техники
+     * @param array &$partners - массив с загруженными данными парнеров
+     * 
+     * @return void
+     */
+    protected static function loadComments(array $technicPartners, array $dayTimestamps, array&$technics, array&$partners)
+    {
+        $filter = [
+            '(technic_id IN (?)) AND (content_date >= ?) AND (content_date <= ?)',
+            array_keys($technicPartners),
+            (new DateTime)->setTimestamp(reset($dayTimestamps)),
+            (new DateTime)->setTimestamp(end($dayTimestamps)),
+        ];
+        foreach (Comment::find('all', ['conditions' => $filter, 'order' => 'id asc']) as $comment) {
+            $partnerId = $technicPartners[$comment->technic_id];
+            if ($partnerId) {
+                $comments = &$partners[$partnerId];
+
+            } else {
+                $comments = &$technics[$comment->technic_id];
+            }
+            $comments['COMMENTS'][$comment->content_date->getTimestamp()][] = $comment->getData();
+        }
+    }
+
+    /**
      * Возвращает массив с краткой информацией о технике и партнерах с привязынными к каждому из них списка контента.
      * Возвращаемое значение представляет из себя массив, где каждый элемент хранит следующие данные:
      *     - ID. Идентификатор техники;
@@ -223,10 +255,12 @@ class Technic extends InfoserviceModel
         if (!is_array($dayPeriod) || empty($dayPeriod)) return [];
         $dayTimestamps = array_keys($dayPeriod);
 
+        $technicPartners = [];
         $technics = [];
         $partners = [];
         foreach (self::visibilityUnits($dayTimestamps, $conditions, $orders) as $technic) {
             $dayContents = &self::initUnitAndGetContents($technic, $dayTimestamps, $technics, $partners);
+            $technicPartners[$technic->id] = $technic->partner_id;
 
             foreach (self::contentsWithInitedFilter($technic->id) as $content) {
                 if ($content->is_closed) {
@@ -257,26 +291,13 @@ class Technic extends InfoserviceModel
                     ++$dayContents[$dayTimestamp]['DEAL_COUNT'];
                     $dayContents[$dayTimestamp]['IS_ONE'] = $dayContents[$dayTimestamp]['DEAL_COUNT'] == self::MIN_DEAL_COUNT;
                     $dayContents[$dayTimestamp]['VERY_MANY'] = $dayContents[$dayTimestamp]['DEAL_COUNT'] > self::MAX_DEAL_COUNT;
-                    $dealUnit = [
-                        'ID' => $content->id,
-                        'DEAL_URL' => $content->deal_url,
-                        'RESPONSIBLE_NAME' => $content->responsible->name,
-                        'CUSTOMER_NAME' => $content->customer->name,
-                        'WORK_ADDRESS' => $content->work_address,
-                        'LAST_COMMENT' => ''
-                    ];
-                    if (!$technic->is_my)
-                        $dealUnit += [
-                            'TECHNIC_ID' => $technic->id,
-                            'TECHNIC_NAME' => $technic->name
-                        ];
-
-                    $dayContents[$dayTimestamp]['DEALS'][] = $dealUnit;
+                    $dayContents[$dayTimestamp]['DEALS'][] = $content->getCellData();
                 }
             }
         }
 
         self::setChosenStatus($externalUserId, $technics, $partners);
+        self::loadComments($technicPartners, $dayTimestamps, $technics, $partners);
 
         $technicResult = array_values($technics);
         if (!empty($partners)) {

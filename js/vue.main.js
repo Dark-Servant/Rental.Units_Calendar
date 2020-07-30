@@ -436,11 +436,11 @@
         startWaitingHintWindow(cellObj, technicIndex, contentDay) {
             var windowIndex = technicIndex + '.' + contentDay;
             if (this.windowIndex && (this.windowIndex == windowIndex)) return;
+            this.hintShowingData = false;
+            this.windowIndex = windowIndex;
 
             var technic = this.technics[technicIndex];
             if (!technic.COMMENTS || !technic.COMMENTS[contentDay]) return;
-            this.hintShowingData = false;
-            this.windowIndex = windowIndex;
 
             setTimeout(() => {
                 if (this.windowIndex != windowIndex) return;

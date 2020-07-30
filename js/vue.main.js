@@ -440,7 +440,8 @@
             this.windowIndex = windowIndex;
 
             var technic = this.technics[technicIndex];
-            if (!technic.COMMENTS || !technic.COMMENTS[contentDay]) return;
+            if (!technic.COMMENTS || !technic.COMMENTS[contentDay] || !technic.COMMENTS[contentDay].length)
+                return;
 
             setTimeout(() => {
                 if (this.windowIndex != windowIndex) return;

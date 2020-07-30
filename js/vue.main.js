@@ -12,6 +12,7 @@
         contentDetail: null,
         newCommentDealIndex: false,
         editCommentIndex: false,
+        hintShowingData: false
     },
 
     watch: {
@@ -25,6 +26,7 @@
          */
         contentDetail() {
             if (this.contentDetail) {
+                this.hintShowingData = false;
                 verticalCenterWindow();
 
             } else {            
@@ -373,5 +375,79 @@
                 this.contentDetail.COMMENTS.splice(commentIndex, 1);
             });
         },
+
+        /**
+         * Обработчик события, которое срабатывает спустя мгновение после того, как было установлено, что
+         * надо показать окно с подсказками, а само окно отрисовалось, получив данные о комментариях.
+         * В обработчике идет выравнивание окна с комментариями относительно ячейки, на которую был наведен
+         * курсор мышки
+         * 
+         * @param cellObj - DOM-объект на объект с ячейкой контента
+         * @return void
+         */
+        changeHintWindowPosition(cellObj) {
+            var cellObjRect = (
+                $(cellObj).is(selector.contentArea) ?
+                    cellObj :
+                    $(cellObj).closest(selector.contentArea).get(0)
+            ).getBoundingClientRect();
+
+            var {top: bodyTop, left: bodyLeft} = document.body.getBoundingClientRect();
+            var hintWindow = $(selector.hintWindow);
+            var hintWindowRect = hintWindow.get(0).getBoundingClientRect();
+            var cssSettings = {};
+            var height = document.body.clientHeight < hintWindowRect.height
+                       ? document.body.clientHeight
+                       : hintWindowRect.height;
+
+            cssSettings['max-height'] = height + 'px';
+
+            if (cellObjRect.top < 0) {
+                cssSettings.top = -bodyTop;
+            
+            } else if (cellObjRect.bottom > document.body.clientHeight) {
+                cssSettings.top = (-bodyTop + document.body.clientHeight - height) + 'px';
+
+            } else if (document.body.clientHeight - cellObjRect.top >= height) {
+                cssSettings.top = -bodyTop + cellObjRect.top + 'px';
+            
+            } else {
+                cssSettings.top = (-bodyTop + document.body.clientHeight - height) + 'px';
+            }
+            
+            if (document.body.clientWidth - cellObjRect.right < cellObjRect.left) {
+                cssSettings.left = (-bodyLeft + cellObjRect.left - hintWindowRect.width) + 'px';
+            
+            } else {
+                cssSettings.left = (-bodyLeft + cellObjRect.right) + 'px';
+            }
+
+            $(selector.hintWindow).css(cssSettings);
+        },
+
+        /**
+         * Обработчик события наведения курсора мышки на ячейку, предназначенную для контента
+         * 
+         * @param cellObj - DOM-объект на объект с ячейкой контента
+         * @param technicIndex - порядковый номер техники или партнера
+         * @param contentDay - timestamp-метка для даты выбранного контента
+         * @return void
+         */
+        startWaitingHintWindow(cellObj, technicIndex, contentDay) {
+            var windowIndex = technicIndex + '.' + contentDay;
+            if (this.windowIndex && (this.windowIndex == windowIndex)) return;
+            this.hintShowingData = false;
+            this.windowIndex = windowIndex;
+
+            setTimeout(() => {
+                if (this.windowIndex != windowIndex) return;
+
+                var technic = this.technics[technicIndex];
+                if (!technic.COMMENTS || !technic.COMMENTS[contentDay]) return;
+
+                this.hintShowingData = technic.COMMENTS[contentDay];
+                setTimeout(() => this.changeHintWindowPosition(cellObj), 1);
+            }, 500);
+        }
     }
 }

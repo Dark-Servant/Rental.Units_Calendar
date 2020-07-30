@@ -6,6 +6,7 @@
                 ['rc-content-is-not-one']: !content.VERY_MANY && !content.IS_ONE,
             }"
         v-on:click="$emit('show-content-details')"
+        v-on:mousemove="if (content.IS_ONE) $emit('start-waiting-hint-window', $event.target)"
         v-if="content">
         <span class="rc-content-many-deals" v-if="content.VERY_MANY"><?=$langValues['MANY_DEAL_STATUS']?></span>
         <div class="rc-content-deals" v-for="deal in content.DEALS" v-else>
@@ -19,6 +20,7 @@
     </div>
     <div class="rc-content-area rc-content-empty"
         v-on:click="$emit('show-content-details')"
+        v-on:mousemove="$emit('start-waiting-hint-window', $event.target)"
         v-else>
         <template v-if="commentSize">
             <div class="rc-content-deal-comment" v-bind:title="lastComment.VALUE">{{lastComment.VALUE}}</div>
@@ -79,6 +81,7 @@
                     v-bind:content="content"
                     v-bind:day="contentDay"
                     v-bind:comments="technic.COMMENTS"
+                    v-on:start-waiting-hint-window="$emit('start-waiting-hint-window', $event, technic.index, contentDay)"
                     v-on:show-content-details="$emit('show-content-details', technic.index, contentDay)"></content-cell>
             </td>
         </tr>
@@ -184,6 +187,18 @@
     </div>
 </script>
 
+<script id="hint-window-component" data-props="comments" type="text/vue-component">
+    <div class="rc-hint-window">
+        <div class="rc-hint-comments">
+            <comment-unit
+                v-bind:comment="comment"
+                v-bind:isediting="false"
+                v-bind:canedit="false"
+                v-for="comment in comments"></comment-unit>
+        </div>
+    </div>
+</script>
+
 <script id="activity-list-component" data-props="installed, activities" type="text/vue-component">
     <div class="rc-activity-list">
         <div class="rc-activity-list-title" v-if="installed"><?=$langValues['BP_ACTIVITIES_INSTALLED_TITLE']?></div>
@@ -215,6 +230,7 @@
             v-on:show-activities="showActivities"
             v-on:set-chosen="setChosen"
             v-on:show-content-details="showContentDetails"
+            v-on:start-waiting-hint-window="startWaitingHintWindow"
             v-bind:bx24inited="bx24inited"
             v-bind:backtoactivities="backtoactivities"
             v-bind:technics="sortedTechnics"
@@ -233,6 +249,10 @@
             v-bind:editcommentindex="editCommentIndex"
             v-bind:user="userData"
             v-if="contentDetail"></content-detail-modal>
+
+        <hint-window
+            v-bind:comments="hintShowingData"
+            v-if="hintShowingData"></hint-window>
     </template>
 
     <activity-list

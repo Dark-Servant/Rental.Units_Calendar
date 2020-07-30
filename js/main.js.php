@@ -22,9 +22,11 @@ header('Content-Type: application/javascript; charset=utf-8');?>
         filterDateInput: '.rc-filter-date-input',
         activityList: '.rc-activity-list',
         technicUnit: '.rc-technic-unit',
+        contentArea: '.rc-content-area',
         contentDetailWindow: '.rc-content-detail-window',
         dealCommentInputArea: '.rc-deal-detail-comment-input-area',
         dealCommentTextarea: '.rc-deal-detail-comment-textarea',
+        hintWindow: '.rc-hint-window'
     };
     var classList = {
         noReaction: 'rc-no-reaction',

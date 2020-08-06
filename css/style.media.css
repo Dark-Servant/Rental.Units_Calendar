@@ -1,0 +1,64 @@
+@media screen and (min-width: 1880px) and (max-width: 2500px) {}
+
+@media screen and (min-width: 2500px) {
+    .rc-content {
+        width: 186px;
+    }
+}
+
+
+@media screen and (max-width: 1880px) {
+    .rc-day {
+        width: 150px;
+    }
+
+    .rc-content {
+        width: 167px;
+    }
+}
+
+@media screen and (max-width: 1650px) {
+    .rc-calendar {
+        font-size: 14px;
+    }
+
+    .rc-header {
+        width: 1440px;
+    }
+
+    .rc-filter {
+        width: 150px;
+    }
+
+    .rc-filter-date-input {
+        width: 80px;
+        font-size: 12px;
+    }
+
+    .qs-datepicker-container {
+        font-size: 12px;
+    }
+
+    .rc-day {
+        width: 135px;
+    }
+
+    .rc-technic {
+        width: 1440px;
+    }
+
+    .rc-technic-unit {
+        height: 115px;
+        width: 150px;
+    }
+
+    .rc-content {
+        width: 152px;
+    }
+
+    .rc-content-area {
+        height: 104px;
+    }
+}
+
+@media screen and (max-width: 900px) {}

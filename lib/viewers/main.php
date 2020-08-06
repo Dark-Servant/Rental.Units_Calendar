@@ -29,6 +29,7 @@ define('URL_SCRIPT_START', '//' . $_SERVER['HTTP_HOST'] . APPPATH);
         <link rel="apple-touch-icon" href="index.php">
 
         <link rel="stylesheet" href="<?=URL_SCRIPT_START?>css/style.css?<?=URL_SCRIPT_FINISH?>">
+        <link rel="stylesheet" href="<?=URL_SCRIPT_START?>css/style.media.css?<?=URL_SCRIPT_FINISH?>">
         <link rel="stylesheet" href="<?=URL_SCRIPT_START?>node_modules/js-datepicker/dist/datepicker.min.css?<?=URL_SCRIPT_FINISH?>">
 
         <script src="<?=URL_SCRIPT_START?>node_modules/vue/dist/vue.min.js?<?=URL_SCRIPT_FINISH?>"></script>

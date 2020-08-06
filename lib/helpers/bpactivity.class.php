@@ -44,7 +44,7 @@ class BPActivity
      * 
      * @return array
      */
-    public static function getParams()
+    public static function getUnits()
     {
         $params = [];
         foreach (self::ativityData() as $activity) {

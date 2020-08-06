@@ -11,7 +11,7 @@ if (defined('AUTH_ID')) {
 
 $days = Day::getPeriod(date(Day::FORMAT), 7);
 $technics = Technic::getWithContentsByDayPeriod($userData ? $userData['ID'] : 0, $days, [], TECHNIC_SORTING);
-$activities = BPActivity::getParams();
+$activities = BPActivity::getUnits();
 header('Content-Type: application/javascript; charset=utf-8');?>
 ;$(() => {
     var LANG_VALUES = <?=json_encode($langValues)?>;
@@ -38,7 +38,7 @@ header('Content-Type: application/javascript; charset=utf-8');?>
     var ajaxURL = document.location.origin + SERVER_CONSTANTS.APPPATH + '?ajaxaction=#action#&' + SERVER_CONSTANTS.URL_SCRIPT_FINISH;
     var BX24Auth;
     var bx24inited = typeof SERVER_CONSTANTS.DOMAIN != 'undefined';
-    var backtoactivities = bx24inited;
+    var backtoactivities = false; // bx24inited;
     var currentUserData = <?=$userData ? json_encode($userData) : '{}'?>;
     
     var activities = <?=json_encode($activities)?>;
@@ -225,7 +225,7 @@ header('Content-Type: application/javascript; charset=utf-8');?>
     if (bx24inited) {
         BX24.init(() => {
             BX24Auth = BX24.getAuth();
-            BX24.resizeWindow(screen.width, screen.height);
+            BX24.fitWindow();
             checkActivities();
         });
 

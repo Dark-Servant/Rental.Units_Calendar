@@ -63,15 +63,12 @@ try {
 
         // обработчик добавления/изменения комментариев
         case 'addcomment':
-            $commentId = intval($_POST['commentId']);
-            $technicId = intval($_POST['technicId']);
-            if (!$commentId && !$technicId) throw new Exception($langValues['ERROR_EMPTY_TECHNIC_AND_COMMENT_IDS']);
-
             $responsible = Responsible::initialize($_POST['user']);
             $commentValue = trim(strval($_POST['value']));
             if (empty($commentValue))
                 throw new Exception($langValues['ERROR_EMPTY_COMMENT_VALUE']);
 
+            $commentId = intval($_POST['commentId']);
             if ($commentId) {
                 $comment = Comment::find($commentId);
                 if (empty($comment))
@@ -81,6 +78,16 @@ try {
                     throw new Exception($langValues['ERROR_COMMENT_AUTHOR_EDITING']);
 
             } else {
+                $technicId = intval($_POST['technicId']);
+                if (!$technicId) throw new Exception($langValues['ERROR_EMPTY_TECHNIC_AND_COMMENT_IDS']);
+
+                if ($_POST['isPartner']) {
+                    $technic = Technic::find_by_partner_id($technicId);
+                    if (empty($technic)) throw new Exception($langValues['ERROR_EMPTY_PARTNER_TECHNIC_LIST']);
+
+                    $technicId = $technic->id;
+                }
+
                 $day = date(Day::FORMAT, intval($_POST['contentDay']));
                 $comment = new Comment;
                 $comment->technic_id = $technicId;

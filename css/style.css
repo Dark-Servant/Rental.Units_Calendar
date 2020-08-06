@@ -1,6 +1,9 @@
-html, body {
-    height: 100%;
+html {
     font-family: Calibri, Candara, Segoe, "Segoe UI", Optima, Arial, sans-serif;
+}
+
+body {
+    height: 100%;
 }
 
 .rc-no-reaction {
@@ -9,44 +12,6 @@ html, body {
 
 .rc-no-visivility {
     visibility: hidden !important;
-}
-
-.rc-table {
-    border-collapse: collapse;
-    border: 1px solid;
-}
-
-.rc-table td {
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
-}
-
-.rc-filter {
-    background-color: #E5E5E5;
-    padding: 5px 15px;
-    width: 280px;
-    position: relative;
-}
-
-.rc-filter > * {
-    margin-bottom: 5px;
-}
-
-.rc-filter-date-area {
-    position: relative;
-    width: 180px;
-}
-
-.rc-filter-date-area::before {
-    content: '\1F4C5';
-    position: absolute;
-    left: 88px;
-}
-
-.rc-filter-date-input {
-    padding: 3px;
-    width: 100px;
 }
 
 .rc-button {
@@ -78,6 +43,57 @@ html, body {
     box-shadow: inset 0 0 2px rgba(0, 0, 0, .2),  inset 0 2px 5px rgba(0, 0, 0, .2),  0 1px rgba(255, 255, 255, .2);
 }
 
+.rc-calendar {
+    padding-top: 62px;
+}
+
+.rc-header {
+    margin-bottom: 3px;
+    position: fixed;
+    width: calc(100% - 15px);
+    z-index: 2;
+    top: 0;
+}
+
+.rc-filter {
+    background-color: #E5E5E5;
+    padding: 5px 15px;
+    width: 177px;
+    position: relative;
+    display: inline-block;
+    border: 1px solid;
+    vertical-align: top;
+    height: 55px;
+}
+
+.rc-filter > * {
+    margin-bottom: 5px;
+}
+
+.rc-filter-date-area {
+    width: 190px;
+}
+
+.rc-filter-date-area label {
+    position: relative;
+}
+
+.rc-filter-date-area label::before {
+    content: '\1F4C5';
+    position: absolute;
+    right: 2px;
+    top: -1px;
+}
+
+.rc-filter-date-input {
+    padding: 3px;
+    width: 100px;
+}
+
+.rc-filter-date-input:focus {
+    outline: none;
+}
+
 .rc-activity-list-back {
     display: inline-block;
     width: 15px;
@@ -100,13 +116,17 @@ html, body {
 
 .rc-day {
     background-color: #FFFFC3;
-    padding: 15px 10px;
+    padding: 5px 10px;
     text-align: center;
     border: 1px solid;
+    display: inline-block;
+    width: 170px;
+    border-left: 0;
+    height: 55px;
 }
 
 .rc-day-area {
-    width: 180px;
+    margin-top: 10px;
 }
 
 .rc-day-value {
@@ -114,11 +134,19 @@ html, body {
     font-weight: bold;
 }
 
+.rc-technic {
+    margin-top: 0px;
+    padding: 0;
+}
+
 .rc-technic-unit {
     height: 125px;
     border: 1px solid;
-    padding: 10px 20px 10px 10px;
+    padding: 0 15px;
     position: relative;
+    display: inline-block;
+    width: 177px;
+    vertical-align: top;
 }
 
 .rc-technic-chosen {
@@ -132,11 +160,11 @@ html, body {
     background-size: cover;
 }
 
-.rc-technic-unit-area.rc-chosen .rc-technic-chosen {
+.rc-technic-unit.rc-chosen .rc-technic-chosen {
     background-image: url(data:image/png;base64,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);
 }
 
-.rc-technic-unit-area > * {
+.rc-technic-unit > * {
     display: inline-block;
     overflow: hidden;
     color: #161616;
@@ -144,6 +172,7 @@ html, body {
 
 .rc-technic-name {
     max-height: 36px;
+    margin-top: 40px;
 }
 
 .rc-technic-state-number {
@@ -156,13 +185,16 @@ html, body {
     border: 1px solid #e2e0e0;
     text-align: center;
     font-size: 13px;
+    display: inline-block;
+    width: 187px;
+    margin-left: 2px;
 }
 
 .rc-content-area {
     border: 1px solid;
     padding: 5px;
     border-radius: 3px;
-    height: 125px;
+    height: 114px;
     overflow: hidden;
     position: relative;
 }
@@ -202,7 +234,7 @@ html, body {
 }
 
 .rc-content-empty:hover {
-    box-shadow: 2px -2px 10px #dedede, -2px 2px 10px #dedede, -2px -2px 10px #dedede, 2px 2px 10px #dedede;
+    box-shadow: 4px -4px 15px #dedede, -4px 4px 15px #dedede, -4px -4px 15px #dedede, 5px 5px 15px #dedede;
 }
 
 .rc-content-waiting:hover {
@@ -237,7 +269,7 @@ html, body {
 
 .rc-content-deals > * {
     display: inline-block;
-    width: 185px;
+    width: 100%;
     overflow: hidden;
 }
 
@@ -252,11 +284,11 @@ html, body {
 
 .rc-content-deal-addr {
     font-weight: bold;
-    max-height: 48px;
+    max-height: 2.5em;
 }
 
 .rc-content-deal-addr.rc-no-comment-addr {
-    max-height: 72px;
+    max-height: 4.5em;
 }
 
 .rc-content-deal-comment {
@@ -264,12 +296,15 @@ html, body {
 }
 
 .rc-content-deal-responsible {
-    width: 186px;
+    width: calc(100% - 10px);
     position: absolute;
     bottom: 0px;
     left: 0;
     padding: 5px;
     border-top: 1px solid;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .rc-content-empty .rc-content-deal-comment {
@@ -337,7 +372,7 @@ html, body {
     background-color: rgb(0 0 0 / 0.25);
     width: 100%;
     height: 100%;
-    z-index: 3;
+    z-index: 10;
 }
 
 .rc-content-detail-window {
@@ -638,7 +673,7 @@ html, body {
     border: 1px solid #71abda;
     padding: 15px;
     border-radius: 40px;
-    z-index: 2;
+    z-index: 3;
     box-shadow: 2px 2px 7px #a7a7a7;
 }
 

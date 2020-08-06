@@ -253,130 +253,6 @@
         },
 
         /**
-         * Сбрасывает свойство contentDetail, что приводит к закрытию модального окна
-         * с описанием контента для техники или партнера
-         * 
-         * @return void
-         */
-        closeDetailModal() {
-            this.contentDetail = null;
-        },
-
-        /**
-         * После нажатия кнопки "+" у каждой сделки запоминает порядковый номер сделки
-         * в переменной newCommentDealIndex, что приводит к скрытию кнопки "+" и появлению поля
-         * ввода комментария
-         * 
-         * @param dealIndex - порядковый номер сделки в контенте
-         * @return void
-         */
-        initCommentAdd(dealIndex) {
-            this.newCommentDealIndex = dealIndex;
-            this.editCommentIndex = false;
-        },
-
-        /**
-         * Обработчик включения редактирования комментария
-         * 
-         * @param commentIndex - порядковый номер комментария в модальном окне
-         * @return void
-         */
-        initEditComment(commentIndex) {
-            this.newCommentDealIndex = false;
-            this.editCommentIndex = commentIndex;
-        },
-
-        /**
-         * Обработчик нажатия крестика в области добавления комментария, убирает
-         * значение в переменной newCommentDealIndex, что приводит к скрытию всех полей
-         * добавления комментария и появлению кнопки "+"
-         * 
-         * @return void
-         */
-        stopCommentAdd() {
-            this.newCommentDealIndex = false;
-            this.editCommentIndex = false;
-        },
-
-        /**
-         * Обработчик нажатия галочки для подтверждения добавления или изменения комментария к сделке
-         * 
-         * @param addButton - DOM-объект на кнопку с галочкой в области добавления
-         * комментария 
-         * 
-         * @return void
-         */
-        commentAdd(addButton) {
-
-            var technicId = 0;
-            var contentId = 0;
-            var commentId = 0;
-
-            if (this.editCommentIndex !== false) {
-                commentId = this.contentDetail.COMMENTS[this.editCommentIndex].ID;
-
-            } else if (this.newCommentDealIndex !== false) {
-                technicId = this.contentDetail.DEALS[this.newCommentDealIndex].TECHNIC_ID
-                            || this.contentDetail.ID;
-                contentId = this.contentDetail.DEALS[this.newCommentDealIndex].ID;
-
-            } else {
-                return;
-            }
-
-            var textArea = $(addButton).closest(selector.dealCommentInputArea).find(selector.dealCommentTextarea);
-            var value = textArea.val().trim();
-            if (!value) return;
-
-            var modalUnit = $(selector.contentDetailWindow);
-            modalUnit.addClass(classList.noReaction);
-
-            $.post(ajaxURL.replace(/#action#/i, 'addcomment'), {
-                commentId: commentId,
-                technicId: technicId,
-                contentDay: this.contentDetail.CONTENT_DAY,
-                contentId: contentId,
-                value: value,
-                user: {...currentUserData}
-            }, answer => {
-                modalUnit.removeClass(classList.noReaction);
-                if (!answer.result) return;
-
-                if (technicId) {
-                    this.technics[this.contentDetail.TECHNIC_INDEX].COMMENTS[this.contentDetail.CONTENT_DAY].push(answer.data);
-
-                } else {
-                    this.contentDetail.COMMENTS[this.editCommentIndex].VALUE = answer.data.VALUE;
-                }
-                this.stopCommentAdd();
-            });
-        },
-
-        /**
-         * Обработчик удаления комментария при нажатии иконки с корзинкой
-         * 
-         * @param commentIndex - порядковый номер комментария в модальном окне
-         * @return void
-         */
-        removeComment(commentIndex) {
-            if (!confirm(LANG_VALUES.CONFIRM_MESSAGE_DELETING)) return;
-
-            var commentId = this.contentDetail.COMMENTS[commentIndex].ID;
-            var modalUnit = $(selector.contentDetailWindow);
-            modalUnit.addClass(classList.noReaction);
-
-            $.post(ajaxURL.replace(/#action#/i, 'removecomment'), {
-                commentId: commentId,
-                user: {...currentUserData}
-            }, answer => {
-                modalUnit.removeClass(classList.noReaction);
-                if (!answer.result) return;
-
-                this.contentDetail.COMMENTS.splice(commentIndex, 1);
-            });
-        },
-
-        /**
          * Обработчик события, которое срабатывает спустя мгновение после того, как было установлено, что
          * надо показать окно с подсказками, а само окно отрисовалось, получив данные о комментариях.
          * В обработчике идет выравнивание окна с комментариями относительно ячейки, на которую был наведен
@@ -397,8 +273,7 @@
             var hintWindowRect = hintWindow.get(0).getBoundingClientRect();
             var cssSettings = {};
             var height = document.body.clientHeight < hintWindowRect.height
-                       ? document.body.clientHeight
-                       : hintWindowRect.height;
+                       ? document.body.clientHeight : hintWindowRect.height;
 
             cssSettings['max-height'] = height + 'px';
 

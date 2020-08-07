@@ -112,7 +112,8 @@
 
 @media screen and (max-width: 1366px) {
     .rc-header {
-        width: 1420px;
+        width: calc(100% - 10px);
+        min-width: 1090px;
     }
 
     .rc-day {
@@ -120,7 +121,8 @@
     }
 
     .rc-technic {
-        width: 1420px;
+        width: calc(100%  + 4px);
+        min-width: 1090px;
     }
 
     .rc-content {

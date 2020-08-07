@@ -1,64 +1,130 @@
-@media screen and (min-width: 1880px) and (max-width: 2500px) {}
+@media screen and (min-width: 2600px) {
+    .rc-header {
+        width: 2650px;
+    }
 
-@media screen and (min-width: 2500px) {
+    .rc-day {
+        width: 11%;
+    }
+
     .rc-content {
-        width: 186px;
+        width: calc(11% + 6.5px);
+    }
+
+    .rc-technic {
+        width: 2650px;
     }
 }
 
+@media screen and (min-width: 2200px) and (max-width: 2600px) {
+    .rc-header {
+        width: 2335px;
+    }
 
-@media screen and (max-width: 1880px) {
     .rc-day {
-        width: 150px;
+        width: 10.8%;
+    }
+
+    .rc-technic {
+        width: 2335px;
     }
 
     .rc-content {
-        width: 167px;
+        width: calc(10.8% + 6.5px);
+    }
+}
+
+@media screen and (min-width: 1880px) and (max-width: 2200px) {
+    .rc-header {
+        width: 2000px;
+    }
+
+    .rc-day {
+        width: 10.2%;
+    }
+
+    .rc-technic {
+        width: 2000px;
+    }
+
+    .rc-content {
+        width: calc(10.2% + 7px);
+    }
+}
+
+@media screen and (max-width: 1880px) {
+    .rc-header {
+        width: 1720px;
+    }
+
+    .rc-day {
+        width: 10.3%;
+    }
+
+    .rc-technic {
+        width: 1720px;
+    }
+
+    .rc-content {
+        width: calc(10.29% + 7px);
+    }
+
+    .rc-hint-comments {
+        font-size: 12px;
     }
 }
 
 @media screen and (max-width: 1650px) {
-    .rc-calendar {
-        font-size: 14px;
-    }
-
     .rc-header {
-        width: 1440px;
-    }
-
-    .rc-filter {
-        width: 150px;
-    }
-
-    .rc-filter-date-input {
-        width: 80px;
-        font-size: 12px;
-    }
-
-    .qs-datepicker-container {
-        font-size: 12px;
+        width: 1560px;
     }
 
     .rc-day {
-        width: 135px;
+        width: 10%;
     }
 
     .rc-technic {
-        width: 1440px;
-    }
-
-    .rc-technic-unit {
-        height: 115px;
-        width: 150px;
+        width: 1560px;
     }
 
     .rc-content {
-        width: 152px;
+        width: calc(10% + 7px);
     }
 
-    .rc-content-area {
-        height: 104px;
+    .rc-hint-comments {
+        font-size: 11px;
     }
 }
 
-@media screen and (max-width: 900px) {}
+@media screen and (max-width: 1450px) {
+    .rc-day {
+        width: 9.5%;
+    }
+
+    .rc-content {
+        width: calc(9.5% + 7px);
+    }
+
+    .rc-hint-comments {
+        font-size: 10px;
+    }
+}
+
+@media screen and (max-width: 1366px) {
+    .rc-header {
+        width: 1420px;
+    }
+
+    .rc-day {
+        width: 9.2%;
+    }
+
+    .rc-technic {
+        width: 1420px;
+    }
+
+    .rc-content {
+        width: calc(9.2% + 7px);
+    }
+
+}

@@ -97,7 +97,7 @@ var VueComponentParams = {
             removeComment() {
                 if (!confirm(LANG_VALUES.CONFIRM_MESSAGE_DELETING)) return;
 
-                var commentId = this.contentDetail.COMMENTS[this.commentindex].ID;
+                var commentId = calendar.contentDetail.COMMENTS[this.commentindex].ID;
                 var modalUnit = $(selector.contentDetailWindow);
                 modalUnit.addClass(classList.noReaction);
 
@@ -108,7 +108,7 @@ var VueComponentParams = {
                     modalUnit.removeClass(classList.noReaction);
                     if (!answer.result) return;
 
-                    this.contentDetail.COMMENTS.splice(this.commentindex, 1);
+                    calendar.contentDetail.COMMENTS.splice(this.commentindex, 1);
                 });
             }
         }

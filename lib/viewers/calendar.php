@@ -38,6 +38,7 @@
                 <label class="rc-filter-date-area">
                     <input class="rc-filter-date-input"
                         name="date" value="<?=date(Day::CALENDAR_FORMAT)?>"
+                        v-on:click="$emit('init-calendar')"
                         v-on:change="$emit('show-data')"
                         type="text" readonly>
                 </label><!--
@@ -208,6 +209,7 @@
 <div id="rental-calendar">
     <template v-if="calendarShow">
         <calendar-table
+            v-on:init-calendar="initCalendar"
             v-on:show-data="showData"
             v-on:set-today="setToday"
             v-on:show-activities="showActivities"

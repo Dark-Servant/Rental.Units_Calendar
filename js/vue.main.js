@@ -114,10 +114,14 @@
          * @return void
          */
         initCalendar() {
-            if (this.filterDateInput) return;
+            if (this.filterDateInput) {
+                this.filterDateInput.show();
+                return;
+            }
 
             this.filterDateInput = datepicker(selector.filterDateInput, {
                 showAllDates: true,
+                alwaysShow: false,
                 startDay: 1,
                 customDays: [
                     LANG_VALUES.DATE_CHOOOSING.DAYS.SHORT.SUN,
@@ -145,7 +149,10 @@
                 overlayPlaceholder: LANG_VALUES.DATE_CHOOOSING_YEAR,
 
                 formatter: (input, date, instance) => input.value = date.toLocaleDateString(),
-                onSelect: () => this.showData()
+                onSelect: () => {
+                    setTimeout(() => this.filterDateInput.hide(), 1);
+                    this.showData();
+                }
             });
         },
 
@@ -262,6 +269,9 @@
          * @return void
          */
         changeHintWindowPosition(cellObj) {
+            var hintWindow = $(selector.hintWindow);
+            if (!hintWindow.length) return;
+
             var cellObjRect = (
                 $(cellObj).is(selector.contentArea) ?
                     cellObj :
@@ -269,7 +279,6 @@
             ).getBoundingClientRect();
 
             var {top: bodyTop, left: bodyLeft} = document.body.getBoundingClientRect();
-            var hintWindow = $(selector.hintWindow);
             var hintWindowRect = hintWindow.get(0).getBoundingClientRect();
             var cssSettings = {};
             var height = document.body.clientHeight < hintWindowRect.height
@@ -319,7 +328,10 @@
                 return;
 
             setTimeout(() => {
-                if (this.windowIndex != windowIndex) return;
+                if (
+                    (this.windowIndex != windowIndex)
+                    || this.contentDetail
+                ) return;
 
                 this.hintShowingData = technic.COMMENTS[contentDay];
                 setTimeout(() => this.changeHintWindowPosition(cellObj), 1);

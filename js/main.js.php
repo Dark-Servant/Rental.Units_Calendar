@@ -18,11 +18,13 @@ header('Content-Type: application/javascript; charset=utf-8');?>
     var SERVER_CONSTANTS = <?=json_encode($_SESSION['CONST_LIST'] ?? [])?>;
     var selector = {
         calendar: '#rental-calendar',
+        header: '.rc-header',
         filterArea: '.rc-filter',
         filterDateInput: '.rc-filter-date-input',
         activityList: '.rc-activity-list',
         technicUnit: '.rc-technic-unit',
         contentArea: '.rc-content-area',
+        contentDetailModal: '.rc-content-detail-modal',
         contentDetailWindow: '.rc-content-detail-window',
         dealCommentInputArea: '.rc-deal-detail-comment-input-area',
         dealCommentTextarea: '.rc-deal-detail-comment-textarea',
@@ -32,9 +34,9 @@ header('Content-Type: application/javascript; charset=utf-8');?>
         noReaction: 'rc-no-reaction',
         noVisivility: 'rc-no-visivility'
     };
-    var modalSelector = {
-        [selector.contentDetailWindow]: selector.contentDetailWindow
-    };
+    var modalSelector = [
+        selector.contentDetailWindow
+    ];
     var ajaxURL = document.location.origin + SERVER_CONSTANTS.APPPATH + '?ajaxaction=#action#&' + SERVER_CONSTANTS.URL_SCRIPT_FINISH;
     var BX24Auth;
     var bx24inited = typeof SERVER_CONSTANTS.DOMAIN != 'undefined';
@@ -208,18 +210,30 @@ header('Content-Type: application/javascript; charset=utf-8');?>
          * истинные размеры
          */
         setTimeout(() => {
-            var bodyArea = document.body.getBoundingClientRect();
-            for (var modalCode in modalSelector) {
-                var modalUnit = $(modalSelector[modalCode]);
-                if (!modalUnit.length) continue;
+            var bodyArea = $(selector.contentDetailModal).get(0).getBoundingClientRect();
+            modalSelector.forEach(modalCode => {
+                var modalUnit = $(modalCode);
+                if (!modalUnit.length) return;
 
                 var modalCodeRect = modalUnit.get(0).getBoundingClientRect();
                 var topvalue = modalCodeRect.height >= bodyArea.height ? 0
                              : Math.floor((bodyArea.height - modalCodeRect.height) / 2);
                 modalUnit.css('top', topvalue + 'px');
                 modalUnit.removeClass(classList.noVisivility);
-            }
+            });
         }, 1);
+    }
+
+    /**
+     * Обработчик скроллинга страницы. У шапки календаря устанавливает позицию, отвечающую
+     * за левое смещение, чтобы элементы шапки всегда были над своими данными в календаре
+     *
+     * @return void
+     */
+    var setHeaderLeftPositionValue = function() {
+        var calendarRect = $(selector.calendar).get(0).getBoundingClientRect();
+
+        $(selector.header).css('left', calendarRect.left + 'px')
     }
 
     if (bx24inited) {
@@ -232,4 +246,8 @@ header('Content-Type: application/javascript; charset=utf-8');?>
     } else {
         showApplication(true);
     }
+
+    $(document)
+        .on('scroll', setHeaderLeftPositionValue)
+    ;
 });

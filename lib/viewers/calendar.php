@@ -35,25 +35,23 @@
     <div class="rc-calendar">
         <div class="rc-header">
             <div class="rc-filter">
-                <div class="rc-filter-my-technic-area">
-                    <label>
-                        <span class="rc-filter-my-technic-title"><?=$langValues['FILTER_MY_TECHNIC']?></span>
-                        <input class="rc-filter-my-technic-checkbox"
-                            name="my-technic" v-on:change="$emit('show-data')"
-                            type="checkbox">
-                    </label>
-                </div>
-                <div class="rc-filter-date-area">
-                    <label>
-                        <input class="rc-filter-date-input"
-                            name="date" value="<?=date(Day::CALENDAR_FORMAT)?>"
-                            v-on:change="$emit('show-data')"
-                            type="text" readonly>
-                    </label>
-                    <div class="rc-button rc-filter-button rc-filter-date-today"
-                        v-on:click="$emit('set-today')"><?=$langValues['FILTER_TODAY_BUTTON']?></div>
-                </div>
-                <span class="rc-activity-list-back" v-on:click="$emit('show-activities')" v-if="backtoactivities"></span>
+                <label class="rc-filter-date-area">
+                    <input class="rc-filter-date-input"
+                        name="date" value="<?=date(Day::CALENDAR_FORMAT)?>"
+                        v-on:change="$emit('show-data')"
+                        type="text" readonly>
+                </label><!--
+                --><div class="rc-filter-date-icon rc-filter-date-today"
+                    v-bind:title="'<?=$langValues['FILTER_TODAY_BUTTON']?>'"
+                    v-on:click="$emit('set-today')"></div><!--
+                --><label
+                    class="rc-filter-date-icon rc-filter-my-technic"
+                    v-bind:title="'<?=$langValues['FILTER_MY_TECHNIC']?>'">
+                    <input type="checkbox" name="my-technic"
+                        v-on:click="$emit('show-data')">
+                    <span></span>
+                </label><!--
+                --><span class="rc-activity-list-back" v-on:click="$emit('show-activities')" v-if="backtoactivities"></span>
             </div><!--
             --><div class="rc-day" v-for="day in days">
                 <div class="rc-day-area">

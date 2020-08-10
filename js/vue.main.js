@@ -84,6 +84,10 @@
      */
     mounted() {
         this.initCalendar();
+        if (!bx24inited) return;
+
+        BX24.resizeWindow(100, 100);
+        setTimeout(() => BX24.fitWindow(), 1);
     },
 
     methods: {

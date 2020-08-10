@@ -239,7 +239,6 @@ header('Content-Type: application/javascript; charset=utf-8');?>
     if (bx24inited) {
         BX24.init(() => {
             BX24Auth = BX24.getAuth();
-            BX24.fitWindow();
             checkActivities();
         });
 

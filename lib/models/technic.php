@@ -17,16 +17,15 @@ class Technic extends InfoserviceModel
     protected static $contentOrders;
 
     /**
-     * По данным экземпляра класса Technic добавляет элемент с кратким описанием
-     * техники или партнера в зависимости то того, отмечена ли техника как "своя".
-     * Если техника "своя", то идет сохранение ее краткой информации в параметр
-     * $technics.
+     * По данным экземпляра класса Technic делает инициализацию элемента с кратким
+     * описанием техники или партнера в зависимости то того, отмечена ли техника
+     * как "своя". Если техника "своя", то идет сохранение ее краткой информации в
+     * параметр $technics.
      * Не зависимо от того, "своя" или нет техника, у кратких данных по технике или
      * партнеру обязательно будет параметр CONTENTS, в котором хранится массив с
      * краткой информацией о контенте за каждую технику или партнера. Метод вернет
-     * результат в виде массива как ссылку на параметр CONTENTS, к которому можно
-     * сразу привязаться и изменять данные контента, относящиеся к краткой информации,
-     * созданной по переданному экземпляру в $technic
+     * результат как ссылку на краткое описание, где надо использовать параметр CONTENTS,
+     * чтобы изменять данные контента
      * 
      * @param $technic - экземпляр класса Technic
      * @param array $dayTimestamps - массив unix-меток времени
@@ -34,7 +33,7 @@ class Technic extends InfoserviceModel
      * @param array &$partners - массив для сохранения результата по партнерам
      * @return &array
      */
-    protected static function &initUnitAndGetContents($technic, array $dayTimestamps, array&$technics, array&$partners)
+    protected static function &getInitedUnitWithContents($technic, array $dayTimestamps, array&$technics, array&$partners)
     {
         if ($technic->is_my) {
             $technics[$technic->id] = [
@@ -45,7 +44,7 @@ class Technic extends InfoserviceModel
                 'IS_CHOSEN' => false,
                 'CONTENTS' => array_fill_keys($dayTimestamps, false)
             ];
-            return $technics[$technic->id]['CONTENTS'];
+            return $technics[$technic->id];
         
         } else {
             if (!$partners[$technic->partner_id]) {
@@ -56,7 +55,7 @@ class Technic extends InfoserviceModel
                 ];
             }
 
-            return $partners[$technic->partner_id]['CONTENTS'];
+            return $partners[$technic->partner_id];
         }
     }
 
@@ -258,12 +257,26 @@ class Technic extends InfoserviceModel
         $technicPartners = [];
         $technics = [];
         $partners = [];
+        $dayDealNames = [];
         foreach (self::visibilityUnits($dayTimestamps, $conditions, $orders) as $technic) {
-            $dayContents = &self::initUnitAndGetContents($technic, $dayTimestamps, $technics, $partners);
+            $technicdData = &self::getInitedUnitWithContents($technic, $dayTimestamps, $technics, $partners);
+            $dayContents = &$technicdData['CONTENTS'];
+            $dayDealNamesCode = ($technicdData['IS_PARTNER'] ? 'P' : 'T') . $technicdData['ID'];
             $technicPartners[$technic->id] = $technic->partner_id;
 
             foreach (self::contentsWithInitedFilter($technic->id) as $content) {
-                if ($content->is_closed) {
+                $cellData = $content->getCellData();
+                if (empty($cellData['DEAL_URL']) || !preg_match('/\/(\d+)/', $cellData['DEAL_URL'], $URLParts)) {
+                    $dealName = 'n:' . trim(strtolower($cellData['CUSTOMER_NAME']));
+
+                } else {
+                    $dealName = 'u:' . $URLParts[1];
+                }
+                
+                if ($cellData['IS_REPAIR']) {
+                    $contentStatus = CONTENT_REPAIR_DEAL_STATUS;
+
+                } elseif ($content->is_closed) {
                     $contentStatus = CONTENT_CLOSED_DEAL_STATUS;
 
                 } else {
@@ -271,27 +284,47 @@ class Technic extends InfoserviceModel
                                    ? CONTENT_MAX_DEAL_STATUS
                                    : $content->status;
                 }
+
                 foreach (
                     range(
-                        $content->begin_date->getTimestamp(),
-                        $content->finish_date->getTimestamp(),
-                        Day::SECOND_COUNT
+                        $content->begin_date->getTimestamp(), $content->finish_date->getTimestamp(), Day::SECOND_COUNT
                     ) as $dayTimestamp
                 ) {
                     if (!isset($dayContents[$dayTimestamp])) continue;
+                    $cellData['CELL_SHOWING'] = empty($dayDealNames[$dayDealNamesCode][$dayTimestamp][$dealName]);
+                    $dayDealNames[$dayDealNamesCode][$dayTimestamp][$dealName] = true;
 
-                    if (!isset($dayContents[$dayTimestamp]['STATUS'])) {
+                    if (
+                        !isset($dayContents[$dayTimestamp]['STATUS'])
+                        || ($contentStatus == CONTENT_REPAIR_DEAL_STATUS)
+                    ) {
                         $dayContents[$dayTimestamp]['STATUS'] = $contentStatus;
                         $dayContents[$dayTimestamp]['STATUS_CLASS'] = Content::CONTENT_DEAL_STATUS[$contentStatus];
                         
-                    } elseif ($dayContents[$dayTimestamp]['STATUS'] != $content->status) {
+                    } elseif (
+                        ($dayContents[$dayTimestamp]['STATUS'] != CONTENT_REPAIR_DEAL_STATUS)
+                        && ($dayContents[$dayTimestamp]['STATUS'] != $content->status)
+                    ) {
                         $dayContents[$dayTimestamp]['STATUS'] = CONTENT_MANY_DEAL_STATUS;
                         $dayContents[$dayTimestamp]['STATUS_CLASS'] = Content::CONTENT_DEAL_STATUS[CONTENT_MANY_DEAL_STATUS];
                     }
-                    ++$dayContents[$dayTimestamp]['DEAL_COUNT'];
-                    $dayContents[$dayTimestamp]['IS_ONE'] = $dayContents[$dayTimestamp]['DEAL_COUNT'] == self::MIN_DEAL_COUNT;
-                    $dayContents[$dayTimestamp]['VERY_MANY'] = $dayContents[$dayTimestamp]['DEAL_COUNT'] > self::MAX_DEAL_COUNT;
-                    $dayContents[$dayTimestamp]['DEALS'][] = $content->getCellData();
+
+                    if ($cellData['CELL_SHOWING']) {
+                        ++$dayContents[$dayTimestamp]['DEAL_COUNT'];
+                        $dayContents[$dayTimestamp]['IS_ONE'] = $dayContents[$dayTimestamp]['DEAL_COUNT'] == self::MIN_DEAL_COUNT;
+                        $dayContents[$dayTimestamp]['VERY_MANY'] = $dayContents[$dayTimestamp]['DEAL_COUNT'] > self::MAX_DEAL_COUNT;
+                    }
+
+                    if (!isset($dayContents[$dayTimestamp]['DEALS']))
+                        $dayContents[$dayTimestamp]['DEALS'] = [];
+
+                    // необходимо, чтобы контент на ремонте был всегда в начале списка
+                    if ($cellData['IS_REPAIR']) {
+                        array_unshift($dayContents[$dayTimestamp]['DEALS'], $cellData);
+
+                    } else {
+                        $dayContents[$dayTimestamp]['DEALS'][] = $cellData;
+                    }
                 }
             }
         }

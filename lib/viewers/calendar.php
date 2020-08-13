@@ -1,6 +1,7 @@
 <script id="content-cell-component" data-props="content, day, comments" type="text/vue-component">
     <div class="rc-content">
-        <div class="rc-content-area"
+        <div
+            class="rc-content-area"
             v-bind:class="{
                     ['rc-content-' + content.STATUS_CLASS]: true,
                     ['rc-content-very-many']: content.VERY_MANY,
@@ -11,11 +12,17 @@
             v-if="content">
             <span class="rc-content-many-deals" v-if="content.VERY_MANY"><?=$langValues['MANY_DEAL_STATUS']?></span>
             <div class="rc-content-deals" v-for="deal in content.DEALS" v-else>
-                <a class="rc-content-deal-link" v-bind:title="deal.CUSTOMER_NAME" v-bind:href="deal.DEAL_URL" target="_blank">{{deal.CUSTOMER_NAME}}</a>
-                <template v-if="content.IS_ONE">
-                    <div class="rc-content-deal-addr" v-bind:class="{'rc-no-comment-addr': !commentSize}" v-bind:title="deal.WORK_ADDRESS">{{deal.WORK_ADDRESS}}</div>
-                    <div class="rc-content-deal-comment" v-bind:title="lastComment.VALUE" v-if="commentSize">{{lastComment.VALUE}}</div>
-                    <div class="rc-content-deal-responsible" v-bind:title="deal.RESPONSIBLE_NAME">{{deal.RESPONSIBLE_NAME}}</div>
+                <template v-if="deal.CELL_SHOWING">
+                    <a
+                        class="rc-content-deal-link"
+                        v-bind:title="deal.CUSTOMER_NAME"
+                        v-bind:href="deal.DEAL_URL ? deal.DEAL_URL : 'javascript:void();'"
+                        v-bind:target="{'_blank': deal.DEAL_URL != ''}">{{deal.CUSTOMER_NAME}}</a>
+                    <template v-if="content.IS_ONE">
+                        <div class="rc-content-deal-addr" v-bind:class="{'rc-no-comment-addr': !commentSize}" v-bind:title="deal.WORK_ADDRESS">{{deal.WORK_ADDRESS}}</div>
+                        <div class="rc-content-deal-comment" v-bind:title="lastComment.VALUE" v-if="commentSize">{{lastComment.VALUE}}</div>
+                        <div class="rc-content-deal-responsible" v-bind:title="deal.RESPONSIBLE_NAME" v-if="deal.RESPONSIBLE_NAME">{{deal.RESPONSIBLE_NAME}}</div>
+                    </template>
                 </template>
             </div>
         </div>

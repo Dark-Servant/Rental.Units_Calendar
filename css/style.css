@@ -268,6 +268,11 @@ body {
     border-color: #daad5a;
 }
 
+.rc-content-repair, .rc-content-repair .rc-content-deal-responsible {
+    background-color: #f99a9a;
+    border-color: #f56565;
+}
+
 .rc-content-area:hover {
     cursor: pointer;
     z-index: 1;
@@ -295,6 +300,10 @@ body {
 
 .rc-content-many:hover {
     box-shadow: 2px -2px 10px #daad5a, -2px 2px 10px #daad5a, -2px -2px 10px #daad5a, 2px 2px 10px #daad5a;
+}
+
+.rc-content-repair:hover {
+    box-shadow: 2px -2px 10px #f56565, -2px 2px 10px #f56565, -2px -2px 10px #f56565, 2px 2px 10px #f56565;
 }
 
 .rc-content-is-not-one .rc-content-deals:first-child {

@@ -28,6 +28,9 @@ $langValues['ERROR_NO_ACTIVITY_INDEX_FILE'] = 'Для действия #ACTIVITY
 // lib/helpers/bp.activities/content.add/index.php
 $langValues['ERROR_PARENT_TECHNIC_OF_CONTENT'] = 'В БД нет информации о техники с внешним ID равным #ID#';
 
+// lib/models/content.php
+$langValues['CONTENT_REPAIR_STATUS_TITLE'] = 'Ремонт';
+
 // lib/models/responsible.php
 $langValues['ERROR_EMPTY_USER_ID'] = 'В параметре user не указан ID';
 

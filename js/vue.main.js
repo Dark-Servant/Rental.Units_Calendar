@@ -86,8 +86,7 @@
         this.initCalendar();
         if (!bx24inited) return;
 
-        BX24.resizeWindow(100, 100);
-        setTimeout(() => BX24.fitWindow(), 1);
+        BX24.fitWindow(() => BX24.resizeWindow(document.body.clientWidth + 50, screen.height - 120));
     },
 
     methods: {

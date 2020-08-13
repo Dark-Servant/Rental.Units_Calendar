@@ -17,7 +17,7 @@ class Content extends InfoserviceModel
      * т.е. final
      */
     const CONTENT_DEAL_STATUS = [
-        'waiting', 'process', 'final', 'closed', 'many'
+        'waiting', 'process', 'final', 'closed', 'many', 'repair'
     ];
 
     /**
@@ -34,6 +34,12 @@ class Content extends InfoserviceModel
         '/\bпроведение +/iu',
         '/\b(?:финал[ьнаяйоые]*|закрыт[аяыйое]*|заверш[иаолуеють]+)\b/iu'
     ];
+
+    /**
+     * Для проверки не находится ли контент в "ремонте", что влияет на общий статус
+     * контента в календаре если так и окажется
+     */
+    const CONTENT_REPAIR_STATUS_REGEX = '/\bремонт +техники\b/iu';
 
     /**
      * Обработчик изменения параметра status. Если параметр будет иметь строковое значение,
@@ -67,6 +73,7 @@ class Content extends InfoserviceModel
      */
     public function getCellData()
     {
+        global $langValues;
         $data = [
             'ID' => $this->id,
             'DEAL_URL' => $this->deal_url,
@@ -79,6 +86,14 @@ class Content extends InfoserviceModel
                 'TECHNIC_ID' => $this->technic_id,
                 'TECHNIC_NAME' => $this->technic->name
             ];
+
+        if (preg_match(self::CONTENT_REPAIR_STATUS_REGEX, $data['WORK_ADDRESS'])) {
+            $data['DEAL_URL'] = 
+            $data['RESPONSIBLE_NAME'] =
+            $data['WORK_ADDRESS'] = '';
+            $data['CUSTOMER_NAME'] = $langValues['CONTENT_REPAIR_STATUS_TITLE'];
+            $data['IS_REPAIR'] = true;
+        }
 
         return $data;
     }

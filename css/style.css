@@ -20,13 +20,13 @@ body {
     padding: 3px;
     text-align: center;
     text-decoration: none;
-    background: #eaeef1;
+    background: #EAEEF1;
     display: inline-block;
-    background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, .1));
+    background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.1));
     border-radius: 3px;
     color: rgba(0, 0, 0, 0.75);
-    text-shadow: 0 1px 1px rgba(255, 255, 255,.7);
-    box-shadow: 0 0 0 1px rgba(0, 0, 0, .2),  0 1px 2px rgba(0, 0, 0, .2),  inset 0 1px 2px rgba(255, 255, 255, .7);
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.7);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.2), inset 0 1px 2px rgba(255, 255, 255, 0.7);
 }
 
 .rc-button + .rc-button {
@@ -34,13 +34,13 @@ body {
 }
 
 .rc-button:hover {
-    background: #fff;
+    background: #FFF;
 }
 
 .rc-button:active {
-    background: #d0d3d6;
-    background-image: linear-gradient(rgba(0,0,0,.1), rgba(0,0,0,0));
-    box-shadow: inset 0 0 2px rgba(0, 0, 0, .2),  inset 0 2px 5px rgba(0, 0, 0, .2),  0 1px rgba(255, 255, 255, .2);
+    background: #D0D3D6;
+    background-image: linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0));
+    box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.2), inset 0 2px 5px rgba(0, 0, 0, 0.2), 0 1px rgba(255, 255, 255, 0.2);
 }
 
 .rc-calendar {
@@ -126,7 +126,7 @@ body {
 }
 
 .rc-filter-my-technic input[type="checkbox"]:checked + span {
-    background-color: #f1f171;
+    background-color: #F1F171;
 }
 
 .rc-activity-list-back {
@@ -222,7 +222,7 @@ body {
 }
 
 .rc-content {
-    border: 1px solid #e2e0e0;
+    border: 1px solid #E2E0E0;
     text-align: center;
     font-size: 13px;
     display: inline-block;
@@ -244,33 +244,33 @@ body {
 }
 
 .rc-content-waiting, .rc-content-waiting .rc-content-deal-responsible {
-    background-color: #f0f7ff;
-    border-color: #cbe3ff;
+    background-color: #F0F7FF;
+    border-color: #CBE3FF;
 }
 
 .rc-content-process, .rc-content-process .rc-content-deal-responsible {
-    background-color: #adcdf3;
-    border-color: #577ba7;
+    background-color: #ADCDF3;
+    border-color: #577BA7;
 }
 
 .rc-content-final, .rc-content-final .rc-content-deal-responsible {
-    background-color: #ce8eff;
-    border-color: #781fbb;
+    background-color: rgba(163, 217, 140, 0.716);
+    border-color: #086A25;
 }
 
 .rc-content-closed, .rc-content-closed .rc-content-deal-responsible {
-    background-color: #81f581;
-    border-color: #50a250;
+    background-color: #81F581;
+    border-color: #50A250;
 }
 
 .rc-content-many, .rc-content-many .rc-content-deal-responsible {
-    background-color: #ffc965;
-    border-color: #daad5a;
+    background-color: #FFC965;
+    border-color: #DAAD5A;
 }
 
 .rc-content-repair, .rc-content-repair .rc-content-deal-responsible {
-    background-color: #f99a9a;
-    border-color: #f56565;
+    background-color: #F99A9A;
+    border-color: #F56565;
 }
 
 .rc-content-area:hover {
@@ -279,31 +279,31 @@ body {
 }
 
 .rc-content-empty:hover {
-    box-shadow: 4px -4px 15px #dedede, -4px 4px 15px #dedede, -4px -4px 15px #dedede, 5px 5px 15px #dedede;
+    box-shadow: 4px -4px 15px #DEDEDE, -4px 4px 15px #DEDEDE, -4px -4px 15px #DEDEDE, 5px 5px 15px #DEDEDE;
 }
 
 .rc-content-waiting:hover {
-    box-shadow: 2px -2px 10px #cbe3ff, -2px 2px 10px #cbe3ff, -2px -2px 10px #cbe3ff, 2px 2px 10px #cbe3ff;
+    box-shadow: 2px -2px 10px #CBE3FF, -2px 2px 10px #CBE3FF, -2px -2px 10px #CBE3FF, 2px 2px 10px #CBE3FF;
 }
 
 .rc-content-process:hover {
-    box-shadow: 2px -2px 10px #577ba7, -2px 2px 10px #577ba7, -2px -2px 10px #577ba7, 2px 2px 10px #577ba7;
+    box-shadow: 2px -2px 10px #577BA7, -2px 2px 10px #577BA7, -2px -2px 10px #577BA7, 2px 2px 10px #577BA7;
 }
 
 .rc-content-final:hover {
-    box-shadow: 2px -2px 10px #bf70bf, -2px 2px 10px #bf70bf, -2px -2px 10px #bf70bf, 2px 2px 10px #bf70bf;
+    box-shadow: 2px -2px 5px #50A250, -2px 2px 5px #50A250, -2px -2px 5px #50A250, 2px 2px 5px #50A250;
 }
 
 .rc-content-closed:hover {
-    box-shadow: 2px -2px 10px #50a250, -2px 2px 10px #50a250, -2px -2px 10px #50a250, 2px 2px 10px #50a250;
+    box-shadow: 2px -2px 10px #50A250, -2px 2px 10px #50A250, -2px -2px 10px #50A250, 2px 2px 10px #50A250;
 }
 
 .rc-content-many:hover {
-    box-shadow: 2px -2px 10px #daad5a, -2px 2px 10px #daad5a, -2px -2px 10px #daad5a, 2px 2px 10px #daad5a;
+    box-shadow: 2px -2px 10px #DAAD5A, -2px 2px 10px #DAAD5A, -2px -2px 10px #DAAD5A, 2px 2px 10px #DAAD5A;
 }
 
 .rc-content-repair:hover {
-    box-shadow: 2px -2px 10px #f56565, -2px 2px 10px #f56565, -2px -2px 10px #f56565, 2px 2px 10px #f56565;
+    box-shadow: 2px -2px 10px #F56565, -2px 2px 10px #F56565, -2px -2px 10px #F56565, 2px 2px 10px #F56565;
 }
 
 .rc-content-is-not-one .rc-content-deals:first-child {
@@ -328,7 +328,7 @@ body {
 }
 
 .rc-content-deal-link:hover {
-    color: #807d7d;
+    color: #A21023;
 }
 
 .rc-content-deal-addr {
@@ -345,6 +345,7 @@ body {
 .rc-content-deal-comment {
     max-height: 2em;
     font-size: 11px;
+    color: #885800;
 }
 
 .rc-content-deal-responsible {
@@ -368,7 +369,7 @@ body {
 }
 
 .rc-content-empty .rc-content-deal-responsible {
-    border-top: 1px solid #e4e3e3;
+    border-top: 1px solid #E4E3E3;
 }
 
 .rc-activity-list-title {
@@ -395,28 +396,28 @@ body {
 }
 
 .rc-activity-list-install-button {
-    background-color: #73fd52;
+    background-color: #73FD52;
 }
 
 .rc-activity-list-install-button:hover {
-    background-color: #9cff84;
+    background-color: #9CFF84;
 }
 
 .rc-activity-list-install-button:active {
-    background-color: #ceffc3;
+    background-color: #CEFFC3;
 }
 
 .rc-activity-list-remove-button {
-    background-color: #ff2121;
+    background-color: #FF2121;
     color: white;
 }
 
 .rc-activity-list-remove-button:hover {
-    background-color: #fd4040;
+    background-color: #FD4040;
 }
 
 .rc-activity-list-remove-button:active {
-    background-color: #fd7d7d;
+    background-color: #FD7D7D;
 }
 
 .rc-content-detail-modal {
@@ -430,7 +431,7 @@ body {
 }
 
 .rc-content-detail-window {
-    background-color: #e9f4fd;
+    background-color: #E9F4FD;
     display: inline-block;
     padding: 10px 5px;
     width: 700px;
@@ -465,7 +466,7 @@ body {
 }
 
 .rc-content-detail-close:active::before {
-    color: #8c8c8c;
+    color: #8C8C8C;
     box-shadow: 1px -1px 3px #777;
 }
 
@@ -480,7 +481,7 @@ body {
 }
 
 .rc-content-detail-title-date {
-    color: #6d6969;
+    color: #6D6969;
 }
 
 .rc-content-detail-title-date::after {
@@ -515,7 +516,7 @@ body {
 }
 
 .rc-deal-detail {
-    background-color: #ffffff;
+    background-color: #FFFFFF;
     padding: 5px;
     border-radius: 5px;
     min-height: 24px;
@@ -526,7 +527,7 @@ body {
 }
 
 .rc-deal-detail-customer-url {
-    color: #0000fd;
+    color: #0000FD;
     text-decoration: none;
 }
 
@@ -542,7 +543,7 @@ body {
 }
 
 .rc-deal-detail-technic-caption {
-    color: #423f3f;
+    color: #423F3F;
     display: none;
 }
 
@@ -561,8 +562,8 @@ body {
 }
 
 .rc-deal-detail-comment-input-area {
-    background-color: #ffff98;
-    border: 1px solid #b9b9b9;
+    background-color: #FFFF98;
+    border: 1px solid #B9B9B9;
     padding: 10px 5px 0px 5px;
     border-radius: 10px;
 }
@@ -604,11 +605,11 @@ body {
 }
 
 .rc-comment-button:hover {
-    box-shadow: 2px 2px 5px #a0a011;
+    box-shadow: 2px 2px 5px #A0A011;
 }
 
 .rc-comment-button:active {
-    box-shadow: 1px 1px 2px #a0a011;
+    box-shadow: 1px 1px 2px #A0A011;
 }
 
 .rc-comment-button + .rc-comment-button {
@@ -629,20 +630,20 @@ body {
     width: 15px;
     height: 15px;
     border-radius: 12px;
-    border: 1px solid #f9a204;
-    background-color: #f9a204;
+    border: 1px solid #F9A204;
+    background-color: #F9A204;
     box-shadow: 2px -2px 5px #404040;
     cursor: pointer;
 }
 
 .rc-deal-detail-add-comment:hover {
-    border-color: #fda911;
-    background-color: #fda911;
+    border-color: #FDA911;
+    background-color: #FDA911;
 }
 
 .rc-deal-detail-add-comment:active {
-    border-color: #ffb939;
-    background-color: #ffb939;
+    border-color: #FFB939;
+    background-color: #FFB939;
     box-shadow: 1px -1px 2px #404040;
 }
 
@@ -665,8 +666,8 @@ body {
 }
 
 .rc-comment-unit-value {
-    background-color: #ffff98;
-    border: 1px solid #b9b9b9;
+    background-color: #FFFF98;
+    border: 1px solid #B9B9B9;
     border-radius: 20px;
     padding: 10px 20px;
     text-align: center;
@@ -713,7 +714,7 @@ body {
 }
 
 .rc-comment-unit-author-date {
-    color: #807d7d;
+    color: #807D7D;
     margin-left: 5px;
 }
 
@@ -723,12 +724,12 @@ body {
     width: 400px;
     min-height: 80px;
     max-height: 550px;
-    background-color: #e9f4fd;
-    border: 1px solid #71abda;
+    background-color: #E9F4FD;
+    border: 1px solid #71ABDA;
     padding: 15px;
     border-radius: 40px;
     z-index: 3;
-    box-shadow: 2px 2px 7px #a7a7a7;
+    box-shadow: 2px 2px 7px #A7A7A7;
 }
 
 .rc-hint-comments {

@@ -359,7 +359,8 @@ body {
 .rc-content-deal-comment {
     max-height: 2em;
     font-size: 11px;
-    color: #885800;
+    color: #1F04C2;
+    font-style: italic;
 }
 
 .rc-content-deal-responsible {
@@ -514,19 +515,19 @@ body {
 }
 
 *[class*="rc-"]::-webkit-scrollbar {
-  background-color: rgba(255, 255, 255, 0.35);
-  width: 5px;
-  height: 5px;
+    background-color: rgba(255, 255, 255, 0.35);
+    width: 5px;
+    height: 5px;
 }
 
 *[class*="rc-"]::-webkit-scrollbar-track {
-  background-color: rgba(255, 255, 255, 0.35);
-  width: 5px;
-  height: 5px;
+    background-color: rgba(255, 255, 255, 0.35);
+    width: 5px;
+    height: 5px;
 }
 
 *[class*="rc-"]::-webkit-scrollbar-thumb {
-  background-color: rgba(137, 199, 255, 0.55);
+    background-color: rgba(137, 199, 255, 0.55);
 }
 
 .rc-deal-detail {

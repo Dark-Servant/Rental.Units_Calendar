@@ -10,6 +10,7 @@
             v-on:click="$emit('show-content-details')"
             v-on:mousemove="if (content.IS_ONE) $emit('start-waiting-hint-window', $event.target)"
             v-if="content">
+            <span class="rc-comment-exist-flag" v-if="commentSize"></span>
             <span class="rc-content-many-deals" v-if="content.VERY_MANY"><?=$langValues['MANY_DEAL_STATUS']?></span>
             <div class="rc-content-deals" v-for="deal in content.DEALS" v-else>
                 <template v-if="deal.CELL_SHOWING">
@@ -31,6 +32,7 @@
             v-on:mousemove="$emit('start-waiting-hint-window', $event.target)"
             v-else>
             <template v-if="commentSize">
+                <span class="rc-comment-exist-flag"></span>
                 <div class="rc-content-deal-comment" v-bind:title="lastComment.VALUE">{{lastComment.VALUE}}</div>
                 <div class="rc-content-deal-responsible" v-bind:title="lastComment.USER_NAME">{{lastComment.USER_NAME}}</div>
             </template>

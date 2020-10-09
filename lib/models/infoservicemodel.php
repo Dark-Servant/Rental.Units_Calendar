@@ -2,6 +2,8 @@
 
 class InfoserviceModel extends ActiveRecord\Model
 {
+    protected static $correctionMethods = null;
+
     /**
      * Объединяет фильтр, описанный как
      *     "<строка с условиями>", <значение параметра 1>, <значение параметра 2>, ..., <значение параметра N>
@@ -74,6 +76,23 @@ class InfoserviceModel extends ActiveRecord\Model
     }
 
     /**
+     * Проверяет название поля. Если оно оканчивается на *_url, то значение
+     * должно начинаться на http(s), иначе значение становится пустым
+     *
+     * @param $name - название поля
+     * @param &$value - значение поля
+     * @return boolean
+     */
+    protected function correctURLValue($name, &$value)
+    {
+        if (preg_match('/_url$/i', $name)) {
+            $value = preg_match('/^https?:\/\//', $value) ? $value : '';
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Проверяет название поля. Если оно оканчивается на *_date, то значение заменяется
      * экземпляром класса DateTime. Само значение для этого должно быть строкового типа
      * и иметь значние даты в формате, описанном в константах Day::CALENDAR_FORMAT или
@@ -98,12 +117,38 @@ class InfoserviceModel extends ActiveRecord\Model
     }
 
     /**
+     * Для класса, в экземпляре которого была вызвана эта функция, метод сначала собирает и
+     * сохраняет в статической переменной все методы для проверки значений по каждому полю,
+     * если еще не делал это для этого класса. При следующих вызовах для того же класса поиск
+     * и сохранение подходящих методов больше не будет происходить. Далее метод возвращает по
+     * одному названия собранных методов для класса, из которого его вызвали. Возвращаемые названия
+     * методов используются для проверки значения каждого поля экземпляра класса
+     * 
+     * @yield
+     */
+    protected function correctionMethods()
+    {
+        $className = get_called_class();
+        if (empty(self::$correctionMethods[$className])) {
+            self::$correctionMethods[$className] = [];
+            foreach (get_class_methods($this) as $method) {
+                if (!preg_match('/^correct\w+value$/i', $method)) continue;
+
+                self::$correctionMethods[$className][] = $method;
+            }
+        }
+        foreach (self::$correctionMethods[$className] as $method) {
+            yield $method;
+        }
+    }
+
+    /**
      * Для случаев вроде присваивания
      *     <экземпляр>-><поле> = <значение>;
      * прогоняет по каждому методу класса, имеющего название по шаблону
      *     correct<Допольнительный текст>Value
      * до тех пор, пока кто-то из таких методов не вернет true или все не
-     * получат нзвание и значение поля     * 
+     * получат нзвание и значение поля
      * 
      * @param $name - название поля
      * @param &$value - значение поля
@@ -111,11 +156,24 @@ class InfoserviceModel extends ActiveRecord\Model
      */
     public function __set($name, $value)
     {
-        foreach (get_class_methods($this) as $method) {
-            if (preg_match('/^correct\w+value$/i', $method)) {
-                if ($this->$method($name, $value)) break;
-            }
+        foreach ($this->correctionMethods() as $method) {
+            if ($this->$method($name, $value)) break;
         }
         parent::__set($name, $value);
+    }
+
+    /**
+     * Возвращает правильное значение для нужного поля экземпляра класса
+     * 
+     * @param $name - название поля
+     * @return mixed
+     */
+    public function __get($name)
+    {
+        $value = parent::__get($name);
+        foreach ($this->correctionMethods() as $method) {
+            if ($this->$method($name, $value)) break;
+        }
+        return $value; 
     }
 };

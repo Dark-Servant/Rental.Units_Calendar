@@ -18,7 +18,7 @@
                         class="rc-content-deal-link"
                         v-bind:title="deal.CUSTOMER_NAME"
                         v-bind:href="deal.DEAL_URL ? deal.DEAL_URL : 'javascript:void();'"
-                        v-bind:target="{'_blank': deal.DEAL_URL != ''}">{{deal.CUSTOMER_NAME}}</a>
+                        v-bind:target="deal.DEAL_URL ? '_blank' : ''">{{deal.CUSTOMER_NAME}}</a>
                     <template v-if="content.IS_ONE">
                         <div class="rc-content-deal-addr" v-bind:class="{'rc-no-comment-addr': !commentSize}" v-bind:title="deal.WORK_ADDRESS">{{deal.WORK_ADDRESS}}</div>
                         <div class="rc-content-deal-comment" v-bind:title="lastComment.VALUE" v-if="commentSize">{{lastComment.VALUE}}</div>

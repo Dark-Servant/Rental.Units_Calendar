@@ -8,6 +8,10 @@ class Content extends InfoserviceModel
         ['customer'],
     ];
 
+    static $has_many = [
+        ['comments']
+    ];
+
     /**
      * Информация о классах контента. Используется при выводе в календаре, 
      * чтобы окрасить в конкретный цвет.

@@ -50,6 +50,7 @@ class Technic extends InfoserviceModel
             if (!$partners[$technic->partner_id]) {
                 $partners[$technic->partner_id] = [
                     'ID' => $technic->partner_id,
+                    'IS_PARTNER' => true,
                     'IS_CHOSEN' => false,
                     'CONTENTS' => array_fill_keys($dayTimestamps, false)
                 ];
@@ -205,12 +206,12 @@ class Technic extends InfoserviceModel
         foreach (Comment::find('all', ['conditions' => $filter, 'order' => 'id asc']) as $comment) {
             $partnerId = $technicPartners[$comment->technic_id];
             if ($partnerId) {
-                $comments = &$partners[$partnerId];
+                $technicRow = &$partners[$partnerId];
 
             } else {
-                $comments = &$technics[$comment->technic_id];
+                $technicRow = &$technics[$comment->technic_id];
             }
-            $comments['COMMENTS'][$comment->content_date->getTimestamp()][] = $comment->getData();
+            $technicRow['COMMENTS'][$comment->content_date->getTimestamp()][] = $comment->getData();
         }
     }
 
@@ -257,15 +258,24 @@ class Technic extends InfoserviceModel
         $technicPartners = [];
         $technics = [];
         $partners = [];
+
+        /**
+         * dayDealNames нужна, чтобы в ячейках, куда попадают несколько элементов из контента, не выводились
+         * более одного раза те элементы, у которых одинаковые ссылки или имена, если ссылок нет
+         */
         $dayDealNames = [];
         foreach (self::visibilityUnits($dayTimestamps, $conditions, $orders) as $technic) {
-            $technicdData = &self::getInitedUnitWithContents($technic, $dayTimestamps, $technics, $partners);
-            $dayContents = &$technicdData['CONTENTS'];
-            $dayDealNamesCode = ($technicdData['IS_PARTNER'] ? 'P' : 'T') . $technicdData['ID'];
+            $technicData = &self::getInitedUnitWithContents($technic, $dayTimestamps, $technics, $partners);
+            $dayContents = &$technicData['CONTENTS'];
+            $dayDealNamesCode = ($technicData['IS_PARTNER'] ? 'P' : 'T') . $technicData['ID'];
             $technicPartners[$technic->id] = $technic->partner_id;
 
             foreach (self::contentsWithInitedFilter($technic->id) as $content) {
                 $cellData = $content->getCellData();
+                /**
+                 * Устанавливаем параметр $dealName, чтобы потом проверить не выводился ли этот контент
+                 * в той же ячейке
+                 */
                 if (empty($cellData['DEAL_URL']) || !preg_match('/\/(\d+)/', $cellData['DEAL_URL'], $URLParts)) {
                     $dealName = 'n:' . trim(strtolower($cellData['CUSTOMER_NAME']));
 

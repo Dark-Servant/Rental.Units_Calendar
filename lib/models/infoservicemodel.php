@@ -3,6 +3,7 @@
 class InfoserviceModel extends ActiveRecord\Model
 {
     protected static $correctionMethods = null;
+    protected $oldParamData = [];
 
     /**
      * Объединяет фильтр, описанный как
@@ -159,6 +160,9 @@ class InfoserviceModel extends ActiveRecord\Model
         foreach ($this->correctionMethods() as $method) {
             if ($this->$method($name, $value)) break;
         }
+        if (!isset($this->oldParamData[$name]))
+            $this->oldParamData[$name] = ['value' => $value]; // иначе не будет работать со значением null
+
         parent::__set($name, $value);
     }
 
@@ -175,5 +179,16 @@ class InfoserviceModel extends ActiveRecord\Model
             if ($this->$method($name, $value)) break;
         }
         return $value; 
+    }
+
+    /**
+     * Обновленный метод сохранения данных в БД
+     * 
+     * @return mixed
+     */
+    public function save()
+    {
+        $this->oldParamData = [];
+        return parent::save();
     }
 };

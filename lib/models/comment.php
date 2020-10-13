@@ -26,4 +26,28 @@ class Comment extends InfoserviceModel
             'CREATED_AT' => $this->created_at->getTimestamp(),
         ];
     }
+
+    /**
+     * Поправляет важные поля в комментариях
+     * 
+     * @return void
+     */
+    protected function correctImortantFields()
+    {
+        if (!$this->id) return;
+
+        $this->technic_id = $this->oldParamData['technic_id']['value'];
+        $this->content_date = $this->oldParamData['content_date']['value'];
+    }
+
+    /**
+     * Обновленный метод сохранения данных в БД
+     * 
+     * @return mixed
+     */
+    public function save()
+    {
+        $this->correctImortantFields();
+        return parent::save();
+    }
 };

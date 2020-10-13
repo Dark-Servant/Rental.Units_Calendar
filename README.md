@@ -21,7 +21,7 @@ migrate migrate:up dev
 Далее нужно поставить решения из файла **package.json**, выполнив команду `npm i`
 
 Для помощи в работе с решениями:
-- **PHP ActiveRecord**: https://koenpunt.github.io/php-activerecord/, https://www.phpactiverecord.xyz/docs/ActiveRecord;
+- **PHP ActiveRecord**: https://koenpunt.github.io/php-activerecord/, https://www.phpactiverecord.xyz/docs/;
 - **php-database-migration**: https://packagist.org/packages/php-database-migration/php-database-migration;
 - **js-datepicker**: https://www.npmjs.com/package/js-datepicker
 

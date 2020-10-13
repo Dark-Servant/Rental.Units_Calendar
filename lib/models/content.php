@@ -101,4 +101,140 @@ class Content extends InfoserviceModel
 
         return $data;
     }
+
+    /**
+     * Возвращает массив комментариев, которые привязаны к контенту, но таковыми быть
+     * не должны из-за связи с другой техникой или датой вывода в календаре, которая не
+     * попадает в интервал между начальной и конечной датами контента.
+     * Возвращаемый результат будет иметь вид
+     *     [
+     *         <ID техники> => [
+     *             <дата вывода как ГГГГ-ММ-ДД> => [<ID комментария-1>, <ID комментария-2>, ..., <ID комментария-N>]
+     *         ],
+     *         ...
+     *     ]
+     * 
+     * @return array
+     */
+    protected function getThrownComments()
+    {
+        $commentIds = array_map(
+                            function($comment) { return $comment->id; },
+                            $this->comments
+                        );
+        if (empty($commentIds)) return [];
+
+        $comments = Comment::all([
+                            'conditions' => [
+                                '(id in (?)) AND ((technic_id <> ?) OR (content_date < ?) OR (content_date > ?))',
+                                $commentIds,
+                                $this->technic_id,
+                                $this->begin_date->format(Day::FORMAT),
+                                $this->finish_date->format(Day::FORMAT)
+                            ]
+                        ]);
+        $commentIds = [];
+        foreach ($comments as $comment) {
+            $commentIds[$comment->technic_id][$comment->content_date->format(Day::FORMAT)][] = $comment->id;
+        }
+        return $commentIds;
+    }
+
+    /**
+     * Возвращает массив комментариев, которые в силу изменения данных текущего контента
+     * не могут больше принадлежать контенту. Идентификаторы комментариев в возвращаемом
+     * результате разбиты на категории:
+     *     contentCommentIds - идентификаторы комментариев и идентификаторы контентов,
+     *     с которыми надо связать указанные комментарии. Тут результат представлен как
+     *         [
+     *             <ID нового контента> => [<ID комментария 1>, <ID комментария 2>, ..., <ID комментария N>],
+     *             ...
+     *         ]
+     *     
+     *     zeroCommentIds - массив идентификаторов комментариев, у которых надо обнулить связь с контентом
+     * 
+     * @return array
+     */
+    protected function getThrownCommentsWithNewRoles()
+    {
+        $contentCommentIds = [];
+        $zeroCommentIds = [];
+        foreach ($this->getThrownComments() as $technicId => $comments) {
+            $dates = array_keys($comments);
+            foreach (
+                self::all([
+                    'conditions' => [
+                        '(id <> ?) AND (technic_id = ?) AND (begin_date <= ?) AND (finish_date >= ?)',
+
+                        $this->id, $technicId, max($dates), min($dates)
+                    ],
+                    'order' => 'id asc'
+                ]) as $content
+            ) {
+                $contentBeginDate = $content->begin_date->format(Day::FORMAT);
+                $contentFinishDate = $content->finish_date->format(Day::FORMAT);
+                $newDates = [];
+                foreach ($dates as $date) {
+                    if (($date < $contentBeginDate) || ($date > $contentFinishDate)) {
+                        $newDates[] = $date;
+
+                    } else {
+                        $contentCommentIds[$content->id] = array_merge($contentCommentIds[$content->id] ?? [], $comments[$date]);
+                    }
+                }
+                $dates = $newDates;
+            }
+            foreach ($dates as $date) {
+                $zeroCommentIds = array_merge($zeroCommentIds, $comments[$date]);
+            }
+        }
+        return ['contentCommentIds' => $contentCommentIds, 'zeroCommentIds' => $zeroCommentIds];
+    }
+
+    /**
+     * После изменения данных контента может получиться так, что некоторые комментарии перестанут
+     * принадлежать контенту, их надо отдать другому контенту или обнулить связь с любым контентом.
+     * Так же после изменения данных у контента могут появиться новые комментарии, которые раньше
+     * были там, куда был передвинут контент, и не были связаны ни с одним контентом
+     * 
+     * @return void
+     */
+    protected function correctNewComment()
+    {
+        if (!$this->id) return;
+
+        $thrownComments = $this->getThrownCommentsWithNewRoles();
+
+        foreach ($thrownComments['contentCommentIds'] as $contentId => $commentIds) {
+            Comment::update_all(['set' => ['content_id' => $contentId], 'conditions' => ['id' => $commentIds]]);
+        }
+
+        if (!empty($thrownComments['zeroCommentIds']))
+            Comment::update_all(['set' => ['content_id' => 0], 'conditions' => ['id' => $thrownComments['zeroCommentIds']]]);
+
+        $newCommentIds = array_map(
+                            function($comment) { return $comment->id; },
+                            Comment::all([
+                                'conditions' => [
+                                    '(technic_id = ?) AND (content_id = 0) AND (content_date >= ?) AND (content_date <= ?)',
+                                    $this->technic_id,
+                                    $this->begin_date->format(Day::FORMAT),
+                                    $this->finish_date->format(Day::FORMAT)
+                                ]
+                            ])
+                        );
+        if (!empty($newCommentIds))
+            Comment::update_all(['set' => ['content_id' => $this->id], 'conditions' => ['id' => $newCommentIds]]);
+    }
+
+    /**
+     * Обновленный метод сохранения данных в БД
+     * 
+     * @return mixed
+     */
+    public function save()
+    {
+        $this->correctNewComment();
+        return parent::save();
+    }
 };

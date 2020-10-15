@@ -167,21 +167,6 @@ class InfoserviceModel extends ActiveRecord\Model
     }
 
     /**
-     * Возвращает правильное значение для нужного поля экземпляра класса
-     * 
-     * @param $name - название поля
-     * @return mixed
-     */
-    public function __get($name)
-    {
-        $value = parent::__get($name);
-        foreach ($this->correctionMethods() as $method) {
-            if ($this->$method($name, $value)) break;
-        }
-        return $value; 
-    }
-
-    /**
      * Обновленный метод сохранения данных в БД
      * 
      * @return mixed

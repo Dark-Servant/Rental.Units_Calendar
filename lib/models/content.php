@@ -35,7 +35,7 @@ class Content extends InfoserviceModel
      */
     const CONTENT_DEAL_STATUS_REGEX = [
         '/\b(?:нов[аяйоые]+|резерв) +/iu',
-        '/\bпроведение +/iu',
+        '/\b(?:проведение|в +процессе)(?: +[\W\W]*)?$/iu',
         '/\b(?:финал[ьнаяйоые]*|закрыт[аяыйое]*|заверш[иаолуеють]+)\b/iu'
     ];
 
@@ -57,15 +57,31 @@ class Content extends InfoserviceModel
     {
         if (strtolower($name) != 'status') return false;
 
-        $regexValues = array_values(self::CONTENT_DEAL_STATUS_REGEX);
-        $newValue = null;
-        foreach ($regexValues as $newValueNumber => $statusRegex) {
-            if (preg_match($statusRegex, $value)) {
-                $newValue = $newValueNumber;
-                break;
+        if (is_string($value) && preg_match('/^\d+$/', $value))
+            $value = intval($value);
+
+        $regexValues = self::CONTENT_DEAL_STATUS_REGEX;
+        $regexValueCount = count($regexValues);
+        if (is_numeric($value)) {
+            if ($value > $regexValueCount) {
+                $value = $regexValueCount;
+
+            } elseif ($value < 0) {
+                $value = 0;
             }
+
+        } else {
+            $newValue = null;
+            $value = strval($value);
+            foreach ($regexValues as $newValueNumber => $statusRegex) {
+                if (preg_match($statusRegex, $value)) {
+                    $newValue = $newValueNumber;
+                    break;
+                }
+            }
+            $value = isset($newValue) ? $newValue : $regexValueCount;
         }
-        $value = isset($newValue) ? $newValue : count($regexValues);
+
         return true;
     }
 
@@ -78,9 +94,12 @@ class Content extends InfoserviceModel
     public function getCellData()
     {
         global $langValues;
+        $dealURL = $this->deal_url;
+        $this->correctURLValue('deal_url', $dealURL);
+
         $data = [
             'ID' => $this->id,
-            'DEAL_URL' => $this->deal_url,
+            'DEAL_URL' => $dealURL,
             'RESPONSIBLE_NAME' => $this->responsible->name,
             'CUSTOMER_NAME' => $this->customer->name,
             'WORK_ADDRESS' => $this->work_address

@@ -17,8 +17,8 @@ class InfoserviceModel extends ActiveRecord\Model
      * или иметь и то и другое вперемешку. Результат будет возвращен как готовый фильтр в том виде, в которым
      * должен быть описан фильтр из $main
      * 
-     * @param array $main - основная часть фильтра, не подтвергается изменению,
-     * ее содержимое дополненяется условиями из $conditions
+     * @param array $main - основная часть фильтра, не подтвергается изменению, ее содержимое дополненяется
+     * условиями из $conditions
      * 
      * @param array $conditions - дополнительные условия для фильтра
      * @return array
@@ -160,7 +160,7 @@ class InfoserviceModel extends ActiveRecord\Model
         foreach ($this->correctionMethods() as $method) {
             if ($this->$method($name, $value)) break;
         }
-        if (!isset($this->oldParamData[$name]))
+        if ($this->id  && !isset($this->oldParamData[$name]))
             $this->oldParamData[$name] = ['value' => $value]; // иначе не будет работать со значением null
 
         parent::__set($name, $value);

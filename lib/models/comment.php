@@ -34,10 +34,11 @@ class Comment extends InfoserviceModel
      */
     protected function correctImortantFields()
     {
-        if (!$this->id) return;
+        foreach (['technic_id', 'content_date'] as $fieldName) {
+            if (!isset($this->oldParamData[$fieldName])) continue;
 
-        $this->technic_id = $this->oldParamData['technic_id']['value'];
-        $this->content_date = $this->oldParamData['content_date']['value'];
+            $this->$fieldName = $this->oldParamData[$fieldName]['value'];
+        }
     }
 
     /**

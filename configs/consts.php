@@ -14,7 +14,7 @@ if (!SESSION_CONTANTS || empty($_SESSION['CONST_LIST'])) {
     define('APPPATH', preg_replace('/[\/\\\\][^\/\\\\]*$/', '/', $_SERVER['SCRIPT_NAME']));
     define('MAIN_SERVER_URL', $_SERVER['HTTP_REFERER'] ?? '');
 
-    if (!empty($_REQUEST['DOMAIN']) && !empty($_REQUEST['AUTH_ID'])) {
+    if (!empty($_REQUEST['DOMAIN']) && isset($_REQUEST['AUTH_ID'])) {
         define('DOMAIN', $_REQUEST['DOMAIN']);
         define('AUTH_ID', $_REQUEST['AUTH_ID']);
     }

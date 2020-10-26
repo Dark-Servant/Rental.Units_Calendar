@@ -256,4 +256,16 @@ class Content extends InfoserviceModel
         $this->correctNewComment();
         return parent::save();
     }
+
+    /**
+     * Обновленный метод удаления данных в БД
+     * 
+     * @return mixed
+     */
+    public function delete()
+    {
+        $this->technic_id = 0;
+        $this->correctNewComment();        
+        return parent::delete();
+    }
 };

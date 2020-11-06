@@ -61,7 +61,10 @@
                         v-on:click="$emit('show-data')">
                     <span></span>
                 </label><!--
-                --><span class="rc-activity-list-back" v-on:click="$emit('show-activities')" v-if="backtoactivities"></span>
+                --><span class="rc-activity-list-back"
+                        title="<?=$langValues['BIZ_PROC_ACTIVITY_LIST_TITLE']?>"
+                        v-on:click="$emit('show-activities')"
+                        v-if="backtoactivities"></span>
             </div><!--
             --><div class="rc-day" v-for="day in days">
                 <div class="rc-day-area">

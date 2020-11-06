@@ -147,6 +147,8 @@ body {
 
 .rc-activity-list-back:hover {
     opacity: 1;
+    background-color: inherit;
+    box-shadow: 1px 1px 3px;
 }
 
 .rc-day {

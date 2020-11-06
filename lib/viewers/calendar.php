@@ -66,8 +66,9 @@
                         v-on:click="$emit('show-activities')"
                         v-if="backtoactivities"></span>
             </div><!--
-            --><div class="rc-day" v-for="day in days">
+            --><div class="rc-day" v-for="(day, dayIndex) in days">
                 <div class="rc-day-area">
+                    <span class="rc-calendar-button rc-day-step" v-on:click="dayInc(dayIndex)"></span>
                     <span class="rc-day-value">{{day.VALUE}}</span>
                     <span class="rc-day-week-name">{{day.WEEK_DAY_NAME}}</span>
                 </div>
@@ -99,9 +100,9 @@
     <div class="rc-deal-detail-comment-input-area">
         <textarea class="rc-textarea rc-deal-detail-comment-textarea" v-model="value"></textarea>
         <div class="rc-deal-detail-comment-input-buttons">
-            <span class="rc-comment-button rc-deal-detail-comment-input-button rc-deal-detail-comment-ok-button"
+            <span class="rc-calendar-button rc-comment-button rc-deal-detail-comment-input-button rc-deal-detail-comment-ok-button"
                 v-on:click="commentAdd"></span><!--
-            --><span class="rc-comment-button rc-deal-detail-comment-input-button rc-deal-detail-comment-cancel-button"
+            --><span class="rc-calendar-button rc-comment-button rc-deal-detail-comment-input-button rc-deal-detail-comment-cancel-button"
                 v-on:click="stopCommentAdd"></span>
         </div>
     </div>
@@ -114,9 +115,9 @@
     <div class="rc-comment-unit" v-else>
         <div class="rc-comment-unit-value">{{comment.VALUE}}</div>
         <div class="rc-comment-unit-buttons" v-if="canedit">
-            <span class="rc-comment-button rc-comment-unit-button rc-comment-unit-edit-button"
+            <span class="rc-calendar-button rc-comment-button rc-comment-unit-button rc-comment-unit-edit-button"
                 v-on:click="initEditComment"></span><!--
-            --><span class="rc-comment-button rc-comment-unit-button rc-comment-unit-remove-button"
+            --><span class="rc-calendar-button rc-comment-button rc-comment-unit-button rc-comment-unit-remove-button"
                 v-on:click="removeComment"></span>
         </div>
         <div class="rc-comment-unit-author">

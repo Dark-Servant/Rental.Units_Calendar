@@ -25,6 +25,7 @@ if (!SESSION_CONTANTS || empty($_SESSION['CONST_LIST'])) {
     define('LANG', 'ru');
     define('ENV_CODE', 'dev');
     define('SHOW_VIEW', 'calendar');
+    define('DAY_SECOND_COUNT', 86400);
     define('CONTENT_CLOSED_DEAL_STATUS', array_search('closed', Content::CONTENT_DEAL_STATUS));
     define('CONTENT_MAX_DEAL_STATUS', CONTENT_CLOSED_DEAL_STATUS - 1);
     define('CONTENT_MANY_DEAL_STATUS', CONTENT_CLOSED_DEAL_STATUS + 1);

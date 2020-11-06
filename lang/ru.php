@@ -35,8 +35,9 @@ $langValues['CONTENT_REPAIR_STATUS_TITLE'] = 'Ремонт';
 $langValues['ERROR_EMPTY_USER_ID'] = 'В параметре user не указан ID';
 
 // lib/viewers/calendar.php
-$langValues['FILTER_MY_TECHNIC'] = 'Своя техника';
 $langValues['FILTER_TODAY_BUTTON'] = 'Сегодня';
+$langValues['FILTER_MY_TECHNIC'] = 'Своя техника';
+$langValues['BIZ_PROC_ACTIVITY_LIST_TITLE'] = 'Перейти к списку действий Бизнес-процессов';
 $langValues['MANY_DEAL_STATUS'] = 'Техника работает на нескольких объектах';
 $langValues['CONFIRM_MESSAGE_DELETING'] = 'Удалить комментарий?';
 

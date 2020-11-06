@@ -43,7 +43,7 @@ header('Content-Type: application/javascript; charset=utf-8');?>
     var backtoactivities = false; // bx24inited;
     var currentUserData = <?=$userData ? json_encode($userData) : '{}'?>;
     
-    var activities = <?=json_encode($activities)?>;
+    var activities = <?=empty($activities) ? '{}' : json_encode($activities)?>;
     var notExistActivityCodes = [];
     var calendar;<?
 
@@ -111,6 +111,7 @@ header('Content-Type: application/javascript; charset=utf-8');?>
         if (!notExistActivityCodes.length) {
             $(selector.activityList).removeClass(classList.noReaction);
             calendar.activityInstalled = true;
+            calendar.activities = activities;
             return calendar.showTable();
         }
 
@@ -126,10 +127,7 @@ header('Content-Type: application/javascript; charset=utf-8');?>
                 USE_SUBSCRIPTION: 'Y',
                 DOCUMENT_TYPE: ['lists', 'BizprocDocument']
             }
-        ).then(answer => {
-            console.log(answer);
-            addActivity();
-        });
+        ).then(answer => addActivity());
     }
 
     /**
@@ -148,18 +146,24 @@ header('Content-Type: application/javascript; charset=utf-8');?>
      * @param activityCodes - список специальных кодов действий Бизнес-процессов
      * @return void
      */
-    var deleteActivity = function(activityCodes) {
+    var deleteActivity = function(activityCodes, callBack) {
         if (!activityCodes.length) {
             $(selector.activityList).removeClass(classList.noReaction);
-            calendar.activityInstalled = false;
-            return;
+            if (calendar) calendar.activityInstalled = false;
+            return typeof(callBack) == 'function' ? callBack() : true;
         }
 
         var activityCode = activityCodes.shift();
-        notExistActivityCodes.push(activityCode);
+        /**
+         * В случае, если некоторые действия были удалены из решения, но они остались на портале,
+         * то эти действия удалятся с портала, и их не надо запоминать в списке неустановленных
+         * действий
+         */
+        if (activities[activityCode] instanceof Object)
+            notExistActivityCodes.push(activityCode);
 
         BXRestAPISend('bizproc.activity.delete', {code: activityCode})
-            .then(() => deleteActivity(activityCodes));
+            .then(() => deleteActivity(activityCodes, callBack));
     }
 
     /**
@@ -192,7 +196,10 @@ header('Content-Type: application/javascript; charset=utf-8');?>
 
                         notExistActivityCodes.push(code);
                     }
-                    showApplication(notExistActivityCodes.length < 1);
+                    deleteActivity(
+                        answer.result.filter(code => activities[code] == undefined ),
+                        () => showApplication(notExistActivityCodes.length < 1)
+                    );
                 }
             )
     }

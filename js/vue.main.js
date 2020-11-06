@@ -6,7 +6,17 @@
         bx24inited: bx24inited,
         backtoactivities: backtoactivities,
         userData: currentUserData,
-        activities: activities,
+        activities: (() => {
+                        var notInstalled = {};
+                        if (notExistActivityCodes.length) {
+                            notExistActivityCodes.forEach(code => notInstalled[code] = activities[code]);
+
+                        } else {
+                            notInstalled = activities;
+                        }
+                        return notInstalled;
+                    })(),
+
         days: <?=json_encode($days)?>,
         technics: <?=json_encode($technics)?>,
         contentDetail: null,

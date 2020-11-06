@@ -2,7 +2,7 @@
 
 class Day
 {
-    const SECOND_COUNT = 86400;
+    const SECOND_COUNT = DAY_SECOND_COUNT;
     const FORMAT = 'Y-m-d';
     const CALENDAR_FORMAT = 'd.m.Y';
 

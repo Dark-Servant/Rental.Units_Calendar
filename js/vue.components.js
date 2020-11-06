@@ -26,6 +26,33 @@ var VueComponentParams = {
         }
     },
 
+    // Компонент для вывода всего календаря
+    calendarTable: {
+
+        methods: {
+
+            /**
+             * Обработчик событий нажатия стелочек для перехода начала недели на день вперед
+             * или назаж
+             * 
+             * @param dayTimeStamp - временная метка даты, рядом с которой нажата стрелка.
+             * Если нажата рядом с первой датой недели, то переход идет на день назад, иначе
+             * вперед
+             * 
+             * @return void
+             */
+            dayInc(dayTimeStamp) {
+                var firstDayTimeStamp = Object.keys(calendar.days)[0];
+                var daySecondCount = SERVER_CONSTANTS.DAY_SECOND_COUNT;
+                if (firstDayTimeStamp  == dayTimeStamp)
+                    daySecondCount = -daySecondCount;
+
+                calendar.filterDateInput.setDate(new Date((parseInt(firstDayTimeStamp) + daySecondCount) * 1000));
+                calendar.showData();
+            }
+        }
+    },
+
     // Компонент для модального окна
     contentDetailModal: {
 

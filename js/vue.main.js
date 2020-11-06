@@ -93,6 +93,8 @@
      * @return void
      */
     mounted() {
+        if (!this.calendarShow) return;
+
         this.initCalendar();
         if (!bx24inited) return;
 

@@ -117,3 +117,5 @@ $langValues['BPA_CONTENT_ADD_PARAM_VISIBILITY'] = 'Видимость в кал�
 // Данные модального окна с данными сделки и контента
 $langValues['MODAL_CONTENT_TECHNIC_CAPTION'] = 'Техника';
 $langValues['MODAL_CONTENT_RESPONSIBLE_CAPTION'] = 'Ответственный';
+$langValues['OPEN_URL_WITH_DEAL_ADD_TITLE'] = 'Открыть страницу с созданием CRM-сделки';
+$langValues['BEGIN_COMMENT_ADD_BUTTON_TITLE'] = 'Начать добавление комментария';

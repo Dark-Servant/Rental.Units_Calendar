@@ -3,13 +3,19 @@ define('SESSION_CONTANTS', true);
 
 $setting = require dirname(__DIR__) . '/configs/settings.php';
 
+$calendarDate = time();
 $userData = null;
 if (defined('AUTH_ID')) {
     $userData = (new BX24RestAPI(['domain' => DOMAIN, 'access_token' => AUTH_ID]))->callUserCurrent();
-    if ($userData) $userData = $userData['result'];
+    if ($userData) {
+        $userData = $userData['result'];
+        $responsible = Responsible::initialize($userData);
+        if ($responsible->calendar_date)
+            $calendarDate = $responsible->calendar_date->getTimestamp();
+    }
 }
 
-$days = Day::getPeriod(date(Day::FORMAT), 7);
+$days = Day::getPeriod(date(Day::FORMAT, $calendarDate), 7);
 $technics = Technic::getWithContentsByDayPeriod($userData ? $userData['ID'] : 0, $days, [], TECHNIC_SORTING);
 $activities = BPActivity::getUnits();
 header('Content-Type: application/javascript; charset=utf-8');?>

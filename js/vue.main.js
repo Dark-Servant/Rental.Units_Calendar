@@ -17,6 +17,7 @@
                         return notInstalled;
                     })(),
 
+        calendarDate: new Date(<?=$calendarDate?> * 1000),
         days: <?=json_encode($days)?>,
         technics: <?=json_encode($technics)?>,
         contentDetail: null,
@@ -65,9 +66,20 @@
             if (this.contentDetail) verticalCenterWindow();
         },
 
+        /**
+         * Следит за изменением значения переменной calendarDate, вызывает метод showData для вывода
+         * данных согласно установленному в этой переменной даты
+         * 
+         * @return void
+         */
+        calendarDate() {
+            this.filterDateInput.setDate(this.calendarDate);
+            this.showData();
+        }
     },
 
     computed: {
+
         /**
          * Возвращает массив с техникой, где идут сначала вся техника и партнеры, отмеченные
          * как избранные, а потом обычные, т.е. перемещает все отмеченное как избранное вперед
@@ -84,7 +96,18 @@
                 if (!technic.IS_CHOSEN) result.push(technic);
             });
             return result;
+        },
+
+        /**
+         * Возвращает выбранную дату в календаре в формат вывода даты, устновленного локально.
+         * Используется для вывода в поле ввода даты календаря
+         * 
+         * @return void
+         */
+        calendarDateValue() {
+            return this.calendarDate.toLocaleDateString();
         }
+
     },
 
     /**
@@ -163,10 +186,10 @@
                 ],
                 overlayPlaceholder: LANG_VALUES.DATE_CHOOOSING_YEAR,
 
-                formatter: (input, date, instance) => input.value = date.toLocaleDateString(),
-                onSelect: () => {
+                onSelect: (unitParams, selectedDate) => {
                     setTimeout(() => this.filterDateInput.hide(), 1);
-                    this.showData();
+
+                    this.calendarDate = selectedDate;
                 }
             });
         },
@@ -178,8 +201,8 @@
          * @return void
          */
         showData() {
-            var data = {};
-            $(selector.filterArea).find('[name]').each((paramNum, paramObj) => {
+            var data = {date: this.calendarDate.toLocaleDateString()};
+            $(selector.filterArea).find('[name]:not([name="date"])').each((paramNum, paramObj) => {
                 data[$(paramObj).attr('name')] = paramObj.type == 'checkbox' ? paramObj.checked : paramObj.value;
             });
             data.user = {...currentUserData};
@@ -200,8 +223,7 @@
          * @return void
          */
         setToday(event) {
-            this.filterDateInput.setDate(new Date());
-            this.showData();
+            this.calendarDate = new Date();
         },
 
         /**

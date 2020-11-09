@@ -15,6 +15,11 @@ try {
             $startDate = date_create_from_format(Day::CALENDAR_FORMAT, $_REQUEST['date']);
             if ($startDate === false) throw new Exception($langValues['ERROR_DATE_VALUE']);
 
+            if (!empty($_REQUEST['user'])) {
+                $responsible = Responsible::initialize($_REQUEST['user']);
+                $responsible->calendar_date = $_REQUEST['date'];
+                $responsible->save();
+            }
             $filter = [];
             if ($_REQUEST['my-technic'] == 'true') $filter['IS_MY'] = 1;
 

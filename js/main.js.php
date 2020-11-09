@@ -51,7 +51,7 @@ header('Content-Type: application/javascript; charset=utf-8');?>
     
     var activities = <?=empty($activities) ? '{}' : json_encode($activities)?>;
     var notExistActivityCodes = [];
-    var calendar;<?
+    var calendar = false;<?
 
     include __DIR__ . '/vue.components.js';?>
 

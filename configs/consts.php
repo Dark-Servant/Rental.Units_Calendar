@@ -19,7 +19,7 @@ if (!SESSION_CONTANTS || empty($_SESSION['CONST_LIST'])) {
         define('AUTH_ID', $_REQUEST['AUTH_ID']);
     }
 
-    define('VERSION', time());//'1.0.0');
+    define('VERSION', '1.1.0');
     define('URL_SCRIPT_FINISH', 'sid=' . session_id() . '&' . VERSION);
 
     define('LANG', 'ru');
@@ -31,6 +31,15 @@ if (!SESSION_CONTANTS || empty($_SESSION['CONST_LIST'])) {
     define('CONTENT_MANY_DEAL_STATUS', CONTENT_CLOSED_DEAL_STATUS + 1);
     define('CONTENT_REPAIR_DEAL_STATUS', CONTENT_CLOSED_DEAL_STATUS + 2);
     define('TECHNIC_SORTING', ['IS_MY DESC, LOADING_CAPACITY ASC']);
+
+    // Символьный код пользовательского поля для CRM-сделок "ID техники"
+    define('CRM_USER_FIELD_TECHNIC_ID', 'UF_CRM_1604312301');
+
+    // Символьный код пользовательского поля для CRM-сделок "Дата начала работ"
+    define('CRM_USER_FIELD_START_DATE', 'UF_CRM_1571574579');
+
+    // Символьный код пользовательского поля для CRM-сделок "Дата окончания работ"
+    define('CRM_USER_FIELD_COMPLETION_DATE', 'UF_CRM_1571574620');
 
     $_SESSION['CONST_LIST'] = array_filter(
                     get_defined_constants(),

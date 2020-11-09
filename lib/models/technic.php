@@ -39,6 +39,7 @@ class Technic extends InfoserviceModel
             $technics[$technic->id] = [
                 'ID' => $technic->id,
                 'NAME' => $technic->name,
+                'EXTERNAL_ID' => $technic->external_id,
                 'IS_PARTNER' => false,
                 'STATE_NUMBER' => $technic->state_number,
                 'IS_CHOSEN' => false,
@@ -50,6 +51,7 @@ class Technic extends InfoserviceModel
             if (!$partners[$technic->partner_id]) {
                 $partners[$technic->partner_id] = [
                     'ID' => $technic->partner_id,
+                    'EXTERNAL_ID' => $technic->external_id,
                     'IS_PARTNER' => true,
                     'IS_CHOSEN' => false,
                     'CONTENTS' => array_fill_keys($dayTimestamps, false)
@@ -92,8 +94,7 @@ class Technic extends InfoserviceModel
 
         self::$contentOrders = is_string($orders['content']) ? $orders['content'] : '';
         foreach (
-            self::find(
-                'all',
+            self::all(
                 [
                     'conditions' => self::getWithAddedConditions(
                                         ['is_visibility = 1'],
@@ -131,8 +132,7 @@ class Technic extends InfoserviceModel
         if ($technicId < 1) return;
 
         foreach (
-            Content::find(
-                'all',
+            Content::all(
                 [
                     'conditions' => self::getWithAddedConditions(self::$contentConditions ?? [], ['technic_id' => $technicId]),
                     'order' => self::$contentOrders ?? ''
@@ -172,7 +172,7 @@ class Technic extends InfoserviceModel
         $values[] = $user->id;
 
         foreach (
-            ChosenTechnics::find('all', ['conditions' => array_merge([$conditions], $values)]) as $chosen
+            ChosenTechnics::all(['conditions' => array_merge([$conditions], $values)]) as $chosen
         ) {
             if ($chosen->is_partner) {
                 $partners[$chosen->entity_id]['IS_CHOSEN'] = true;
@@ -203,7 +203,7 @@ class Technic extends InfoserviceModel
             (new DateTime)->setTimestamp(reset($dayTimestamps)),
             (new DateTime)->setTimestamp(end($dayTimestamps)),
         ];
-        foreach (Comment::find('all', ['conditions' => $filter, 'order' => 'id asc']) as $comment) {
+        foreach (Comment::all(['conditions' => $filter, 'order' => 'id asc']) as $comment) {
             $partnerId = $technicPartners[$comment->technic_id];
             if ($partnerId) {
                 $technicRow = &$partners[$partnerId];
@@ -344,7 +344,7 @@ class Technic extends InfoserviceModel
 
         $technicResult = array_values($technics);
         if (!empty($partners)) {
-            foreach (Partner::find('all', ['conditions' => ['id' => array_keys($partners)], 'order' => 'name ASC']) as $partner) {
+            foreach (Partner::all(['conditions' => ['id' => array_keys($partners)], 'order' => 'name ASC']) as $partner) {
                 $technicResult[] = [
                     'NAME' => $partner->name,
                     'IS_PARTNER' => true

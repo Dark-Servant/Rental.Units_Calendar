@@ -143,6 +143,7 @@
         </template>
         <span class="rc-calendar-button rc-calendar-add-deal-button"
             title="<?=$langValues['OPEN_URL_WITH_DEAL_ADD_TITLE']?>"
+            v-on:click="openDealCreating()"
             v-else></span>
         <div class="rc-deal-detail-comments">
             <comment-unit

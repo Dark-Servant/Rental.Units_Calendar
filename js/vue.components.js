@@ -75,7 +75,24 @@ var VueComponentParams = {
         methods: {
 
             /**
-             * После нажатия кнопки "+" у каждой сделки запоминает порядковый номер сделки nв переменной
+             * Обработчик нажатия синей кнопки "+", чтобы открыть отдельное окно в браузере с формой
+             * создания новой CRM-сделки, где уже заранее заполненны конкретные поля
+             * 
+             * @return void
+             */
+            openDealCreating() {
+                var dateValue = (new Date(calendar.contentDetail.CONTENT_DAY * 1000)).toLocaleDateString();
+                $(
+                    '<a target="_blank" '
+                        + 'href="' + SERVER_CONSTANTS.MAIN_SERVER_URL + 'crm/deal/details/0/?category_id=0&'
+                        + SERVER_CONSTANTS.CRM_USER_FIELD_TECHNIC_ID + '=' + calendar.contentDetail.EXTERNAL_ID + '&'
+                        + SERVER_CONSTANTS.CRM_USER_FIELD_START_DATE + '=' + dateValue + '&'
+                        + SERVER_CONSTANTS.CRM_USER_FIELD_COMPLETION_DATE + '=' + dateValue + '">'
+                ).get(0).click();
+            },
+
+            /**
+             * После нажатия желтой кнопки "+" у каждой сделки запоминает порядковый номер сделки в переменной
              * newCommentDealIndex, что приводит к скрытию кнопки "+" и появлению поля ввода комментария
              * 
              * @return void

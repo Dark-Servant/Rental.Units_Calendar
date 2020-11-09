@@ -40,15 +40,15 @@
     </div>
 </script>
 
-<script id="calendar-table-component" data-props="bx24inited, backtoactivities, technics, days" type="text/vue-component">
+<script id="calendar-table-component" data-props="calendardate, bx24inited, backtoactivities, technics, days" type="text/vue-component">
     <div class="rc-calendar">
         <div class="rc-header">
             <div class="rc-filter">
                 <label class="rc-filter-date-area">
                     <input class="rc-filter-date-input"
-                        name="date" value="<?=date(Day::CALENDAR_FORMAT)?>"
+                        name="date"
+                        v-bind:value="calendardate"
                         v-on:click="$emit('init-calendar')"
-                        v-on:change="$emit('show-data')"
                         type="text" readonly>
                 </label><!--
                 --><div class="rc-filter-date-icon rc-filter-date-today"
@@ -229,6 +229,7 @@
             v-on:set-chosen="setChosen"
             v-on:show-content-details="showContentDetails"
             v-on:start-waiting-hint-window="startWaitingHintWindow"
+            v-bind:calendardate="calendarDateValue"
             v-bind:bx24inited="bx24inited"
             v-bind:backtoactivities="backtoactivities"
             v-bind:technics="sortedTechnics"

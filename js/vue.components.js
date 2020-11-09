@@ -47,8 +47,7 @@ var VueComponentParams = {
                 if (firstDayTimeStamp  == dayTimeStamp)
                     daySecondCount = -daySecondCount;
 
-                calendar.filterDateInput.setDate(new Date((parseInt(firstDayTimeStamp) + daySecondCount) * 1000));
-                calendar.showData();
+                calendar.calendarDate = new Date((parseInt(firstDayTimeStamp) + daySecondCount) * 1000);
             }
         }
     },

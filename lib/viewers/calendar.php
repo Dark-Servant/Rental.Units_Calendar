@@ -141,6 +141,9 @@
                 <span class="rc-deal-detail-responsible-value">{{deal.RESPONSIBLE_NAME}}</span>
             </div>
         </template>
+        <span class="rc-calendar-button rc-calendar-add-deal-button"
+            title="<?=$langValues['OPEN_URL_WITH_DEAL_ADD_TITLE']?>"
+            v-else></span>
         <div class="rc-deal-detail-comments">
             <comment-unit
                 v-bind:comment="comment"
@@ -154,6 +157,7 @@
                     v-bind:value="''"
                     v-if="newcomment"></comment-unit-editor>
                 <span class="rc-deal-detail-add-comment"
+                    title="<?=$langValues['BEGIN_COMMENT_ADD_BUTTON_TITLE']?>"
                     v-on:click="initCommentAdd" v-else></span>
             <template>
         </div>

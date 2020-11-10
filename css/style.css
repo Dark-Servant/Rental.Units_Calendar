@@ -656,7 +656,7 @@ body {
     border-radius: 10px;
 }
 
-.rc-calendar-add-deal-button + .rc-deal-detail-comments .rc-deal-detail-comment-input-area {
+.rc-calendar-add-deal-button + .rc-deal-detail-comments > *:not(.rc-deal-detail-add-comment):first-child {
     margin-top: 20px;
 }
 

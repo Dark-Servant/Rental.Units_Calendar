@@ -12,7 +12,7 @@ alias migrate="php \"`pwd`/vendor/bin/migrate\""
 ```
 set path=%cd%\vendor\bin;%path%
 ```
-7. Внутри папки **configs** выполнить в консоле следующие команды
+7. Внутри папки **configs** выполнить в консоле следующие команды. Если *migrate* будет жаловаться на *driver*, значит, скорее всего не установлено расширение *pdo_mysql*
 ```
 migrate migrate:init dev
 migrate migrate:up dev

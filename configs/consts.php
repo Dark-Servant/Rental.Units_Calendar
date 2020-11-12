@@ -12,7 +12,12 @@ if (!SESSION_CONTANTS || empty($_SESSION['CONST_LIST'])) {
     $_SESSION['CONST_LIST'] = array_keys(get_defined_constants());
 
     define('APPPATH', preg_replace('/[\/\\\\][^\/\\\\]*$/', '/', $_SERVER['SCRIPT_NAME']));
-    define('MAIN_SERVER_URL', $_SERVER['HTTP_REFERER'] ?? '');
+    define('MAIN_SERVER_URL', (
+                    $_SERVER['HTTP_ORIGIN']
+                    ?? preg_replace('/(https?:\/\/[^\/]+)(?:\/[\w\W]*)?/i', '$1', $_SERVER['HTTP_REFERER'])
+                    ?? ''
+                ) . '/'
+            );
 
     if (!empty($_REQUEST['DOMAIN']) && isset($_REQUEST['AUTH_ID'])) {
         define('DOMAIN', $_REQUEST['DOMAIN']);

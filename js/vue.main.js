@@ -4,7 +4,6 @@
         calendarShow: startCalendar,
         activityInstalled: startCalendar,
         bx24inited: bx24inited,
-        backtoactivities: backtoactivities,
         userData: currentUserData,
         activities: (() => {
                         var notInstalled = {};
@@ -23,7 +22,8 @@
         contentDetail: null,
         newCommentDealIndex: false,
         editCommentIndex: false,
-        hintShowingData: false
+        hintShowingData: false,
+        quarterNumber: 0
     },
 
     watch: {
@@ -37,7 +37,7 @@
          */
         contentDetail() {
             if (this.contentDetail) {
-                this.hintShowingData = false;
+                this.hideHintWindow();
                 verticalCenterWindow();
 
             } else {            
@@ -67,17 +67,35 @@
         },
 
         /**
+         * Следит за изменением значения переменной quarterNumber. Если значение изменилось на нуль,
+         * то вызывает таблицу просмотра контента в течении недели
+         * 
+         * @return void
+         */
+        quarterNumber() {
+            this.technics.forEach(technic => technic.CONTENTS = []);
+            if (this.quarterNumber) return;
+
+            var newDays = [];
+            Object.keys(this.days).slice(0, 7).forEach(dayTimeStamp => newDays.push(this.days[dayTimeStamp]));
+            this.days = newDays; 
+            this.showTable();
+            setTimeout(() => this.showData(), 1);
+        },
+
+        /**
          * Следит за изменением значения переменной calendarDate, вызывает метод showData для вывода
-         * данных согласно установленному в этой переменной даты
+         * данных согласно установленной в этой переменной дате
          * 
          * @return void
          */
         calendarDate() {
-            this.filterDateInput.setDate(this.calendarDate);
-            this.showData();
+            if (!this.quarterNumber)
+                this.filterDateInput.setDate(this.calendarDate);
+
+            setTimeout(() => this.showData(), 1);
         }
     },
-
     computed: {
 
         /**
@@ -97,17 +115,6 @@
             });
             return result;
         },
-
-        /**
-         * Возвращает выбранную дату в календаре в формат вывода даты, устновленного локально.
-         * Используется для вывода в поле ввода даты календаря
-         * 
-         * @return void
-         */
-        calendarDateValue() {
-            return this.calendarDate.toLocaleDateString();
-        }
-
     },
 
     /**
@@ -127,8 +134,7 @@
     methods: {
 
         /**
-         * Обработчик нажатия кнопки "Удалить" для удаления установленных
-         * действий БП
+         * Обработчик нажатия кнопки "Удалить" для удаления установленных действий БП
          * 
          * @return void
          */
@@ -186,10 +192,10 @@
                 ],
                 overlayPlaceholder: LANG_VALUES.DATE_CHOOOSING_YEAR,
 
-                onSelect: (unitParams, selectedDate) => {
-                    setTimeout(() => this.filterDateInput.hide(), 1);
+                onSelect(unitParams, selectedDate)  {
+                    setTimeout(() => calendar.filterDateInput.hide(), 1);
 
-                    this.calendarDate = selectedDate;
+                    calendar.calendarDate = selectedDate;
                 }
             });
         },
@@ -217,16 +223,6 @@
         },
 
         /**
-         * Обработчик нажатия кнопки "Сегодня"
-         * 
-         * @param event - данные события
-         * @return void
-         */
-        setToday(event) {
-            this.calendarDate = new Date();
-        },
-
-        /**
          * Обработчик нажатия кнопки "Показать календарь"
          * 
          * @return void
@@ -234,7 +230,7 @@
         showTable() {
             this.calendarShow = true;
             this.filterDateInput = null;
-            this.initCalendar();
+            setTimeout(() => this.initCalendar(), 1);
         },
 
         /**
@@ -347,6 +343,15 @@
         },
 
         /**
+         * Скрывает окно с подсказкой о контенте
+         * 
+         * @return void
+         */
+        hideHintWindow() {
+            this.hintShowingData = false;
+        },
+
+        /**
          * Обработчик события наведения курсора мышки на ячейку, предназначенную для контента
          * 
          * @param cellObj - DOM-объект на объект с ячейкой контента
@@ -357,7 +362,7 @@
         startWaitingHintWindow(cellObj, technicIndex, contentDay) {
             var windowIndex = technicIndex + '.' + contentDay;
             if (this.windowIndex && (this.windowIndex == windowIndex)) return;
-            this.hintShowingData = false;
+            this.hideHintWindow();
             this.windowIndex = windowIndex;
 
             var technic = this.technics[technicIndex];

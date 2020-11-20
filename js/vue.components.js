@@ -26,14 +26,157 @@ var VueComponentParams = {
         }
     },
 
-    // Компонент для вывода всего календаря
-    calendarTable: {
+    // Компонент для вывода блока с фильтром
+    calendarFilter: {
+        data() {
+            return {
+                backtoactivities: backtoactivities,
+                chosenYear: ''
+            };
+        },
+
+        computed: {
+
+            /**
+             * Возвращает выбранную дату в календаре в формат вывода даты, установленного локально.
+             * Используется для вывода в поле ввода даты календаря
+             * 
+             * @return void
+             */
+            calendarDateValue() {
+                return this.calendardate.toLocaleDateString();
+            },
+
+            /**
+             * Возвращает список с годами, начиная за пять лет до года, установленного в фильтре
+             * календаря, и заканчивая через пять лет после этого года. 
+             * Используется в фильтре, когда идет работа с кварталами
+             * 
+             * @return array
+             */
+            yearList() {
+                var halfValue = 4;
+                return Array.from(Array(10).keys()).map(number => {
+                    return number - halfValue + this.chosenYear;
+                });
+            },
+
+            /**
+             * Возвращает список кварталов. Используется в фильтре, когда идет работа с кварталами
+             * 
+             * @return array
+             */
+            quarterList() {
+                return ['I', 'II', 'III', 'IV'];
+            }
+        },
 
         methods: {
 
             /**
-             * Обработчик событий нажатия стелочек для перехода начала недели на день вперед
-             * или назаж
+             * Устанавливает в переменной основного приложения календаря дату согласно выбранному
+             * кварталу и году
+             *
+             * @return void
+             */
+            setCalendarDate() {
+                var month = (calendar.quarterNumber - 1) * 3 + 1;
+                calendar.calendarDate = new Date(this.chosenYear + '-' + (month < 10 ? '0' : '') + month + '-01');
+            },
+
+            /**
+             * Обработчик изменения года или квартала при работе с кваталами
+             * 
+             * @return void
+             */
+            changeQuarterParams() {
+                calendar.quarterNumber = this.quarter;
+                this.setCalendarDate();
+            },
+
+            /**
+             * Обработчик нажатия кнопки "Сегодня"
+             * 
+             * @param event - данные события
+             * @return void
+             */
+            setToday(event) {
+                calendar.calendarDate = new Date();
+            },
+
+            /**
+             * Обработчик нажатия в фильтре кнопки для включения просмотра данных кварталами.
+             * Включает просмотр кварталами, если не был включен, иначе выключает
+             * 
+             * @return void
+             */
+            showQuarters() {
+                /**
+                 * В этом месте есть возможность запутаться. Дело в том, что сначала идет изменение
+                 * переменной quarterNumber из самого календаря, затем изменение переменной calendarDate
+                 * снова из этого календаря. На каждую из этих переменных наложены свои watch-обработчики
+                 * в календаре. Возмжно, ожидается, что после изменения одной из них сразу же сработает
+                 * свой watch-обработчик, т.е. сначала для quarterNumber, а затем для calendarDate, и каждый
+                 * раз после любого watch-обработчик код продолжил свою работу далее после той строчки, где
+                 * произошло изменение.
+                 * Но это не так. После изменения этих переменных watch-обработчики не срабатывают сразу,
+                 * VueJS, кажется, создает отложеннный обработчик, который сработает после работы кода, в
+                 * котором произошло изменение, включая и все вызванные методы, если только они не работают
+                 * асинхронно. Все изменения Vue-переменных запоминаются где-то в какой-то очереди у VueJS,
+                 * и, когда начнет работу обработчик VueJS, установленный на изменения этих пеерменных, то
+                 * он, видимо, берет эту очередь подвегшихся изменению переменных и вызывает для них свои
+                 * watch-обработчики, но не в порядке изменения этих переменных, а в порядке их следования
+                 * в блоке watch. Поэтому watch-обработчик изменения переменной quarterNumber ранее срабатывал
+                 * позже watch-обработчика переменной calendarDate, хотя переменная quarterNumber была изменена
+                 * раньше, потому что watch-обработчик переменной quarterNumber в блоке watch у календаря раньше
+                 * был описан позже watch-обработчик переменной calendarDate
+                 */
+                if (calendar.quarterNumber) {
+                    calendar.quarterNumber = 0;
+
+                } else {
+                    this.chosenYear = this.calendardate.getFullYear();
+                    calendar.quarterNumber = Math.floor(calendar.calendarDate.getMonth() / 3) + 1;
+                    this.setCalendarDate();
+                }
+            }
+        }
+    },
+
+    // Компонент для вывода всего календаря
+    calendarTable: {
+
+        computed: {
+
+            /**
+             * Возвращает список месяцев для просмотра календаря в режиме кварталов. Согласно дате,
+             * установленной в календаре, возвращает те три месяца, т.е. кватал, где эта дата находится
+             * 
+             * @return array
+             */
+            months() {
+                var monthTitles = <?=json_encode(array_values($langValues['DATE_CHOOOSING']['MONTHS']))?>;
+                return Array.from(Array(3).keys()).map(monthDiff => {
+                            var monthNumber = (this.quarter - 1) * 3 + monthDiff;
+                            var dayCount = [0, 2, 4, 6, 7, 9, 11].indexOf(monthNumber) < 0 ? 30 : 31;
+                            if (monthNumber == 1)
+                                dayCount = calendar.calendarDate.getFullYear() & 3 ? 28 : 29;
+
+                            return {
+                                title: monthTitles[monthNumber],
+                                number: monthNumber + 1,
+                                dayCount: dayCount,
+                                days: Array.from(Array(dayCount).keys())
+                            };
+                        });
+            }
+        },
+
+        methods: {
+
+            /**
+             * Обработчик событий нажатия стрелочек для перехода начала недели на день вперед
+             * или назад
              * 
              * @param dayTimeStamp - временная метка даты, рядом с которой нажата стрелка.
              * Если нажата рядом с первой датой недели, то переход идет на день назад, иначе
@@ -238,10 +381,16 @@ $('*[type="text/vue-component"]').each((unitNum, unitObj) => {
     var paramSelector = componentSelector.replace(/\W(\w)/g, (...parts) => parts[1].toUpperCase() );
     var params = VueComponentParams[paramSelector] ? VueComponentParams[paramSelector] : {};
     var props = $(unitObj).data('props');
+    if (params.props instanceof Object) {
+        props = params.props;
+
+    } else {
+        props = props ? props.trim().split(/\s*,\s*/) : [];
+    }
 
     var componentData = {
         ...params,
-        props: props ? props.trim().split(/\s*,\s*/) : [],
+        props: props,
         template: $(unitObj).html().trim().replace(/\s+/g, ' ')
     };
 

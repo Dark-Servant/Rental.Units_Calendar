@@ -1,37 +1,39 @@
-<script id="content-cell-component" data-props="content, day, comments" type="text/vue-component">
-    <div class="rc-content">
+<script id="content-cell-component" data-props="content, quarter, day, comments" type="text/vue-component">
+    <div class="rc-content" v-bind:class="{['rc-content-quarter']: quarter > 0}">
         <div
             class="rc-content-area"
             v-bind:class="{
                     ['rc-content-' + content.STATUS_CLASS]: true,
                     ['rc-content-very-many']: content.VERY_MANY,
-                    ['rc-content-is-not-one']: !content.VERY_MANY && !content.IS_ONE,
+                    ['rc-content-is-not-one']: !content.VERY_MANY && !content.IS_ONE
                 }"
             v-on:click="$emit('show-content-details')"
             v-on:mousemove="if (content.IS_ONE) $emit('start-waiting-hint-window', $event.target)"
             v-if="content">
-            <span class="rc-comment-exist-flag" v-if="commentSize"></span>
-            <span class="rc-content-many-deals" v-if="content.VERY_MANY"><?=$langValues['MANY_DEAL_STATUS']?></span>
-            <div class="rc-content-deals" v-for="deal in content.DEALS" v-else>
-                <template v-if="deal.CELL_SHOWING">
-                    <a
-                        class="rc-content-deal-link"
-                        v-bind:title="deal.CUSTOMER_NAME"
-                        v-bind:href="deal.DEAL_URL ? deal.DEAL_URL : 'javascript:void();'"
-                        v-bind:target="deal.DEAL_URL ? '_blank' : ''">{{deal.CUSTOMER_NAME}}</a>
-                    <template v-if="content.IS_ONE">
-                        <div class="rc-content-deal-addr" v-bind:class="{'rc-no-comment-addr': !commentSize}" v-bind:title="deal.WORK_ADDRESS">{{deal.WORK_ADDRESS}}</div>
-                        <div class="rc-content-deal-comment" v-bind:title="lastComment.VALUE" v-if="commentSize">{{lastComment.VALUE}}</div>
-                        <div class="rc-content-deal-responsible" v-bind:title="deal.RESPONSIBLE_NAME" v-if="deal.RESPONSIBLE_NAME">{{deal.RESPONSIBLE_NAME}}</div>
+            <template v-if="!quarter">
+                <span class="rc-comment-exist-flag" v-if="commentSize"></span>
+                <span class="rc-content-many-deals" v-if="content.VERY_MANY"><?=$langValues['MANY_DEAL_STATUS']?></span>
+                <div class="rc-content-deals" v-for="deal in content.DEALS" v-else>
+                    <template v-if="deal.CELL_SHOWING">
+                        <a
+                            class="rc-content-deal-link"
+                            v-bind:title="deal.CUSTOMER_NAME"
+                            v-bind:href="deal.DEAL_URL ? deal.DEAL_URL : 'javascript:void();'"
+                            v-bind:target="deal.DEAL_URL ? '_blank' : ''">{{deal.CUSTOMER_NAME}}</a>
+                        <template v-if="content.IS_ONE">
+                            <div class="rc-content-deal-addr" v-bind:class="{'rc-no-comment-addr': !commentSize}" v-bind:title="deal.WORK_ADDRESS">{{deal.WORK_ADDRESS}}</div>
+                            <div class="rc-content-deal-comment" v-bind:title="lastComment.VALUE" v-if="commentSize">{{lastComment.VALUE}}</div>
+                            <div class="rc-content-deal-responsible" v-bind:title="deal.RESPONSIBLE_NAME" v-if="deal.RESPONSIBLE_NAME">{{deal.RESPONSIBLE_NAME}}</div>
+                        </template>
                     </template>
-                </template>
-            </div>
+                </div>
+            </template>
         </div>
         <div class="rc-content-area rc-content-empty"
             v-on:click="$emit('show-content-details')"
             v-on:mousemove="$emit('start-waiting-hint-window', $event.target)"
             v-else>
-            <template v-if="commentSize">
+            <template v-if="commentSize && !quarter">
                 <span class="rc-comment-exist-flag"></span>
                 <div class="rc-content-deal-comment" v-bind:title="lastComment.VALUE">{{lastComment.VALUE}}</div>
                 <div class="rc-content-deal-responsible" v-bind:title="lastComment.USER_NAME">{{lastComment.USER_NAME}}</div>
@@ -40,42 +42,89 @@
     </div>
 </script>
 
-<script id="calendar-table-component" data-props="calendardate, bx24inited, backtoactivities, technics, days" type="text/vue-component">
+<script id="calendar-filter-component" data-props="calendardate, quarter" type="text/vue-component">
+    <div class="rc-filter">
+        <template v-if="quarter"><!--
+            --><select name="quarter-year" title="<?=$langValues['FILTER_YEAR_CHOSING']?>"
+                v-model="chosenYear"
+                v-on:change="changeQuarterParams">
+                <option
+                    v-bind:value="year"
+                    v-for="year in yearList">{{year}}</option>
+            </select><!--
+            --><select name="quarter-number" title="<?=$langValues['FILTER_QUARTER_CHOSING']?>"
+                v-model="quarter"
+                v-on:change="changeQuarterParams">
+                <option
+                    v-bind:value="qIndex + 1"
+                    v-for="(qValue, qIndex) in quarterList">{{qValue}}</option>
+            </select><!--
+        --></template><!--
+        --><template v-else><!--
+            --><label class="rc-filter-date-area">
+                <input class="rc-filter-date-input"
+                    name="date"
+                    v-bind:value="calendarDateValue"
+                    v-on:click="$emit('init-calendar')"
+                    type="text" readonly>
+            </label><!--
+            --><div class="rc-filter-icon rc-filter-date-today"
+                v-bind:title="'<?=$langValues['FILTER_TODAY_BUTTON']?>'"
+                v-on:click="setToday()"></div><!--
+        --></template><!--
+        --><label
+            class="rc-filter-icon rc-filter-my-technic"
+            v-bind:title="'<?=$langValues['FILTER_MY_TECHNIC']?>'">
+            <input type="checkbox" name="my-technic"
+                v-on:click="$emit('show-data')">
+            <span></span>
+        </label><!--
+        --><label
+            class="rc-filter-icon rc-filter-quarter"
+            v-bind:title="'<?=$langValues['FILTER_QUARTER_BUTTON']?>'">
+            <input type="checkbox" v-on:change="showQuarters()">
+            <span></span>
+        </label><!--
+        --><span class="rc-activity-list-back"
+                title="<?=$langValues['BIZ_PROC_ACTIVITY_LIST_TITLE']?>"
+                v-on:click="$emit('show-activities')"
+                v-if="backtoactivities"></span>
+    </div>
+</script>
+
+<script id="calendar-table-component" data-props="calendardate, quarter, bx24inited, technics, days" type="text/vue-component">
     <div class="rc-calendar">
-        <div class="rc-header">
-            <div class="rc-filter">
-                <label class="rc-filter-date-area">
-                    <input class="rc-filter-date-input"
-                        name="date"
-                        v-bind:value="calendardate"
-                        v-on:click="$emit('init-calendar')"
-                        type="text" readonly>
-                </label><!--
-                --><div class="rc-filter-date-icon rc-filter-date-today"
-                    v-bind:title="'<?=$langValues['FILTER_TODAY_BUTTON']?>'"
-                    v-on:click="$emit('set-today')"></div><!--
-                --><label
-                    class="rc-filter-date-icon rc-filter-my-technic"
-                    v-bind:title="'<?=$langValues['FILTER_MY_TECHNIC']?>'">
-                    <input type="checkbox" name="my-technic"
-                        v-on:click="$emit('show-data')">
-                    <span></span>
-                </label><!--
-                --><span class="rc-activity-list-back"
-                        title="<?=$langValues['BIZ_PROC_ACTIVITY_LIST_TITLE']?>"
-                        v-on:click="$emit('show-activities')"
-                        v-if="backtoactivities"></span>
-            </div><!--
-            --><div class="rc-day" v-for="(day, dayIndex) in days">
-                <div class="rc-day-area">
-                    <span class="rc-calendar-button rc-day-step" v-on:click="dayInc(dayIndex)"></span>
-                    <span class="rc-day-value">{{day.VALUE}}</span>
-                    <span class="rc-day-week-name">{{day.WEEK_DAY_NAME}}</span>
-                </div>
-            </div>
+        <div class="rc-header" v-bind:class="{['rc-header-quarter']: quarter > 0}" v-on:mousemove="$emit('hide-hint-window');">
+            <calendar-filter
+                v-bind:calendardate="calendardate"
+                v-bind:quarter="quarter"
+                v-on:init-calendar="$emit('init-calendar')"
+                v-on:show-data="$emit('show-data')"
+                v-on:show-activities="$emit('show-activities')"></calendar-filter><!--
+            --><template v-if="quarter"><!--
+                --><div class="rc-month" v-bind:data-day-count="month.dayCount" v-for="month in months">
+                        <div class="rc-month-name">
+                            <span>{{month.title}}</span>
+                        </div>
+                        <div class="rc-month-day" v-for="day in month.days">
+                            <span>{{day + 1}}</span>
+                        </div>
+                    </div><!--
+            --></template><!--
+            --><template v-else><!--
+                --><div class="rc-day" v-for="(day, dayIndex) in days">
+                        <div class="rc-day-area">
+                            <span class="rc-calendar-button rc-day-step" v-on:click="dayInc(dayIndex)"></span>
+                            <span class="rc-day-value">{{day.VALUE}}</span>
+                            <span class="rc-day-week-name">{{day.WEEK_DAY_NAME}}</span>
+                        </div>
+                    </div>
+            </template>
         </div>
-        <div class="rc-technic" v-for="technic in technics">
-            <div class="rc-technic-unit" v-bind:class="{'rc-chosen': technic.IS_CHOSEN}">
+        <div class="rc-technic" v-bind:class="{['rc-technic-quarter']: quarter > 0}" v-for="technic in technics">
+            <div class="rc-technic-unit"
+                v-on:mousemove="$emit('hide-hint-window');"
+                v-bind:class="{'rc-chosen': technic.IS_CHOSEN, 'rc-quarter-technic': quarter != 0}">
                 <span class="rc-technic-chosen"
                     v-on:click="$emit('set-chosen', technic.index, $event.target)"
                     v-if="bx24inited"></span>
@@ -87,11 +136,12 @@
             </div><!--
             --><content-cell
                 v-bind:content="content"
+                v-bind:quarter="quarter"
                 v-bind:day="contentDay"
                 v-bind:comments="technic.COMMENTS"
                 v-on:start-waiting-hint-window="$emit('start-waiting-hint-window', $event, technic.index, contentDay)"
                 v-on:show-content-details="$emit('show-content-details', technic.index, contentDay)"
-                v-for="(content, contentDay) in technic.CONTENTS"></content-cell>
+                v-for="(content, contentDay) in technic.CONTENTS"></content-cell><!--
         </div>
     </div>
 </script>
@@ -229,14 +279,14 @@
         <calendar-table
             v-on:init-calendar="initCalendar"
             v-on:show-data="showData"
-            v-on:set-today="setToday"
             v-on:show-activities="showActivities"
             v-on:set-chosen="setChosen"
             v-on:show-content-details="showContentDetails"
             v-on:start-waiting-hint-window="startWaitingHintWindow"
-            v-bind:calendardate="calendarDateValue"
+            v-on:hide-hint-window="hideHintWindow"
+            v-bind:calendardate="calendarDate"
+            v-bind:quarter="quarterNumber"
             v-bind:bx24inited="bx24inited"
-            v-bind:backtoactivities="backtoactivities"
             v-bind:technics="sortedTechnics"
             v-bind:days="days"></calendar-table>
 

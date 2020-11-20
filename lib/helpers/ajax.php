@@ -23,7 +23,26 @@ try {
             $filter = [];
             if ($_REQUEST['my-technic'] == 'true') $filter['IS_MY'] = 1;
 
-            $days = Day::getPeriod(date(Day::FORMAT, $startDate->getTimestamp()), 7);
+            $dayCount = 7;
+            if (!empty($_REQUEST['quarter-number'])) {
+                /**
+                 * везде берется на один день меньше, чем есть в квартале, так как первый день уже учтен
+                 * в $startDate
+                 *
+                 * В 3м и 4м кварталах одинаковое количество дней
+                 */
+                if ($_REQUEST['quarter-number'] > 2) {
+                    $dayCount = 91;
+
+                // Во 2м квартале столько же дней, как и в 1м, если год высокосный
+                } elseif (($_REQUEST['quarter-number'] > 1) || !(intval($_REQUEST['quarter-year']) & 3)) {
+                    $dayCount = 90;
+
+                } else {
+                    $dayCount = 89;
+                }
+            }
+            $days = Day::getPeriod(date(Day::FORMAT, $startDate->getTimestamp()), $dayCount);
             $user = $_REQUEST['user'];
             $answer['data'] = [
                 'days' => $days,

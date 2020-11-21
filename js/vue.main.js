@@ -73,14 +73,11 @@
          * @return void
          */
         quarterNumber() {
-            this.technics.forEach(technic => technic.CONTENTS = []);
+            this.technics = [];
             if (this.quarterNumber) return;
 
-            var newDays = [];
-            Object.keys(this.days).slice(0, 7).forEach(dayTimeStamp => newDays.push(this.days[dayTimeStamp]));
-            this.days = newDays; 
+            this.days = []; 
             this.showTable();
-            setTimeout(() => this.showData(), 1);
         },
 
         /**
@@ -90,7 +87,7 @@
          * @return void
          */
         calendarDate() {
-            if (!this.quarterNumber)
+            if (this.filterDateInput)
                 this.filterDateInput.setDate(this.calendarDate);
 
             setTimeout(() => this.showData(), 1);

@@ -79,7 +79,7 @@ var VueComponentParams = {
              *
              * @return void
              */
-            setCalendarDate() {
+            setCalendarDateByQuarter() {
                 var month = (calendar.quarterNumber - 1) * 3 + 1;
                 calendar.calendarDate = new Date(this.chosenYear + '-' + (month < 10 ? '0' : '') + month + '-01');
             },
@@ -91,7 +91,7 @@ var VueComponentParams = {
              */
             changeQuarterParams() {
                 calendar.quarterNumber = this.quarter;
-                this.setCalendarDate();
+                this.setCalendarDateByQuarter();
             },
 
             /**
@@ -133,11 +133,13 @@ var VueComponentParams = {
                  */
                 if (calendar.quarterNumber) {
                     calendar.quarterNumber = 0;
+                    calendar.calendarDate = new Date(this.savedCalendarTimeStamp);
 
                 } else {
+                    this.savedCalendarTimeStamp = calendar.calendarDate.getTime();
                     this.chosenYear = this.calendardate.getFullYear();
                     calendar.quarterNumber = Math.floor(calendar.calendarDate.getMonth() / 3) + 1;
-                    this.setCalendarDate();
+                    this.setCalendarDateByQuarter();
                 }
             }
         }

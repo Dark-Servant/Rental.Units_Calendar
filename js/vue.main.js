@@ -23,7 +23,9 @@
         newCommentDealIndex: false,
         editCommentIndex: false,
         hintShowingData: false,
-        quarterNumber: 0
+        quarterNumber: 0,
+
+        quarterContent: null
     },
 
     watch: {
@@ -346,6 +348,7 @@
          */
         hideHintWindow() {
             this.hintShowingData = false;
+            this.quarterContent = null;
         },
 
         /**
@@ -361,6 +364,13 @@
             if (this.windowIndex && (this.windowIndex == windowIndex)) return;
             this.hideHintWindow();
             this.windowIndex = windowIndex;
+
+            var date = new Date(contentDay * 1000);
+            this.quarterContent = this.quarterNumber ? {
+                                        technicIndex: technicIndex,
+                                        month: date.getMonth() + 1,
+                                        day: date.getDate()
+                                    } : null;
 
             var technic = this.technics[technicIndex];
             if (!technic.COMMENTS || !technic.COMMENTS[contentDay] || !technic.COMMENTS[contentDay].length)

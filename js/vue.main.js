@@ -23,7 +23,9 @@
         newCommentDealIndex: false,
         editCommentIndex: false,
         hintShowingData: false,
-        quarterNumber: 0
+        quarterNumber: 0,
+
+        quarterContent: null
     },
 
     watch: {
@@ -73,14 +75,11 @@
          * @return void
          */
         quarterNumber() {
-            this.technics.forEach(technic => technic.CONTENTS = []);
+            this.technics = [];
             if (this.quarterNumber) return;
 
-            var newDays = [];
-            Object.keys(this.days).slice(0, 7).forEach(dayTimeStamp => newDays.push(this.days[dayTimeStamp]));
-            this.days = newDays; 
+            this.days = []; 
             this.showTable();
-            setTimeout(() => this.showData(), 1);
         },
 
         /**
@@ -90,7 +89,7 @@
          * @return void
          */
         calendarDate() {
-            if (!this.quarterNumber)
+            if (this.filterDateInput)
                 this.filterDateInput.setDate(this.calendarDate);
 
             setTimeout(() => this.showData(), 1);
@@ -349,6 +348,7 @@
          */
         hideHintWindow() {
             this.hintShowingData = false;
+            this.quarterContent = null;
         },
 
         /**
@@ -364,6 +364,13 @@
             if (this.windowIndex && (this.windowIndex == windowIndex)) return;
             this.hideHintWindow();
             this.windowIndex = windowIndex;
+
+            var date = new Date(contentDay * 1000);
+            this.quarterContent = this.quarterNumber ? {
+                                        technicIndex: technicIndex,
+                                        month: date.getMonth() + 1,
+                                        day: date.getDate()
+                                    } : null;
 
             var technic = this.technics[technicIndex];
             if (!technic.COMMENTS || !technic.COMMENTS[contentDay] || !technic.COMMENTS[contentDay].length)

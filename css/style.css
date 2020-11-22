@@ -212,6 +212,10 @@ body {
     text-align: center;
 }
 
+.rc-month-day.rc-hover-content-month-day {
+    background-color: #dcdc1f;
+}
+
 .rc-month-day + .rc-month-day {
     border-left: #dcdc1f solid 1px;
 }
@@ -278,9 +282,13 @@ body {
     width: 165px;
 }
 
-.rc-technic-unit.rc-quarter-technic {
+.rc-technic.rc-technic-quarter .rc-technic-unit {
     height: 25px;
     font-size: 10px;
+}
+
+.rc-technic-unit.rc-hover-quarter-technic {
+    background-color: #e2e1e1;
 }
 
 .rc-technic-unit > * {
@@ -306,7 +314,7 @@ body {
     background-image: url(data:image/png;base64,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);
 }
 
-.rc-technic-unit.rc-quarter-technic .rc-technic-chosen {
+.rc-technic.rc-technic-quarter .rc-technic-unit .rc-technic-chosen {
     width: 15px;
     height: 14px;
 }
@@ -316,7 +324,7 @@ body {
     margin-top: 5px;
 }
 
-.rc-technic-unit.rc-quarter-technic .rc-technic-name {
+.rc-technic.rc-technic-quarter .rc-technic-unit .rc-technic-name {
     max-height: 12px;
     margin-left: 5px;
 }
@@ -327,18 +335,16 @@ body {
     display: block;
 }
 
-.rc-technic-unit.rc-quarter-technic .rc-technic-state-number {
+.rc-technic.rc-technic-quarter .rc-technic-unit .rc-technic-state-number {
     display: inline-block;
     margin: 0;
 }
 
 .rc-content {
-    border: 1px solid #E2E0E0;
     text-align: center;
     font-size: 13px;
     display: inline-block;
     margin-left: 2px;
-    width: calc(10.89% + 7px);
 }
 
 .rc-content.rc-content-quarter {
@@ -372,8 +378,14 @@ body {
     right: 1px;
 }
 
+.rc-content.rc-content-quarter .rc-comment-exist-flag {
+    right: 0;
+    top: 0;
+    border-width: 5px;
+}
+
 .rc-content-empty {
-    border: 0;
+    border: 1px solid #E2E0E0;
 }
 
 .rc-content-waiting, .rc-content-waiting .rc-content-deal-responsible {

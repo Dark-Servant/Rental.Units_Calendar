@@ -85,6 +85,7 @@
 }
 
 @media screen and (max-width: 1880px) {
+    
     .rc-header {
         width: 1720px;
     }
@@ -98,7 +99,7 @@
     }
 
     .rc-content {
-        width: calc(10.29% + 7px);
+        width: calc(10.4% + 7px);
     }
 
     .rc-hint-comments {
@@ -114,9 +115,8 @@
     }
 
     .rc-content.rc-content-quarter {
-        width: 0.723%;
+        width: 0.841%;
     }
-
 }
 
 @media screen and (max-width: 1650px) {
@@ -133,7 +133,7 @@
     }
 
     .rc-content {
-        width: calc(10% + 7px);
+        width: calc(10.12% + 7px);
     }
 
     .rc-hint-comments {
@@ -149,9 +149,8 @@
     }
 
     .rc-content.rc-content-quarter {
-        width: 0.66%;
+        width: 0.788%;
     }
-
 }
 
 @media screen and (max-width: 1450px) {
@@ -161,6 +160,10 @@
 
     .rc-content {
         width: calc(9.5% + 7px);
+    }
+    
+    .rc-content:not(.rc-content-quarter) + .rc-content {
+        margin-left: 4px;
     }
 
     .rc-hint-comments {
@@ -173,9 +176,8 @@
     }
 
     .rc-content.rc-content-quarter {
-        width: 8.5px;
+        width: 10.5px;
     }
-
 }
 
 @media screen and (max-width: 1366px) {
@@ -198,7 +200,11 @@
     }
 
     .rc-content {
-        width: calc(9.2% + 7px);
+        width: calc(9.38% + 7px);
+    }
+
+    .rc-content:not(.rc-content-quarter) + .rc-content {
+        margin-left: 2px;
     }
 
     .rc-month-day {
@@ -207,6 +213,6 @@
     }
 
     .rc-content.rc-content-quarter {
-        width: 6.5px;
+        width: 8.5px;
     }
 }

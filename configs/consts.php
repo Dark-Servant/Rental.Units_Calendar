@@ -24,7 +24,7 @@ if (!SESSION_CONTANTS || empty($_SESSION['CONST_LIST'])) {
         define('AUTH_ID', $_REQUEST['AUTH_ID']);
     }
 
-    define('VERSION', '1.2.0');
+    define('VERSION', '1.2.1');
     define('URL_SCRIPT_FINISH', 'sid=' . session_id() . '&' . VERSION);
 
     define('LANG', 'ru');

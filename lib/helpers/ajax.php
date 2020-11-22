@@ -17,7 +17,10 @@ try {
 
             if (!empty($_REQUEST['user'])) {
                 $responsible = Responsible::initialize($_REQUEST['user']);
-                $responsible->calendar_date = $_REQUEST['date'];
+
+                if (empty($_REQUEST['quarter-number']))
+                    $responsible->calendar_date = $_REQUEST['date'];
+
                 $responsible->save();
             }
             $filter = [];

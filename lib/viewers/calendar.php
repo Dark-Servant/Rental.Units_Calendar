@@ -1,17 +1,17 @@
 <script id="content-cell-component" data-props="content, quarter, day, comments" type="text/vue-component">
-    <div class="rc-content" v-bind:class="{['rc-content-quarter']: quarter > 0}">
+    <div class="rc-content" v-bind:class="{'rc-content-quarter': quarter > 0}">
         <div
             class="rc-content-area"
             v-bind:class="{
                     ['rc-content-' + content.STATUS_CLASS]: true,
-                    ['rc-content-very-many']: content.VERY_MANY,
-                    ['rc-content-is-not-one']: !content.VERY_MANY && !content.IS_ONE
+                    'rc-content-very-many': content.VERY_MANY,
+                    'rc-content-is-not-one': !content.VERY_MANY && !content.IS_ONE
                 }"
             v-on:click="$emit('show-content-details')"
             v-on:mousemove="if (content.IS_ONE) $emit('start-waiting-hint-window', $event.target)"
             v-if="content">
+            <span class="rc-comment-exist-flag" v-if="commentSize"></span>
             <template v-if="!quarter">
-                <span class="rc-comment-exist-flag" v-if="commentSize"></span>
                 <span class="rc-content-many-deals" v-if="content.VERY_MANY"><?=$langValues['MANY_DEAL_STATUS']?></span>
                 <div class="rc-content-deals" v-for="deal in content.DEALS" v-else>
                     <template v-if="deal.CELL_SHOWING">
@@ -33,10 +33,12 @@
             v-on:click="$emit('show-content-details')"
             v-on:mousemove="$emit('start-waiting-hint-window', $event.target)"
             v-else>
-            <template v-if="commentSize && !quarter">
+            <template v-if="commentSize">
                 <span class="rc-comment-exist-flag"></span>
-                <div class="rc-content-deal-comment" v-bind:title="lastComment.VALUE">{{lastComment.VALUE}}</div>
-                <div class="rc-content-deal-responsible" v-bind:title="lastComment.USER_NAME">{{lastComment.USER_NAME}}</div>
+                <template v-if="!quarter">
+                    <div class="rc-content-deal-comment" v-bind:title="lastComment.VALUE">{{lastComment.VALUE}}</div>
+                    <div class="rc-content-deal-responsible" v-bind:title="lastComment.USER_NAME">{{lastComment.USER_NAME}}</div>
+                </template>
             </template>
         </div>
     </div>
@@ -92,9 +94,9 @@
     </div>
 </script>
 
-<script id="calendar-table-component" data-props="calendardate, quarter, bx24inited, technics, days" type="text/vue-component">
+<script id="calendar-table-component" data-props="calendardate, quarter, quartercontent, bx24inited, technics, days" type="text/vue-component">
     <div class="rc-calendar">
-        <div class="rc-header" v-bind:class="{['rc-header-quarter']: quarter > 0}" v-on:mousemove="$emit('hide-hint-window');">
+        <div class="rc-header" v-bind:class="{'rc-header-quarter': quarter > 0}" v-on:mousemove="$emit('hide-hint-window');">
             <calendar-filter
                 v-bind:calendardate="calendardate"
                 v-bind:quarter="quarter"
@@ -106,7 +108,14 @@
                         <div class="rc-month-name">
                             <span>{{month.title}}</span>
                         </div>
-                        <div class="rc-month-day" v-for="day in month.days">
+                        <div
+                            class="rc-month-day"
+                            v-bind:class="{
+                                'rc-hover-content-month-day': quartercontent
+                                                              && (quartercontent.month == month.number)
+                                                              && (quartercontent.day == day + 1)
+                            }"
+                            v-for="day in month.days">
                             <span>{{day + 1}}</span>
                         </div>
                     </div><!--
@@ -121,10 +130,14 @@
                     </div>
             </template>
         </div>
-        <div class="rc-technic" v-bind:class="{['rc-technic-quarter']: quarter > 0}" v-for="technic in technics">
+        <div class="rc-technic" v-bind:class="{'rc-technic-quarter': quarter}" v-for="technic in technics">
             <div class="rc-technic-unit"
                 v-on:mousemove="$emit('hide-hint-window');"
-                v-bind:class="{'rc-chosen': technic.IS_CHOSEN, 'rc-quarter-technic': quarter != 0}">
+                v-bind:class="{
+                    'rc-chosen': technic.IS_CHOSEN,
+                    'rc-hover-quarter-technic': quarter && quartercontent && (quartercontent.technicIndex == technic.index),
+
+                }">
                 <span class="rc-technic-chosen"
                     v-on:click="$emit('set-chosen', technic.index, $event.target)"
                     v-if="bx24inited"></span>
@@ -286,6 +299,7 @@
             v-on:hide-hint-window="hideHintWindow"
             v-bind:calendardate="calendarDate"
             v-bind:quarter="quarterNumber"
+            v-bind:quartercontent="quarterContent"
             v-bind:bx24inited="bx24inited"
             v-bind:technics="sortedTechnics"
             v-bind:days="days"></calendar-table>

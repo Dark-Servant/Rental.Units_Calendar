@@ -253,8 +253,9 @@ class Content extends InfoserviceModel
      */
     public function save()
     {
+        $result = parent::save();
         $this->correctNewComment();
-        return parent::save();
+        return $result;
     }
 
     /**

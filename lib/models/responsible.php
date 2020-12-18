@@ -4,7 +4,8 @@ class Responsible extends InfoserviceModel
 {
     static $has_many = [
         ['comments'],
-        ['contents']
+        ['contents'],
+        ['choice', 'class_name' => 'ChosenTechnic', 'foreign_key' => 'user_id']
     ];
 
     /**

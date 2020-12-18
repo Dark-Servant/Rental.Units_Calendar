@@ -7,7 +7,8 @@ class Technic extends InfoserviceModel
     ];
 
     static $has_many = [
-        ['contents']
+        ['contents'],
+        ['userchoice', 'foreign_key' => 'entity_id', 'class_name' => 'ChosenTechnic', 'conditions' => 'is_partner = "0"']
     ];
 
     const MIN_DEAL_COUNT = 1;
@@ -172,7 +173,7 @@ class Technic extends InfoserviceModel
         $values[] = $user->id;
 
         foreach (
-            ChosenTechnics::all(['conditions' => array_merge([$conditions], $values)]) as $chosen
+            ChosenTechnic::all(['conditions' => array_merge([$conditions], $values)]) as $chosen
         ) {
             if ($chosen->is_partner) {
                 $partners[$chosen->entity_id]['IS_CHOSEN'] = true;

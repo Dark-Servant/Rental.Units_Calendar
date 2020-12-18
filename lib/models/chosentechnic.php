@@ -1,0 +1,15 @@
+<?
+
+class ChosenTechnic extends InfoserviceModel
+{
+    static $belongs_to = [
+        ['user', 'foreign_key' => 'user_id', 'class_name' => 'Responsible'],
+        ['technic', 'foreign_key' => 'entity_id'],
+        ['partner', 'foreign_key' => 'entity_id'],
+    ];
+
+    static $fieldExistenceConditions = [
+        'technic' => ['is_partner' => "0"],
+        'partner' => ['is_partner' => "1"],
+    ];
+};

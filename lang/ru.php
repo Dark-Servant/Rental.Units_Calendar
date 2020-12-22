@@ -14,6 +14,7 @@ $langValues['ERROR_EMPTY_COMMENT_BY_ID'] = 'Передан неверный ид
 $langValues['ERROR_COMMENT_AUTHOR_EDITING'] = 'Редактировать комментарий может только автор комментария';
 $langValues['ERROR_EMPTY_TECHNIC_AND_COMMENT_IDS'] = 'Не указаны ни идентификатор техники, ни идентификатор партнера, ни идентификатор комментария';
 $langValues['ERROR_EMPTY_PARTNER_TECHNIC_LIST'] = 'У указанного партнера нет ни одной техники';
+$langValues['ERROR_EMPTY_READ_COMMENT_ID'] = 'Не переданы идентификаторы комментариев, которые были прочитаны';
 
 // lib/helpers/bx24.restapi.class.php
 $langValues['ERROR_EMPTY_PARAMS'] = 'Не указаны параметры domain, а так же либо access_token для обычного REST-запоса, '

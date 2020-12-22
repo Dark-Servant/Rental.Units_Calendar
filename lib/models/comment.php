@@ -8,13 +8,18 @@ class Comment extends InfoserviceModel
         ['content'],
     ];
 
+    static $has_many = [
+        ['readmarks', 'class_name' => 'ReadCommentMark']
+    ];
+
     /**
      * Возвращает данные комментария, которые используются при выводе
      * в календаре
      * 
+     * @param bool $isRead - отметка, что комментарий прочитан
      * @return array
      */
-    function getData()
+    function getData(bool $isRead = false)
     {
         return [
             'ID' => $this->id,
@@ -23,6 +28,7 @@ class Comment extends InfoserviceModel
             'USER_ID' => $this->user->external_id,
             'USER_NAME' => $this->user->name,
             'VALUE' => $this->value,
+            'READ' => $isRead,
             'CREATED_AT' => $this->created_at->getTimestamp(),
         ];
     }
@@ -49,6 +55,8 @@ class Comment extends InfoserviceModel
     public function save()
     {
         $this->correctImortantFields();
-        return parent::save();
+        $result = parent::save();
+        ReadCommentMark::create(['comment_id' => $this->id, 'user_id' => $this->user_id]);
+        return $result;
     }
 };

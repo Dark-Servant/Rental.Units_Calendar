@@ -77,14 +77,14 @@ try {
                 'is_partner' => !$isNotPartner
             ];
 
-            $chosenTechnics = ChosenTechnics::find('first', ['conditions' => $data]);
+            $chosenTechnics = ChosenTechnic::find('first', ['conditions' => $data]);
             $data['is_active'] = $technic['IS_CHOSEN'] == 'true';
             if ($chosenTechnics) {
                 $chosenTechnics->set_attributes($data);
                 $chosenTechnics->save();
 
             } else {
-                ChosenTechnics::create($data);
+                ChosenTechnic::create($data);
             }
             break;
 
@@ -126,7 +126,7 @@ try {
             $comment->value = $commentValue;
             $comment->save();
 
-            $answer['data'] = $comment->getData();
+            $answer['data'] = $comment->getData(true);
             break;
 
         // обработчик удаления комментария
@@ -145,6 +145,29 @@ try {
                 throw new Exception($langValues['ERROR_COMMENT_AUTHOR_EDITING']);
             
             $comment->delete($commentId);
+            break;
+
+        // обработчик отметки, что комментарии были прочитаны пользователем
+        case 'readcomments':
+            $responsible = Responsible::initialize($_POST['user']);
+            if (!is_array($_POST['comment_ids']))
+                throw new Exception($langValues['ERROR_EMPTY_READ_COMMENT_ID']);
+                
+            $readIds = array_map(
+                            function($comment) { return $comment->comment_id; },
+                            ReadCommentMark::all([
+                                'user_id' => $responsible->id,
+                                'comment_id' => $_POST['comment_ids']
+                            ])
+                        );
+            foreach (
+                array_filter(
+                    $_POST['comment_ids'],
+                    function($id) use($readIds) { return !in_array($id, $readIds); }
+                ) as $commentId
+            ) {
+                ReadCommentMark::create(['comment_id' => $commentId, 'user_id' => $responsible->id]);
+            };
             break;
 
         default:

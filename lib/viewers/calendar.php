@@ -1,5 +1,5 @@
 <script id="content-cell-component" data-props="content, quarter, day, comments" type="text/vue-component">
-    <div class="rc-content" v-bind:class="{'rc-content-quarter': quarter > 0}">
+    <div class="rc-content" v-bind:class="{'rc-content-quarter': quarter > 0, 'rc-read-content': readComment}">
         <div
             class="rc-content-area"
             v-bind:class="{
@@ -207,7 +207,7 @@
         <span class="rc-calendar-button rc-calendar-add-deal-button"
             title="<?=$langValues['OPEN_URL_WITH_DEAL_ADD_TITLE']?>"
             v-on:click="openDealCreating()"
-            v-else></span>
+            v-else-if="bx24inited"></span>
         <div class="rc-deal-detail-comments">
             <comment-unit
                 v-bind:comment="comment"

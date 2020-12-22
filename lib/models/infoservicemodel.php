@@ -6,6 +6,20 @@ class InfoserviceModel extends ActiveRecord\Model
     protected $oldParamData = [];
 
     /**
+     * Условия для доступа к конкретным полям экземпляров моделей. Сами условия описываются
+     * как массивы, где под "ключами" указываются поля экземпляра, а под "элементами" массива
+     * требуемые значения для полей. Массивы с требуемыми значениями конкретных полей указываются
+     * под "ключом", имя которого совпадает с именем поля, доступ к которому и надо сделать условным.
+     * Например,
+     *     'testField' => ['digit' => 100]
+     * Доступ к полю testField будет возможен, если другое поле - digit - равно 100.
+     * Это функционал нужен, чтобы для моделей, у которых в одном поле может быть записана ссылка на
+     * элемент из разных моделей, можно было указать, что получить элемент конкретной модели, на которую
+     * можно сослаться по значению поля, возможно при наличии конкретных значений в других полях
+     */
+    static $fieldExistenceConditions = [];
+
+    /**
      * Объединяет фильтр, описанный как
      *     "<строка с условиями>", <значение параметра 1>, <значение параметра 2>, ..., <значение параметра N>
      * где
@@ -70,7 +84,7 @@ class InfoserviceModel extends ActiveRecord\Model
     protected function correctBooleanValue($name, &$value)
     {
         if (preg_match('/^is_/i', $name)) {
-            $value = intval(is_string($value) ? preg_match('/^(?:y(?:es)?|true)$/i', $value) : $value);
+            $value = intval(is_string($value) ? preg_match('/^(?:y(?:es)?|true|\-? *[1-9]\d*)$/i', $value) : $value);
             return true;
         }
         return false;
@@ -155,11 +169,12 @@ class InfoserviceModel extends ActiveRecord\Model
      * @param &$value - значение поля
      * @return void
      */
-    public function __set($name, $value)
+    public function __set(string $name, $value)
     {
         foreach ($this->correctionMethods() as $method) {
             if ($this->$method($name, $value)) break;
         }
+
         if ($this->id  && !isset($this->oldParamData[$name]))
             $this->oldParamData[$name] = ['value' => $value]; // иначе не будет работать со значением null
 
@@ -175,5 +190,46 @@ class InfoserviceModel extends ActiveRecord\Model
     {
         $this->oldParamData = [];
         return parent::save();
+    }
+
+    /**
+     * Проверяет не установлены ли для поля, чье имя передано, условия по наличию
+     * конкретных значений в других полях экземпляра. Если условий по доступу к полю
+     * нет или все условия позволяют доступ, то не будет ничего возвращено, иначе
+     * будет возвращен массив с "ключом" value и "значением", равным null
+     * 
+     * @param string $name - название поля
+     * @return null|array
+     */
+    protected function getFieldByConditions(string $name)
+    {
+        if (!isset(static::$fieldExistenceConditions[$name]))
+            return;
+
+        $isSuccess = true;
+        foreach (static::$fieldExistenceConditions[$name] as $field => $value) {
+            if ($this->$field == $value) continue;
+
+            return ['value' => null];
+        }
+    }
+
+    /**
+     * Поправленный метод получения значения конкретного поля из экземпляра
+     * класса с помощью конструкции
+     *     <экземпляр>-><поле>
+     * 
+     * @param string $name - название поля
+     * @return mixed
+     */
+    public function __get(string $name)
+    {
+        foreach (['getFieldByConditions'] as $methodName) {
+            $result = $this->$methodName($name);
+            if (!is_array($result)) continue;
+
+            return $result['value'];
+        }
+        return parent::__get($name);
     }
 };

@@ -42,6 +42,22 @@
                 this.hideHintWindow();
                 verticalCenterWindow();
 
+                if (!bx24inited) return;
+                var commentIds = [];
+                if (this.contentDetail.COMMENTS)
+                    commentIds = this.contentDetail.COMMENTS.map(comment => comment.ID);
+
+                $.post(ajaxURL.replace(/#action#/i, 'readcomments'),
+                    {
+                        comment_ids: commentIds,
+                        user: {...currentUserData}
+                    }, answer => {
+                        if (!answer.result) return;
+
+                        this.contentDetail.COMMENTS.forEach(comment => comment.READ = true );
+                    }
+                );
+
             } else {            
                 this.newCommentDealIndex = false;
                 this.editCommentIndex = false;

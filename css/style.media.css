@@ -60,7 +60,7 @@
     }
 
     .rc-day {
-        width: 10.2%;
+        width: 10%;
     }
 
     .rc-technic {
@@ -68,11 +68,11 @@
     }
 
     .rc-content {
-        width: calc(10.2% + 7px);
+        width: calc(10.09% + 7px);
     }
 
     .rc-month-day {
-        width: 18px;
+        width: 17px;
     }
 
     .rc-technic.rc-technic-quarter {
@@ -80,12 +80,11 @@
     }
 
     .rc-content.rc-content-quarter {
-        width: 0.756%;
+        width: 0.82%;
     }
 }
 
 @media screen and (max-width: 1880px) {
-    
     .rc-header {
         width: 1720px;
     }
@@ -154,6 +153,7 @@
 }
 
 @media screen and (max-width: 1450px) {
+
     .rc-day {
         width: 9.5%;
     }

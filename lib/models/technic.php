@@ -149,17 +149,14 @@ class Technic extends InfoserviceModel
      * данных по технике и партнерах отметку в параметре IS_CHOSEN, что техника
      * была избрана пользователем
      * 
-     * @param int $externalUserId - идентификатор пользователя на портале
+     * @param int $userId - идентификатор пользователя
      * @param array &$technics - массив заранее подговленных данных техники
      * @param array &$partners - массив заранее подговленных данных партнеров
      * @return void
      */
-    protected static function setChosenStatus(int $externalUserId, array&$technics, array&$partners)
+    protected static function setChosenStatus(int $userId, array&$technics, array&$partners)
     {
-        if (
-            !$externalUserId || empty($user = Responsible::find_by_external_id($externalUserId))
-            || (empty($technics) && empty($partners))
-        ) return;
+        if (empty($technics) && empty($partners)) return;
 
         $values = [];
         $conditions = '';
@@ -170,7 +167,7 @@ class Technic extends InfoserviceModel
             $values[] = $ids;
         }
         $conditions = '(' . $conditions . ') AND (is_active = 1) AND (user_id = ?)';
-        $values[] = $user->id;
+        $values[] = $userId;
 
         foreach (
             ChosenTechnic::all(['conditions' => array_merge([$conditions], $values)]) as $chosen
@@ -185,18 +182,19 @@ class Technic extends InfoserviceModel
     }
 
     /**
-     * загружает данные комментариев к каждой техники или парнерам
+     * Загружает данные комментариев к каждой техники или парнерам
      * 
      * @param array $technicPartners - массив связей техники и парнеров. В "ключе" указан идентификатор техники,
      * а в "значении" идентификатор партнера или нуль, если техника сама по себе
-     * 
+     *
+     * @param int $userId - идентификатор пользователя
      * @param array $dayTimestamps - массив unix-меток времени от меньшего к большему
      * @param array &$technics - массив с загруженными данными единиц техники
      * @param array &$partners - массив с загруженными данными парнеров
      * 
      * @return void
      */
-    protected static function loadComments(array $technicPartners, array $dayTimestamps, array&$technics, array&$partners)
+    protected static function loadComments(int $userId, array $technicPartners, array $dayTimestamps, array&$technics, array&$partners)
     {
         $filter = [
             '(technic_id IN (?)) AND (content_date >= ?) AND (content_date <= ?)',
@@ -204,6 +202,7 @@ class Technic extends InfoserviceModel
             (new DateTime)->setTimestamp(reset($dayTimestamps)),
             (new DateTime)->setTimestamp(end($dayTimestamps)),
         ];
+        $comments = [];
         foreach (Comment::all(['conditions' => $filter, 'order' => 'id asc']) as $comment) {
             $partnerId = $technicPartners[$comment->technic_id];
             if ($partnerId) {
@@ -212,7 +211,18 @@ class Technic extends InfoserviceModel
             } else {
                 $technicRow = &$technics[$comment->technic_id];
             }
-            $technicRow['COMMENTS'][$comment->content_date->getTimestamp()][] = $comment->getData();
+            $comments[$comment->id] = $comment->getData();
+            $technicRow['COMMENTS'][$comment->content_date->getTimestamp()][] = &$comments[$comment->id];
+        }
+
+        if (empty($comments)) return;
+        foreach (
+            ReadCommentMark::all([
+                'user_id' => $userId,
+                'comment_id' => array_keys($comments)
+            ]) as $mark
+        ) {
+            $comments[$mark->comment_id]['READ'] = true;
         }
     }
 
@@ -339,9 +349,10 @@ class Technic extends InfoserviceModel
                 }
             }
         }
-
-        self::setChosenStatus($externalUserId, $technics, $partners);
-        self::loadComments($technicPartners, $dayTimestamps, $technics, $partners);
+        $userId = $externalUserId && !empty($user = Responsible::find_by_external_id($externalUserId))
+                ? $user->id : 0;
+        if ($userId) self::setChosenStatus($userId, $technics, $partners);
+        self::loadComments($userId, $technicPartners, $dayTimestamps, $technics, $partners);
 
         $technicResult = array_values($technics);
         if (!empty($partners)) {

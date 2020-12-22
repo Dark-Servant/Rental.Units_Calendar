@@ -375,13 +375,19 @@ body {
     border-color: red transparent transparent transparent;
     position: absolute;
     top: 0;
-    right: 1px;
+    right: 0;
 }
 
 .rc-content.rc-content-quarter .rc-comment-exist-flag {
     right: 0;
     top: 0;
     border-width: 5px;
+}
+
+.rc-content.rc-read-content .rc-comment-exist-flag {
+    border-left: 10px solid green;
+    border-top: 10px solid green;
+    border-color: green transparent transparent transparent;
 }
 
 .rc-content-empty {

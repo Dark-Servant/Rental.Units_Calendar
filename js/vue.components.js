@@ -23,6 +23,19 @@ var VueComponentParams = {
                 var comments = this.comments[this.day];
                 return comments[comments.length - 1];
             },
+
+            /**
+             * Возвращает True, если в ячейке с контентом нет ни одного непрочитанного
+             * текущим пользователем комментария, иначе будет возвращено False.
+             * Возвращаемое значение влияет на цвет треугольника, указывающего на наличие
+             * комментариев в ячейке с контентом
+             * 
+             * @return boolean
+             */
+            readComment() {
+                return this.comments && this.comments[this.day]
+                       && !this.comments[this.day].find(comment => !comment.READ );
+            }
         }
     },
 

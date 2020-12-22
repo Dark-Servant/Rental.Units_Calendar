@@ -244,6 +244,15 @@ var VueComponentParams = {
                     '<a target="_blank" '
                         + 'href="' + SERVER_CONSTANTS.MAIN_SERVER_URL + 'crm/deal/details/0/?category_id=0&'
                         + SERVER_CONSTANTS.CRM_USER_FIELD_TECHNIC_ID + '=' + calendar.contentDetail.EXTERNAL_ID + '&'
+                        + 'COMMENTS=' +
+                            encodeURI(
+                                this.comments.map(comment => {
+                                    var dateValue = new Date(comment['CREATED_AT'] * 1000);
+                                    return comment['VALUE'] + "\n" + comment['USER_NAME']
+                                         + ' (' + dateValue.toLocaleDateString() + ' '
+                                                + dateValue.toLocaleTimeString() + ')';
+                                }).join("\n\n")
+                            ) + '&'
                         + SERVER_CONSTANTS.CRM_USER_FIELD_START_DATE + '=' + dateValue + '&'
                         + SERVER_CONSTANTS.CRM_USER_FIELD_COMPLETION_DATE + '=' + dateValue + '">'
                 ).get(0).click();

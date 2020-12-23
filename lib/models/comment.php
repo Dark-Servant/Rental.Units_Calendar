@@ -12,6 +12,9 @@ class Comment extends InfoserviceModel
         ['readmarks', 'class_name' => 'ReadCommentMark']
     ];
 
+    const NOT_CHANGED_FIELDS = ['technic_id', 'content_date', 'user_id'];
+    const CHILD_NAMES_FOR_DELETING = ['readmarks'];
+
     /**
      * Возвращает данные комментария, которые используются при выводе
      * в календаре
@@ -34,29 +37,15 @@ class Comment extends InfoserviceModel
     }
 
     /**
-     * Поправляет важные поля в комментариях
-     * 
-     * @return void
-     */
-    protected function correctImortantFields()
-    {
-        foreach (['technic_id', 'content_date'] as $fieldName) {
-            if (!isset($this->oldParamData[$fieldName])) continue;
-
-            $this->$fieldName = $this->oldParamData[$fieldName]['value'];
-        }
-    }
-
-    /**
      * Обновленный метод сохранения данных в БД
      * 
      * @return mixed
      */
     public function save()
     {
-        $this->correctImortantFields();
+        $isNew = !$this->id;
         $result = parent::save();
-        ReadCommentMark::create(['comment_id' => $this->id, 'user_id' => $this->user_id]);
+        if ($isNew) ReadCommentMark::setMark($this->user_id, $this->id);
         return $result;
     }
 };

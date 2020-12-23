@@ -8,8 +8,10 @@ class Technic extends InfoserviceModel
 
     static $has_many = [
         ['contents'],
-        ['userchoice', 'foreign_key' => 'entity_id', 'class_name' => 'ChosenTechnic', 'conditions' => 'is_partner = "0"']
+        ['comments'],
+        ['userchoice', 'foreign_key' => 'entity_id', 'class_name' => 'ChosenTechnic', 'conditions' => 'is_partner = "0"'],
     ];
+    const CHILD_NAMES_FOR_DELETING = ['contents', 'comments', 'userchoice'];
 
     const MIN_DEAL_COUNT = 1;
     const MAX_DEAL_COUNT = 3;

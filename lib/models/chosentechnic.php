@@ -8,7 +8,7 @@ class ChosenTechnic extends InfoserviceModel
         ['partner', 'foreign_key' => 'entity_id'],
     ];
 
-    static $fieldExistenceConditions = [
+    const FIELD_EXISTENCE_CONDITIONS = [
         'technic' => ['is_partner' => "0"],
         'partner' => ['is_partner' => "1"],
     ];

@@ -3,11 +3,12 @@
 class Responsible extends InfoserviceModel
 {
     static $has_many = [
-        ['comments'],
-        ['readcomments', 'class_name' => 'ReadCommentMark'],
         ['contents'],
+        ['comments', 'foreign_key' => 'user_id'],
+        ['readcomments', 'class_name' => 'ReadCommentMark', 'foreign_key' => 'user_id'],
         ['choice', 'class_name' => 'ChosenTechnic', 'foreign_key' => 'user_id']
     ];
+    const CHILD_NAMES_FOR_DELETING = ['contents', 'comments', 'readcomments', 'choice'];
 
     /**
      * По полученным данным пользователя создает в базе запись, если ее нет,

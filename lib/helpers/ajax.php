@@ -144,7 +144,7 @@ try {
             if ($comment->user_id != $responsible->id)
                 throw new Exception($langValues['ERROR_COMMENT_AUTHOR_EDITING']);
             
-            $comment->delete($commentId);
+            $comment->delete();
             break;
 
         // обработчик отметки, что комментарии были прочитаны пользователем
@@ -153,21 +153,7 @@ try {
             if (!is_array($_POST['comment_ids']))
                 throw new Exception($langValues['ERROR_EMPTY_READ_COMMENT_ID']);
                 
-            $readIds = array_map(
-                            function($comment) { return $comment->comment_id; },
-                            ReadCommentMark::all([
-                                'user_id' => $responsible->id,
-                                'comment_id' => $_POST['comment_ids']
-                            ])
-                        );
-            foreach (
-                array_filter(
-                    $_POST['comment_ids'],
-                    function($id) use($readIds) { return !in_array($id, $readIds); }
-                ) as $commentId
-            ) {
-                ReadCommentMark::create(['comment_id' => $commentId, 'user_id' => $responsible->id]);
-            };
+            ReadCommentMark::setMark($responsible->id, $_POST['comment_ids']);
             break;
 
         default:

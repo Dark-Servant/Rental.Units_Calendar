@@ -17,7 +17,20 @@ class InfoserviceModel extends ActiveRecord\Model
      * элемент из разных моделей, можно было указать, что получить элемент конкретной модели, на которую
      * можно сослаться по значению поля, возможно при наличии конкретных значений в других полях
      */
-    static $fieldExistenceConditions = [];
+    const FIELD_EXISTENCE_CONDITIONS = [];
+
+    /**
+     * Здесь перечисляются поля, значения которых надо восстанавливать, когда идет сохранение изменений
+     * в экземпляре
+     */
+    const NOT_CHANGED_FIELDS = [];
+
+    /**
+     * Здесь перечисляются имена, указанные в has_many, для доступа к экземплярам других моделей,
+     * чтобы при удалении экзепляра какой-то модели были так же удалены все экземпляры дргуих
+     * моделей, связанные с удаляемой моделью
+     */
+    const CHILD_NAMES_FOR_DELETING = [];
 
     /**
      * Объединяет фильтр, описанный как
@@ -171,14 +184,31 @@ class InfoserviceModel extends ActiveRecord\Model
      */
     public function __set(string $name, $value)
     {
+        if (in_array(strtolower($name), ['id'])) return;
+
         foreach ($this->correctionMethods() as $method) {
             if ($this->$method($name, $value)) break;
         }
 
         if ($this->id  && !isset($this->oldParamData[$name]))
-            $this->oldParamData[$name] = ['value' => $value]; // иначе не будет работать со значением null
+            $this->oldParamData[$name] = ['value' => $this->$name]; // иначе не будет работать со значением null
 
         parent::__set($name, $value);
+    }
+
+    /**
+     * Поправляет важные поля в экземпляре, так как они не должны меняться при
+     * изменении экземпляра
+     * 
+     * @return void
+     */
+    protected function correctImortantFields()
+    {
+        foreach (static::NOT_CHANGED_FIELDS as $fieldName) {
+            if (!isset($this->oldParamData[$fieldName])) continue;
+
+            $this->$fieldName = $this->oldParamData[$fieldName]['value'];
+        }
     }
 
     /**
@@ -188,6 +218,7 @@ class InfoserviceModel extends ActiveRecord\Model
      */
     public function save()
     {
+        $this->correctImortantFields();
         $this->oldParamData = [];
         return parent::save();
     }
@@ -203,11 +234,11 @@ class InfoserviceModel extends ActiveRecord\Model
      */
     protected function getFieldByConditions(string $name)
     {
-        if (!isset(static::$fieldExistenceConditions[$name]))
+        if (!isset(static::FIELD_EXISTENCE_CONDITIONS[$name]))
             return;
 
         $isSuccess = true;
-        foreach (static::$fieldExistenceConditions[$name] as $field => $value) {
+        foreach (static::FIELD_EXISTENCE_CONDITIONS[$name] as $field => $value) {
             if ($this->$field == $value) continue;
 
             return ['value' => null];
@@ -231,5 +262,20 @@ class InfoserviceModel extends ActiveRecord\Model
             return $result['value'];
         }
         return parent::__get($name);
+    }
+
+    /**
+     * Обновленный метод удаления данных в БД
+     * 
+     * @return mixed
+     */
+    public function delete()
+    {
+        foreach (static::CHILD_NAMES_FOR_DELETING as $name) {
+            foreach ($this->$name as $child) {
+                $child->delete();
+            }
+        }
+        return parent::delete();
     }
 };

@@ -145,7 +145,7 @@ class Content extends InfoserviceModel
 
         $comments = Comment::all([
                             'conditions' => [
-                                '(id in (?)) AND ((technic_id <> ?) OR (content_date < ?) OR (content_date > ?))',
+                                '(id IN (?)) AND ((technic_id <> ?) OR (content_date < ?) OR (content_date > ?))',
                                 $commentIds,
                                 $this->technic_id,
                                 $this->begin_date->format(Day::FORMAT),
@@ -163,12 +163,15 @@ class Content extends InfoserviceModel
      * Возвращает массив комментариев, которые в силу изменения данных текущего контента
      * не могут больше принадлежать контенту. Идентификаторы комментариев в возвращаемом
      * результате разбиты на категории:
-     *     contentCommentIds - идентификаторы комментариев и идентификаторы контентов,
-     *     с которыми надо связать указанные комментарии. Тут результат представлен как
+     *     contentCommentIds - идентификаторы комментариев, идентификаторы контентов и идентификаторы техники
+     *     с которыми надо связать указанные комментарии. В результате группы идентификаторов комментариев
+     *     сгруппированы по элементам, где в каждом элементе
      *         [
-     *             <ID нового контента> => [<ID комментария 1>, <ID комментария 2>, ..., <ID комментария N>],
-     *             ...
-     *         ]
+     *             ids => [<ID комментария 1>, <ID комментария 2>, ..., <ID комментария N>],
+     *             contentId => <ID нового контента>,
+     *             technicId => <ID новой техники>
+     *         ],
+     *         ...
      *     
      *     zeroCommentIds - массив идентификаторов комментариев, у которых надо обнулить связь с контентом
      * 
@@ -179,13 +182,20 @@ class Content extends InfoserviceModel
         $contentCommentIds = [];
         $zeroCommentIds = [];
         foreach ($this->getThrownComments() as $technicId => $comments) {
+            $technic = Technic::find($technicId);
+            $technicIds = $technic->partner
+                        ? array_map(
+                                function($technic) { return $technic->id; },
+                                Technic::all(['partner_id' => $technic->partner_id])
+                            )
+                        : [$technicId];
             $dates = array_keys($comments);
             foreach (
                 self::all([
                     'conditions' => [
-                        '(id <> ?) AND (technic_id = ?) AND (begin_date <= ?) AND (finish_date >= ?)',
+                        '(id <> ?) AND (technic_id IN (?)) AND (begin_date <= ?) AND (finish_date >= ?)',
 
-                        $this->id, $technicId, max($dates), min($dates)
+                        $this->id, $technicIds, max($dates), min($dates)
                     ],
                     'order' => 'id asc'
                 ]) as $content
@@ -193,14 +203,20 @@ class Content extends InfoserviceModel
                 $contentBeginDate = $content->begin_date->format(Day::FORMAT);
                 $contentFinishDate = $content->finish_date->format(Day::FORMAT);
                 $newDates = [];
+                $commentIds = [];
                 foreach ($dates as $date) {
                     if (($date < $contentBeginDate) || ($date > $contentFinishDate)) {
                         $newDates[] = $date;
 
                     } else {
-                        $contentCommentIds[$content->id] = array_merge($contentCommentIds[$content->id] ?? [], $comments[$date]);
+                        $commentIds = array_merge($commentIds, $comments[$date]);
                     }
                 }
+                $contentCommentIds[] = [
+                    'ids' => $commentIds,
+                    'contentId' => $content->id,
+                    'technicId' => $content->technic_id
+                ];
                 $dates = $newDates;
             }
             foreach ($dates as $date) {
@@ -224,19 +240,32 @@ class Content extends InfoserviceModel
 
         $thrownComments = $this->getThrownCommentsWithNewRoles();
 
-        foreach ($thrownComments['contentCommentIds'] as $contentId => $commentIds) {
-            Comment::update_all(['set' => ['content_id' => $contentId], 'conditions' => ['id' => $commentIds]]);
+        foreach ($thrownComments['contentCommentIds'] as $comment) {
+            Comment::update_all([
+                'set' => [
+                    'content_id' => $comment['contentId'],
+                    'technic_id' => $comment['technicId']
+                ],
+                'conditions' => ['id' => $comment['ids']]
+            ]);
         }
 
         if (!empty($thrownComments['zeroCommentIds']))
             Comment::update_all(['set' => ['content_id' => 0], 'conditions' => ['id' => $thrownComments['zeroCommentIds']]]);
 
+        $partner = $this->technic ? $this->technic->partner : null;
+        $technicIds = $partner
+                    ? array_map(
+                            function($technic) { return $technic->id; },
+                            $partner->technics
+                        )
+                    : [$this->technic_id];
         $newCommentIds = array_map(
                             function($comment) { return $comment->id; },
                             Comment::all([
                                 'conditions' => [
-                                    '(technic_id = ?) AND (content_id = 0) AND (content_date >= ?) AND (content_date <= ?)',
-                                    $this->technic_id,
+                                    '(technic_id IN (?)) AND (content_id = 0) AND (content_date >= ?) AND (content_date <= ?)',
+                                    $technicIds,
                                     $this->begin_date->format(Day::FORMAT),
                                     $this->finish_date->format(Day::FORMAT)
                                 ]

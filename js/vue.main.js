@@ -22,9 +22,9 @@
         contentDetail: null,
         newCommentDealIndex: false,
         editCommentIndex: false,
+        copyCommentIndex: false,
         hintShowingData: false,
         quarterNumber: 0,
-
         quarterContent: null
     },
 
@@ -40,7 +40,7 @@
         contentDetail() {
             if (this.contentDetail) {
                 this.hideHintWindow();
-                verticalCenterWindow();
+                verticalCenterWindow(selector.contentDetailModal);
 
                 if (!bx24inited) return;
                 var commentIds = [];
@@ -59,7 +59,8 @@
                 );
 
             } else {            
-                this.newCommentDealIndex = false;
+                this.newCommentDealIndex = 
+                this.copyCommentIndex = 
                 this.editCommentIndex = false;
             }
         },
@@ -71,7 +72,10 @@
          * @return void
          */
         newCommentDealIndex() {
-            if (this.contentDetail) verticalCenterWindow();
+            if (this.contentDetail) verticalCenterWindow(selector.contentDetailModal);
+            if (this.newCommentDealIndex === false) return;
+
+            this.copyCommentIndex = false;
         },
 
         /**
@@ -81,7 +85,24 @@
          * @return void
          */
         editCommentIndex() {
-            if (this.contentDetail) verticalCenterWindow();
+            if (this.contentDetail) verticalCenterWindow(selector.contentDetailModal);
+            if (this.editCommentIndex === false) return;
+
+            this.copyCommentIndex = false;
+        },
+
+        /**
+         * Следит за изменением переменной copyCommentIndex, наличие в которой значения отличного
+         * от false приводит к появлению модального окна для копирования комментария
+         * 
+         * @return void
+         */
+        copyCommentIndex() {
+            verticalCenterWindow(selector.contentDetailModal);
+            if (this.copyCommentIndex === false) return;
+
+            this.newCommentDealIndex =
+            this.editCommentIndex = false;
         },
 
         /**
@@ -178,41 +199,10 @@
                 return;
             }
 
-            this.filterDateInput = datepicker(selector.filterDateInput, {
-                showAllDates: true,
-                alwaysShow: false,
-                startDay: 1,
-                customDays: [
-                    LANG_VALUES.DATE_CHOOOSING.DAYS.SHORT.SUN,
-                    LANG_VALUES.DATE_CHOOOSING.DAYS.SHORT.MON,
-                    LANG_VALUES.DATE_CHOOOSING.DAYS.SHORT.TUE,
-                    LANG_VALUES.DATE_CHOOOSING.DAYS.SHORT.WED,
-                    LANG_VALUES.DATE_CHOOOSING.DAYS.SHORT.THU,
-                    LANG_VALUES.DATE_CHOOOSING.DAYS.SHORT.FRI,
-                    LANG_VALUES.DATE_CHOOOSING.DAYS.SHORT.SAT
-                ],
-                customMonths: [
-                    LANG_VALUES.DATE_CHOOOSING.MONTHS.JANUARY,
-                    LANG_VALUES.DATE_CHOOOSING.MONTHS.FEBRUARY,
-                    LANG_VALUES.DATE_CHOOOSING.MONTHS.MARCH,
-                    LANG_VALUES.DATE_CHOOOSING.MONTHS.APRIL,
-                    LANG_VALUES.DATE_CHOOOSING.MONTHS.MAY,
-                    LANG_VALUES.DATE_CHOOOSING.MONTHS.JUNE,
-                    LANG_VALUES.DATE_CHOOOSING.MONTHS.JULY,
-                    LANG_VALUES.DATE_CHOOOSING.MONTHS.AUGUST,
-                    LANG_VALUES.DATE_CHOOOSING.MONTHS.SEPTEMBER,
-                    LANG_VALUES.DATE_CHOOOSING.MONTHS.OCTOBER,
-                    LANG_VALUES.DATE_CHOOOSING.MONTHS.NOVEMBER,
-                    LANG_VALUES.DATE_CHOOOSING.MONTHS.DECEMBER
-                ],
-                overlayPlaceholder: LANG_VALUES.DATE_CHOOOSING_YEAR,
-
-                onSelect(unitParams, selectedDate)  {
-                    setTimeout(() => calendar.filterDateInput.hide(), 1);
-
-                    calendar.calendarDate = selectedDate;
-                }
-            });
+            this.filterDateInput = initDatePicker(
+                                        selector.filterDateInput,
+                                        (unitParams, selectedDate) => this.calendarDate = selectedDate
+                                    );
         },
 
         /**

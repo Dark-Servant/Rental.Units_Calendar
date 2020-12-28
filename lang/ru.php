@@ -123,3 +123,7 @@ $langValues['MODAL_CONTENT_TECHNIC_CAPTION'] = 'Техника';
 $langValues['MODAL_CONTENT_RESPONSIBLE_CAPTION'] = 'Ответственный';
 $langValues['OPEN_URL_WITH_DEAL_ADD_TITLE'] = 'Открыть страницу с созданием CRM-сделки';
 $langValues['BEGIN_COMMENT_ADD_BUTTON_TITLE'] = 'Начать добавление комментария';
+$langValues['COMMENT_COPY_TITLE'] = 'Скопировать комментарий до другой даты';
+$langValues['COMMENT_COPY_BUTTON_TITLE'] = 'Скопировать в другие даты';
+$langValues['COMMENT_EDIT_BUTTON_TITLE'] = 'Редактировать';
+$langValues['COMMENT_REMOVE_BUTTON_TITLE'] = 'Удалить';

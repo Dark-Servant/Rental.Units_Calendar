@@ -210,8 +210,94 @@ var VueComponentParams = {
         }
     },
 
+    // Компонент модального окна для выбора даты копирования комментария
+    copyCommentModal: {
+        data() {
+            return {
+                dateForCopyValue: new Date(calendar.contentDetail.CONTENT_DAY * 1000)
+            };
+        },
+
+        computed: {
+
+            /**
+             * Возвращает дату, которая отображается в поле ввода даты,
+             * до которой надо копировать
+             * 
+             * @return string
+             */
+            copyToDateValue() {
+                return this.dateForCopyValue.toLocaleDateString();
+            },
+        },
+
+        mounted() {
+            setTimeout(
+                () => initDatePicker(
+                            selector.commentCopyDateInput,
+                            (unitParams, selectedDate) => this.dateForCopyValue = selectedDate
+                        ),
+                500
+            );
+        },
+
+        methods: {
+
+            /**
+             * Обработчик нажатия закрытия окна копирования комментария
+             * 
+             * @return void
+             */
+            closeCopyComment() {
+                calendar.copyCommentIndex = false;
+            },
+
+            /**
+             * Обработчик подтверждения копирования комментария
+             * 
+             * @return void
+             */
+            processCopyComment() {
+                var data = {
+                    date: Math.floor(this.dateForCopyValue.getTime() / 1000),
+                    commentId: calendar.contentDetail.COMMENTS[calendar.copyCommentIndex].ID,
+                    user: {...currentUserData}
+                };
+
+                var modalUnit = $(selector.copyCommentModalWindow);
+                modalUnit.addClass(classList.noReaction);
+
+                $.post(ajaxURL.replace(/#action#/i, 'copycomment'), data, answer => {
+                    modalUnit.removeClass(classList.noReaction);
+                    if (!answer.result) return;
+
+                    var technic = calendar.technics[calendar.contentDetail.TECHNIC_INDEX];
+                    Object.keys(technic.CONTENTS).forEach(contentDay => {
+                        if (!answer.data[contentDay]) return;
+                        if (!technic.COMMENTS[contentDay]) Vue.set(technic.COMMENTS, contentDay, []);
+
+                        technic.COMMENTS[contentDay].push(answer.data[contentDay]);
+                    });
+                    this.closeCopyComment();
+                });
+            }
+        }
+    },
+
     // Компонент для модального окна
     contentDetailModal: {
+
+        computed: {
+
+            /**
+             * Возвращает True, если была нажата кнопка копирования комментария
+             * 
+             * @return boolean
+             */
+            isCopyProcess() {
+                return calendar.copyCommentIndex !== false;
+            }
+        },
 
         methods: {
 
@@ -223,7 +309,7 @@ var VueComponentParams = {
              */
             closeDetailModal() {
                 calendar.contentDetail = null;
-            },
+            }
         }
     },
 
@@ -277,6 +363,27 @@ var VueComponentParams = {
         computed: {
 
             /**
+             * Возвращает True, если комментарий находится в режиме редактирования
+             * или создания
+             * 
+             * @return boolean
+             */
+            isEditing() {
+                return this.isnothint && (calendar.editCommentIndex === this.commentindex);
+            },
+
+            /**
+             * Возвращает True, если пользователь имеет право редактировать, удалять или
+             * копировать комментарий
+             * 
+             * @return boolean
+             */
+            canEdit() {
+                return this.isnothint && bx24inited && calendar.userData.ID
+                       && (this.comment.USER_ID == calendar.userData.ID);
+            },
+
+            /**
              * Возвращает дату и время добавления комментария
              * 
              * @return string
@@ -297,6 +404,16 @@ var VueComponentParams = {
             initEditComment() {
                 calendar.newCommentDealIndex = false;
                 calendar.editCommentIndex = this.commentindex;
+            },
+
+            /**
+             * Обработчик нажатия копирования комментария, показывает модальное
+             * окно для копирования комментария
+             * 
+             * @return void
+             */
+            initCopyComment() {
+                calendar.copyCommentIndex = this.commentindex;
             },
 
             /**
@@ -337,7 +454,7 @@ var VueComponentParams = {
              * @return void
              */
             stopCommentAdd() {
-                calendar.newCommentDealIndex = false;
+                calendar.newCommentDealIndex =
                 calendar.editCommentIndex = false;
             },
 

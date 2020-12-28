@@ -90,11 +90,11 @@ class InfoserviceModel extends ActiveRecord\Model
      * 'y', 'yes' или 'true' будут приведены к 1, остальные значения будут приниматься
      * как нуль.
      * 
-     * @param $name - название поля
+     * @param string $name - название поля
      * @param &$value - значение поля
      * @return boolean
      */
-    protected function correctBooleanValue($name, &$value)
+    protected function correctBooleanValue(string $name, &$value)
     {
         if (preg_match('/^is_/i', $name)) {
             $value = intval(is_string($value) ? preg_match('/^(?:y(?:es)?|true|\-? *[1-9]\d*)$/i', $value) : $value);
@@ -107,11 +107,11 @@ class InfoserviceModel extends ActiveRecord\Model
      * Проверяет название поля. Если оно оканчивается на *_url, то значение
      * должно начинаться на http(s), иначе значение становится пустым
      *
-     * @param $name - название поля
+     * @param string $name - название поля
      * @param &$value - значение поля
      * @return boolean
      */
-    protected function correctURLValue($name, &$value)
+    protected function correctURLValue(string $name, &$value)
     {
         if (preg_match('/_url$/i', $name)) {
             $value = preg_match('/^https?:\/\//', $value) ? $value : '';
@@ -124,24 +124,56 @@ class InfoserviceModel extends ActiveRecord\Model
      * Проверяет название поля. Если оно оканчивается на *_date, то значение заменяется
      * экземпляром класса DateTime. Само значение для этого должно быть строкового типа
      * и иметь значние даты в формате, описанном в константах Day::CALENDAR_FORMAT или
-     * Day::FORMAT
+     * Day::FORMAT, или быть меткой времени
      * 
-     * @param $name - название поля
+     * @param string $name - название поля
      * @param &$value - значение поля
      * @return boolean
      */
-    protected function correctDateValue($name, &$value)
+    protected function correctDateValue(string $name, &$value)
     {
-        if (!preg_match('/_date$/i', $name) || !is_string($value)) return false;
+        if (!preg_match('/_date$/i', $name)) return false;
 
-        $newValue = date_create_from_format(Day::CALENDAR_FORMAT, $value);
-        if (!$newValue) $newValue = date_create_from_format(Day::FORMAT, $value);
+        $newValue = null;
+        if (is_string($value) && !preg_match('/^\d+$/', $value)) {
+            $newValue = date_create_from_format(Day::CALENDAR_FORMAT, $value);
+            if (!$newValue) $newValue = date_create_from_format(Day::FORMAT, $value);
+        
+        } elseif (is_integer($value) || is_string($value)) {
+            $newValue = new DateTime();
+            $newValue->setTimestamp(intval($value));
+        }
 
         if (isset($newValue)) {
             $value = $newValue;
             return true;
         }
         return false;
+    }
+
+    /**
+     * Проверяет название поля. Если оно оканчивается на *_id, то значение должно
+     * быть либо числового типа, либо строкового, но так же иметь число в значении,
+     * иначе параметр $value приобретет значение null
+     * 
+     * @param string $name - название поля
+     * @param &$value - значение поля
+     * @return boolean
+     */
+    protected function correctIDValue(string $name, &$value)
+    {
+        if (!preg_match('/_id$/i', $name)) return false;
+
+        if (
+            is_integer($value) && ($value > 0)
+            || is_string($value) && preg_match('/^[1-9]\d*&/', $value)
+        ) {
+            $value = intval($value);
+
+        } else {
+            $value = null;
+        }
+        return true;
     }
 
     /**

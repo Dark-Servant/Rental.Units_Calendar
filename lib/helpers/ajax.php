@@ -151,9 +151,49 @@ try {
         case 'readcomments':
             $responsible = Responsible::initialize($_POST['user']);
             if (!is_array($_POST['comment_ids']))
-                throw new Exception($langValues['ERROR_EMPTY_READ_COMMENT_ID']);
+                throw new Exception($langValues['ERROR_EMPTY_COMMENT_BY_ID']);
                 
             ReadCommentMark::setMark($responsible->id, $_POST['comment_ids']);
+            break;
+
+        // обработчик копирования комментария
+        case 'copycomment':
+            $user = $_POST['user'];
+            if (
+                empty($user['ID'])
+                || empty($responsible = Responsible::find_by_external_id($user['ID']))
+            ) throw new Exception($langValues['ERROR_EMPTY_USER_ID']);
+
+            $commentId = intval($_POST['commentId']);
+            if (!$commentId || empty($comment = Comment::find($commentId)))
+                throw new Exception($langValues['ERROR_BAD_COMMENT_ID']);
+
+            $startDate = $comment->content_date->getTimestamp();
+            $finishDate = intval($_POST['date']);
+            /**
+             * Вычитаем или добавляем сутки, так как нет смысла копировать комментарий в ту же
+             * дату, откуда он копируется. Можно, конечно, просто проверять в следующем цикле не
+             * совпадает ли новая дата с датой комментария, но тогда будут затраты времени на
+             * проверки по каждой дате, когда ясно, что комментарий не надо копировать только для
+             * одной даты
+             */
+            if ($finishDate < $startDate) {
+                [$startDate, $finishDate] = [$finishDate, $startDate - DAY_SECOND_COUNT];
+
+            } else {
+                $startDate += DAY_SECOND_COUNT;
+            }
+
+            foreach (range($startDate, $finishDate, DAY_SECOND_COUNT) as $dayTime) {
+                $commentUnit = Comment::create([
+                    'technic_id' => $comment->technic_id,
+                    'content_date' => $dayTime,
+                    'content_id' => 0,
+                    'user_id' => $comment->user_id,
+                    'value' => $comment->value,
+                ]);
+                $answer['data'][$dayTime] = $commentUnit->getData(true);
+            }
             break;
 
         default:

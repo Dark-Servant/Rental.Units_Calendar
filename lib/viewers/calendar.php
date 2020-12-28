@@ -63,8 +63,8 @@
             </select><!--
         --></template><!--
         --><template v-else><!--
-            --><label class="rc-filter-date-area">
-                <input class="rc-filter-date-input"
+            --><label class="rc-date-area rc-filter-date-area">
+                <input class="rc-date-input rc-filter-date-input"
                     name="date"
                     v-bind:value="calendarDateValue"
                     v-on:click="$emit('init-calendar')"
@@ -84,7 +84,7 @@
         --><label
             class="rc-filter-icon rc-filter-quarter"
             v-bind:title="'<?=$langValues['FILTER_QUARTER_BUTTON']?>'">
-            <input type="checkbox" v-on:change="showQuarters()">
+            <input type="checkbox" v-on:change="showQuarters">
             <span></span>
         </label><!--
         --><span class="rc-activity-list-back"
@@ -162,25 +162,30 @@
 <script id="comment-unit-editor-component" data-props="value" type="text/vue-component">
     <div class="rc-deal-detail-comment-input-area">
         <textarea class="rc-textarea rc-deal-detail-comment-textarea" v-model="value"></textarea>
-        <div class="rc-deal-detail-comment-input-buttons">
-            <span class="rc-calendar-button rc-comment-button rc-deal-detail-comment-input-button rc-deal-detail-comment-ok-button"
+        <div class="rc-deal-detail-comment-buttons">
+            <span class="rc-calendar-button rc-comment-button rc-deal-detail-comment-button rc-deal-detail-comment-ok-button"
                 v-on:click="commentAdd"></span><!--
-            --><span class="rc-calendar-button rc-comment-button rc-deal-detail-comment-input-button rc-deal-detail-comment-cancel-button"
+            --><span class="rc-calendar-button rc-comment-button rc-deal-detail-comment-button rc-deal-detail-comment-cancel-button"
                 v-on:click="stopCommentAdd"></span>
         </div>
     </div>
 </script>
 
-<script id="comment-unit-component" data-props="comment, commentindex, isediting, canedit" type="text/vue-component">
+<script id="comment-unit-component" data-props="comment, commentindex, isnothint" type="text/vue-component">
     <comment-unit-editor
         v-bind:value="comment.VALUE"
-        v-if="isediting && canedit"></comment-unit-editor>
+        v-if="isEditing && canEdit"></comment-unit-editor>
     <div class="rc-comment-unit" v-else>
         <div class="rc-comment-unit-value">{{comment.VALUE}}</div>
-        <div class="rc-comment-unit-buttons" v-if="canedit">
-            <span class="rc-calendar-button rc-comment-button rc-comment-unit-button rc-comment-unit-edit-button"
+        <div class="rc-comment-unit-buttons" v-if="canEdit">
+            <span class="rc-calendar-button rc-comment-button rc-comment-unit-button rc-comment-unit-copy-button"
+                title="<?=$langValues['COMMENT_COPY_BUTTON_TITLE']?>"
+                v-on:click="initCopyComment"></span><!--
+            --><span class="rc-calendar-button rc-comment-button rc-comment-unit-button rc-comment-unit-edit-button"
+                title="<?=$langValues['COMMENT_EDIT_BUTTON_TITLE']?>"
                 v-on:click="initEditComment"></span><!--
             --><span class="rc-calendar-button rc-comment-button rc-comment-unit-button rc-comment-unit-remove-button"
+                title="<?=$langValues['COMMENT_REMOVE_BUTTON_TITLE']?>"
                 v-on:click="removeComment"></span>
         </div>
         <div class="rc-comment-unit-author">
@@ -190,7 +195,7 @@
     </div>
 </script>
 
-<script id="deal-detail-modal-component" data-props="deal, dealindex, newcomment, bx24inited, comments, editcommentindex, user" type="text/vue-component">
+<script id="deal-detail-modal-component" data-props="deal, dealindex, newcomment, bx24inited, comments" type="text/vue-component">
     <div class="rc-deal-detail">
         <template v-if="!deal.IS_EMPTY">
             <a class="rc-deal-detail-customer-url" v-bind:href="deal.DEAL_URL">{{deal.CUSTOMER_NAME}}</a>
@@ -212,8 +217,7 @@
             <comment-unit
                 v-bind:comment="comment"
                 v-bind:commentindex="commentIndex"
-                v-bind:isediting="editcommentindex === commentIndex"
-                v-bind:canedit="bx24inited && user.ID && (comment.USER_ID == user.ID)"
+                v-bind:isnothint="true"
                 v-for="(comment, commentIndex) in comments"
                 v-if="deal.ID == comment.CONTENT_ID"></comment-unit>
             <template v-if="bx24inited">
@@ -228,26 +232,45 @@
     </div>
 </script>
 
-<script id="content-detail-modal-component" data-props="content, bx24inited, newcommentdealindex, editcommentindex, user" type="text/vue-component">
-    <div class="rc-content-detail-modal">
-        <div class="rc-content-detail-window rc-no-visivility">
+<script id="copy-comment-modal-component" data-props="" type="text/vue-component">
+    <div class="rc-window rc-copy-comment-modal-window rc-no-visivility">
+        <div class="rc-modal-title rc-copy-comment-title"><?=$langValues['COMMENT_COPY_TITLE']?></div>
+        <div class="rc-modal-details rc-comment-copy-details">
+            <label class="rc-date-area rc-comment-copy-date-area">
+                <input class="rc-date-input rc-comment-copy-date-input"
+                    name="date"
+                    v-bind:value="copyToDateValue"
+                    type="text" readonly>
+            </label>
+            <span class="rc-calendar-button rc-comment-button rc-comment-unit-button rc-copy-comment-ok-button"
+                v-on:click="processCopyComment"></span><!--
+            --><span class="rc-calendar-button rc-comment-button rc-comment-unit-button rc-copy-comment-cancel-button"
+                v-on:click="closeCopyComment"></span>
+        </div>
+    </div>
+</script>
+
+<script id="content-detail-modal-component" data-props="content, bx24inited, newcommentdealindex" type="text/vue-component">
+    <div class="rc-modal rc-content-detail-modal">
+        <div class="rc-window rc-content-detail-window rc-no-visivility" v-bind:class="{'rc-no-reaction': isCopyProcess}">
             <span class="rc-content-detail-close" v-on:click="closeDetailModal"></span>
-            <div class="rc-content-detail-title">
+            <div class="rc-modal-title rc-content-detail-title">
                 <span class="rc-content-detail-title-date">{{content.DATE}}</span><!--
                 --><span class="rc-content-detail-title-value">{{content.NAME}}</span>
             </div>
-            <div class="rc-deal-details">           
+            <div class="rc-modal-details rc-deal-details">  
                 <deal-detail-modal
                     v-bind:deal="deal"
                     v-bind:dealindex="dealIndex"
                     v-bind:newcomment="newcommentdealindex === dealIndex"
                     v-bind:bx24inited="bx24inited"
                     v-bind:comments="content.COMMENTS"
-                    v-bind:editcommentindex="editcommentindex"
-                    v-bind:user="user"
                     v-for="(deal, dealIndex) in content.DEALS"></deal-detail-modal>
             </div>               
         </div>
+
+        <copy-comment-modal v-if="isCopyProcess"></copy-comment-modal>
+
     </div>
 </script>
 
@@ -257,8 +280,7 @@
             <comment-unit
                 v-bind:comment="comment"
                 v-bind:commentindex="false"
-                v-bind:isediting="false"
-                v-bind:canedit="false"
+                v-bind:isnothint="false"
                 v-for="comment in comments"></comment-unit>
         </div>
     </div>
@@ -308,8 +330,6 @@
             v-bind:content="contentDetail"
             v-bind:bx24inited="bx24inited"
             v-bind:newcommentdealindex="newCommentDealIndex"
-            v-bind:editcommentindex="editCommentIndex"
-            v-bind:user="userData"
             v-if="contentDetail"></content-detail-modal>
 
         <hint-window

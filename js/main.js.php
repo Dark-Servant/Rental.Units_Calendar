@@ -30,10 +30,13 @@ header('Content-Type: application/javascript; charset=utf-8');?>
         activityList: '.rc-activity-list',
         technicUnit: '.rc-technic-unit',
         contentArea: '.rc-content-area',
+        modalArea: '.rc-modal',
         contentDetailModal: '.rc-content-detail-modal',
         contentDetailWindow: '.rc-content-detail-window',
+        copyCommentModalWindow: '.rc-copy-comment-modal-window',
         dealCommentInputArea: '.rc-deal-detail-comment-input-area',
         dealCommentTextarea: '.rc-deal-detail-comment-textarea',
+        commentCopyDateInput: '.rc-comment-copy-date-input',
         hintWindow: '.rc-hint-window'
     };
     var classList = {
@@ -41,7 +44,8 @@ header('Content-Type: application/javascript; charset=utf-8');?>
         noVisivility: 'rc-no-visivility'
     };
     var modalSelector = [
-        selector.contentDetailWindow
+        selector.contentDetailWindow,
+        selector.copyCommentModalWindow
     ];
     var ajaxURL = document.location.origin + SERVER_CONSTANTS.APPPATH + '?ajaxaction=#action#&' + SERVER_CONSTANTS.URL_SCRIPT_FINISH;
     var BX24Auth;
@@ -97,6 +101,74 @@ header('Content-Type: application/javascript; charset=utf-8');?>
             xhr.onload = () => success(JSON.parse(xhr.response));
             xhr.send(readyParams);
         });
+    }
+
+    /**
+     * Создает календарь выбора даты, используя решение datepicker
+     *
+     * @param inputSelector - селектор к input-объекту с типом text, для которого показывать
+     * модальное окно
+     * 
+     * @param onSelectCallback - функция, которую надо вызывать, когда выбрана конкретная
+     * дата
+     * 
+     * @return datepicker
+     */
+    var initDatePicker = function(inputSelector, onSelectCallback) {
+        var modalPosition = false;
+        var dpUnit = datepicker(inputSelector, {
+            showAllDates: true,
+            alwaysShow: false,
+            startDay: 1,
+            customDays: [
+                LANG_VALUES.DATE_CHOOOSING.DAYS.SHORT.SUN,
+                LANG_VALUES.DATE_CHOOOSING.DAYS.SHORT.MON,
+                LANG_VALUES.DATE_CHOOOSING.DAYS.SHORT.TUE,
+                LANG_VALUES.DATE_CHOOOSING.DAYS.SHORT.WED,
+                LANG_VALUES.DATE_CHOOOSING.DAYS.SHORT.THU,
+                LANG_VALUES.DATE_CHOOOSING.DAYS.SHORT.FRI,
+                LANG_VALUES.DATE_CHOOOSING.DAYS.SHORT.SAT
+            ],
+            customMonths: [
+                LANG_VALUES.DATE_CHOOOSING.MONTHS.JANUARY,
+                LANG_VALUES.DATE_CHOOOSING.MONTHS.FEBRUARY,
+                LANG_VALUES.DATE_CHOOOSING.MONTHS.MARCH,
+                LANG_VALUES.DATE_CHOOOSING.MONTHS.APRIL,
+                LANG_VALUES.DATE_CHOOOSING.MONTHS.MAY,
+                LANG_VALUES.DATE_CHOOOSING.MONTHS.JUNE,
+                LANG_VALUES.DATE_CHOOOSING.MONTHS.JULY,
+                LANG_VALUES.DATE_CHOOOSING.MONTHS.AUGUST,
+                LANG_VALUES.DATE_CHOOOSING.MONTHS.SEPTEMBER,
+                LANG_VALUES.DATE_CHOOOSING.MONTHS.OCTOBER,
+                LANG_VALUES.DATE_CHOOOSING.MONTHS.NOVEMBER,
+                LANG_VALUES.DATE_CHOOOSING.MONTHS.DECEMBER
+            ],
+            overlayPlaceholder: LANG_VALUES.DATE_CHOOOSING_YEAR,
+            onShow(datePickerUnit) {
+                var calendarUnit = $(datePickerUnit.calendar).parent();
+                if (modalPosition) {
+                    calendarUnit.css(modalPosition);
+                    return;
+                }
+
+                var modalUnit = calendarUnit.closest(selector.modalArea);
+                if (!modalUnit.length) return;
+
+                var {left: leftValue, top: topValue} = calendarUnit.get(0).getBoundingClientRect();
+                modalPosition = {left: leftValue, top: topValue};
+
+                modalUnit.get(0).appendChild(calendarUnit.get(0));
+                calendarUnit.css(modalPosition);
+            },
+
+            onSelect(unitParams, selectedDate) {
+                setTimeout(() => dpUnit.hide(), 1);
+
+                if (typeof(onSelectCallback) == 'function')
+                    onSelectCallback(unitParams, selectedDate);
+            }
+        });
+        return dpUnit;
     }
 
     /**
@@ -212,20 +284,21 @@ header('Content-Type: application/javascript; charset=utf-8');?>
 
     /**
      * По всем указанным в переменной modalselector селекторам к модальным окнам
-     * берет каждое окно, проверяет его на существование. Если окно существует, то
-     * оно центрируется по вертикали
-     * 
+     * проверяет наличие окна через объект по селектору, указанному в параметре selector.
+     * Если окно существует, то оно центрируется по вертикали
+     *
+     * @param selector - селектор к фону, на котором расположены модальные окна
      * @return void
      */
-    var verticalCenterWindow = function() {
+    var verticalCenterWindow = function(selector) {
         /**
          * Делается с ожиданием, чтобы изменения успели отрисоваться и стали доступны
          * истинные размеры
          */
         setTimeout(() => {
-            var bodyArea = $(selector.contentDetailModal).get(0).getBoundingClientRect();
+            var bodyArea = $(selector).get(0).getBoundingClientRect();
             modalSelector.forEach(modalCode => {
-                var modalUnit = $(modalCode);
+                var modalUnit = $(selector).find(modalCode);
                 if (!modalUnit.length) return;
 
                 var modalCodeRect = modalUnit.get(0).getBoundingClientRect();

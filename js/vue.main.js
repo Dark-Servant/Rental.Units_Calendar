@@ -292,7 +292,7 @@
                 DATE: (new Date(contentDay * 1000)).toLocaleDateString(),
                 TECHNIC_INDEX: technicIndex,
                 CONTENT_DAY: contentDay,
-                DEALS: contents && contents[contentDay] ? contents[contentDay].DEALS : [{ID: 0, IS_EMPTY: true}],
+                DEALS: contents && contents[contentDay] && contents[contentDay].DEALS ? contents[contentDay].DEALS : [{ID: 0, IS_EMPTY: true}],
                 COMMENTS: technic.COMMENTS[contentDay]
             };
         },

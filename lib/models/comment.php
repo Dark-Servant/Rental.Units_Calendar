@@ -15,6 +15,9 @@ class Comment extends InfoserviceModel
     const NOT_CHANGED_FIELDS = ['technic_id', 'content_date', 'user_id'];
     const CHILD_NAMES_FOR_DELETING = ['readmarks'];
 
+    // Классы дежурных комментариев
+    const DUTY_STATUS = [1 => 'repair', 'on-road', 'based-on'];
+
     /**
      * Возвращает данные комментария, которые используются при выводе
      * в календаре
@@ -32,6 +35,9 @@ class Comment extends InfoserviceModel
             'USER_NAME' => $this->user->name,
             'VALUE' => $this->value,
             'READ' => $isRead,
+            'DUTY_STATUS_NAME' => $this->duty_status
+                                ? self::DUTY_STATUS[$this->duty_status]
+                                : '',
             'CREATED_AT' => $this->created_at->getTimestamp(),
         ];
     }

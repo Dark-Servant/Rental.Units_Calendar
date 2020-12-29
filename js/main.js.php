@@ -172,6 +172,90 @@ header('Content-Type: application/javascript; charset=utf-8');?>
     }
 
     /**
+     * Согласно оставленному комментарию, если он относится к дежурным, устанавливает
+     * класс для ячейки, которая принадлежит конкретной технике
+     * 
+     * @param data - данные комментария
+     * @param contentDay - метка времени, указывающая на конкретный день
+     * @param technic - объект с данными техники
+     * @return void
+     */
+    var setContentDutyStatus = function(data, contentDay, technic) {
+        if (!data.DUTY_STATUS_NAME) return;
+
+        if (!technic.CONTENTS[contentDay])
+            Vue.set(technic.CONTENTS, contentDay, {});
+
+        technic.CONTENTS[contentDay].STATUS_CLASS = data.DUTY_STATUS_NAME;
+    }
+
+    /**
+     * Добавление комментария в модальном окне для просмотра данных ячейки календаря
+     * 
+     * @param comment - объект с данными комментария, могут быть два поля:
+     *     value - текст комментария (обязательный параметр)
+     *     code - статус, если комментарий дежурный
+     *     
+     * @param commentIndex - порядковый номер комментария в модальном окне
+     * @param dealIndex - порядковый номер сделки в модяльном окне
+     * @param successCallBack - функция, которую надо вызвать после добавления комментария
+     * @return void
+     */
+    var createComment = function(comment, commentIndex, dealIndex, successCallBack) {
+        if (
+            !(comment instanceof Object)
+            || (typeof(comment.value) != 'string')
+            || !comment.value.trim()
+        ) return;
+
+        var data = {
+            ...comment,
+            technicId: 0,
+            contentId: 0,
+            commentId: 0,
+            isPartner: 0,
+            contentDay: calendar.contentDetail.CONTENT_DAY,
+            user: {...currentUserData}
+        };
+
+        if (commentIndex !== false) {
+            data.commentId = calendar.contentDetail.COMMENTS[commentIndex].ID;
+
+        } else if (dealIndex !== false) {
+            if (calendar.contentDetail.DEALS[dealIndex].TECHNIC_ID) {
+                data.technicId = calendar.contentDetail.DEALS[dealIndex].TECHNIC_ID;
+
+            } else {
+                data.technicId = calendar.contentDetail.ID;
+                data.isPartner = +calendar.contentDetail.IS_PARTNER;
+            }
+            data.contentId = calendar.contentDetail.DEALS[dealIndex].ID;
+
+        } else {
+            return;
+        }
+
+        var modalUnit = $(selector.contentDetailWindow);
+        modalUnit.addClass(classList.noReaction);
+
+        $.post(ajaxURL.replace(/#action#/i, 'addcomment'), data, answer => {
+            modalUnit.removeClass(classList.noReaction);
+            if (!answer.result) return;
+
+            var technic = calendar.technics[calendar.contentDetail.TECHNIC_INDEX];
+            if (data.technicId) {
+                technic.COMMENTS[calendar.contentDetail.CONTENT_DAY].push(answer.data);
+
+            } else {
+                calendar.contentDetail.COMMENTS[commentIndex].VALUE = answer.data.VALUE;
+            }
+
+            setContentDutyStatus(answer.data, calendar.contentDetail.CONTENT_DAY, technic);
+            if (typeof(successCallBack) == 'function') successCallBack();
+        });
+    }
+
+    /**
      * Основной метод приложения, с которого начинается работа в нем
      * 
      * @return void

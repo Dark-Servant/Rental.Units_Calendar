@@ -4,6 +4,15 @@ var VueComponentParams = {
 
         computed: {
             /**
+             * Возвращает True, если у контента есть сделки
+             * 
+             * @return void
+             */
+            dealExists() {
+                return this.content && this.content.DEALS;
+            },
+
+            /**
              * Возвращает количество комментариев
              * 
              * @return int
@@ -277,6 +286,8 @@ var VueComponentParams = {
                         if (!technic.COMMENTS[contentDay]) Vue.set(technic.COMMENTS, contentDay, []);
 
                         technic.COMMENTS[contentDay].push(answer.data[contentDay]);
+
+                        setContentDutyStatus(answer.data[contentDay], contentDay, technic);
                     });
                     this.closeCopyComment();
                 });
@@ -313,6 +324,52 @@ var VueComponentParams = {
         }
     },
 
+    // Компонент работы с дежурными комментариями
+    dutyComments: {
+        data() {
+            return {
+                isChoosing: false,
+                comments: [
+                    {CODE: SERVER_CONSTANTS.DUTY_COMMENT_REPAIR_STATUS, NAME: LANG_VALUES.DUTY_COMMENT_REPAIR_STATUS},
+                    {CODE: SERVER_CONSTANTS.DUTY_COMMENT_ON_ROAD_STATUS, NAME: LANG_VALUES.DUTY_COMMENT_ON_ROAD_STATUS},
+                    {CODE: SERVER_CONSTANTS.DUTY_COMMENT_BASED_ON_STATUS, NAME: LANG_VALUES.DUTY_COMMENT_BASED_ON_STATUS}
+                ],
+                selectedcomment: SERVER_CONSTANTS.DUTY_COMMENT_REPAIR_STATUS
+            };
+        },
+
+        methods: {
+
+            /**
+             * Показывает выбор дежурных комментариев и кнопки для подтверждения и отмены
+             * 
+             * @return void
+             */
+            initDutyChoosing() {
+                this.isChoosing = true;
+            },
+
+            /**
+             * Скрывает выбор дежурных комментариев и кнопки для подтверждения и отмены
+             * 
+             * @return void
+             */
+            closeDutyChoosing() {
+                this.isChoosing = false;
+            },
+
+            /**
+             * Добавляет дежурный комментарий
+             *
+             * @return void
+             */
+            addDutyComment() {
+                var {CODE: code, NAME: value} = this.comments.find(comment => comment.CODE == this.selectedcomment);
+                createComment({code: code, value: value}, false, this.dealindex, () => this.closeDutyChoosing());
+            }
+        }
+    },
+
     // Компонент отрисовки сделки в модальном окне
     dealDetailModal: {
 
@@ -334,10 +391,10 @@ var VueComponentParams = {
                             encodeURI(
                                 this.comments.map(comment => {
                                     var dateValue = new Date(comment['CREATED_AT'] * 1000);
-                                    return comment['VALUE'] + "\n" + comment['USER_NAME']
+                                    return comment['VALUE'] + "->" + comment['USER_NAME']
                                          + ' (' + dateValue.toLocaleDateString() + ' '
                                                 + dateValue.toLocaleTimeString() + ')';
-                                }).join("\n\n")
+                                }).join("->")
                             ) + '&'
                         + SERVER_CONSTANTS.CRM_USER_FIELD_START_DATE + '=' + dateValue + '&'
                         + SERVER_CONSTANTS.CRM_USER_FIELD_COMPLETION_DATE + '=' + dateValue + '">'
@@ -465,51 +522,7 @@ var VueComponentParams = {
              * @return void
              */
             commentAdd() {
-                var commentValue = this.value.trim();
-                if (!commentValue) return;
-
-                var data = {
-                    technicId: 0,
-                    contentId: 0,
-                    commentId: 0,
-                    isPartner: 0,
-                    contentDay: calendar.contentDetail.CONTENT_DAY,
-                    value: commentValue,
-                    user: {...currentUserData}
-                };
-
-                if (calendar.editCommentIndex !== false) {
-                    data.commentId = calendar.contentDetail.COMMENTS[calendar.editCommentIndex].ID;
-
-                } else if (calendar.newCommentDealIndex !== false) {
-                    if (calendar.contentDetail.DEALS[calendar.newCommentDealIndex].TECHNIC_ID) {
-                        data.technicId = calendar.contentDetail.DEALS[calendar.newCommentDealIndex].TECHNIC_ID;
-
-                    } else {
-                        data.technicId = calendar.contentDetail.ID;
-                        data.isPartner = +calendar.contentDetail.IS_PARTNER;
-                    }
-                    data.contentId = calendar.contentDetail.DEALS[calendar.newCommentDealIndex].ID;
-
-                } else {
-                    return;
-                }
-
-                var modalUnit = $(selector.contentDetailWindow);
-                modalUnit.addClass(classList.noReaction);
-
-                $.post(ajaxURL.replace(/#action#/i, 'addcomment'), data, answer => {
-                    modalUnit.removeClass(classList.noReaction);
-                    if (!answer.result) return;
-
-                    if (data.technicId) {
-                        calendar.technics[calendar.contentDetail.TECHNIC_INDEX].COMMENTS[calendar.contentDetail.CONTENT_DAY].push(answer.data);
-
-                    } else {
-                        calendar.contentDetail.COMMENTS[calendar.editCommentIndex].VALUE = answer.data.VALUE;
-                    }
-                    this.stopCommentAdd();
-                });
+                createComment({value: this.value.trim()}, calendar.editCommentIndex, calendar.newCommentDealIndex, () => this.stopCommentAdd());
             }
         }
     }

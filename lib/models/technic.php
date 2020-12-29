@@ -214,7 +214,10 @@ class Technic extends InfoserviceModel
                 $technicRow = &$technics[$comment->technic_id];
             }
             $comments[$comment->id] = $comment->getData();
-            $technicRow['COMMENTS'][$comment->content_date->getTimestamp()][] = &$comments[$comment->id];
+            $dayTimestamp = $comment->content_date->getTimestamp();
+            $technicRow['COMMENTS'][$dayTimestamp][] = &$comments[$comment->id];
+            if ($comment->duty_status)
+                $technicRow['CONTENTS'][$dayTimestamp]['STATUS_CLASS'] = Comment::DUTY_STATUS[$comment->duty_status];
         }
 
         if (empty($comments)) return;

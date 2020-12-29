@@ -46,6 +46,11 @@ if (!SESSION_CONTANTS || empty($_SESSION['CONST_LIST'])) {
     // Символьный код пользовательского поля для CRM-сделок "Дата окончания работ"
     define('CRM_USER_FIELD_COMPLETION_DATE', 'UF_CRM_1571574620');
 
+    // Коды дежурных комментариев
+    define('DUTY_COMMENT_REPAIR_STATUS', 1); // комментарий "Ремонт"
+    define('DUTY_COMMENT_ON_ROAD_STATUS', 2); // комментарий "В дороге"
+    define('DUTY_COMMENT_BASED_ON_STATUS', 3); // комментарий "На базе "
+
     $_SESSION['CONST_LIST'] = array_filter(
                     get_defined_constants(),
                     function($key) {

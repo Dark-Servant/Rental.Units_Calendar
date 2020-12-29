@@ -121,6 +121,7 @@ try {
                 $comment->content_date = $day;
                 $comment->content_id = intval($_POST['contentId']);
                 $comment->user_id = $responsible->id;
+                if (isset($_POST['code'])) $comment->duty_status = intval($_POST['code']);
             }
 
             $comment->value = $commentValue;
@@ -191,6 +192,7 @@ try {
                     'content_id' => 0,
                     'user_id' => $comment->user_id,
                     'value' => $comment->value,
+                    'duty_status' => $comment->duty_status,
                 ]);
                 $answer['data'][$dayTime] = $commentUnit->getData(true);
             }

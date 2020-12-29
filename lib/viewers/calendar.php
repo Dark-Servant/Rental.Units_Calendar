@@ -9,7 +9,7 @@
                 }"
             v-on:click="$emit('show-content-details')"
             v-on:mousemove="if (content.IS_ONE) $emit('start-waiting-hint-window', $event.target)"
-            v-if="content">
+            v-if="dealExists">
             <span class="rc-comment-exist-flag" v-if="commentSize"></span>
             <template v-if="!quarter">
                 <span class="rc-content-many-deals" v-if="content.VERY_MANY"><?=$langValues['MANY_DEAL_STATUS']?></span>
@@ -30,6 +30,9 @@
             </template>
         </div>
         <div class="rc-content-area rc-content-empty"
+            v-bind:class="{
+                    ['rc-content-' + content.STATUS_CLASS]: content.STATUS_CLASS,
+                }"
             v-on:click="$emit('show-content-details')"
             v-on:mousemove="$emit('start-waiting-hint-window', $event.target)"
             v-else>
@@ -195,6 +198,24 @@
     </div>
 </script>
 
+<script id="duty-comments-component" data-props="dealindex" type="text/vue-component">
+    <template>
+        <div class="rc-duty-comment-area" v-if="isChoosing">
+            <select class="rc-duty-comment-select" v-model="selectedcomment">
+                <option v-bind:value="dutycomment.CODE" v-for="dutycomment in comments">{{dutycomment.NAME}}</option>
+            </select>
+            <span class="rc-calendar-button rc-comment-button rc-deal-detail-comment-button rc-deal-detail-comment-ok-button"
+                v-on:click="addDutyComment"></span><!--
+            --><span class="rc-calendar-button rc-comment-button rc-deal-detail-comment-button rc-deal-detail-comment-cancel-button"
+                v-on:click="closeDutyChoosing"></span>
+        </div>
+        <span class="rc-deal-detail-button rc-deal-duty-comment"
+            title="<?=$langValues['BEGIN_DUTY_COMMENT_ADD_BUTTON_TITLE']?>"
+            v-on:click="initDutyChoosing"
+            v-else></span>
+    </template>
+</script>
+
 <script id="deal-detail-modal-component" data-props="deal, dealindex, newcomment, bx24inited, comments" type="text/vue-component">
     <div class="rc-deal-detail">
         <template v-if="!deal.IS_EMPTY">
@@ -224,9 +245,12 @@
                 <comment-unit-editor
                     v-bind:value="''"
                     v-if="newcomment"></comment-unit-editor>
-                <span class="rc-deal-detail-add-comment"
-                    title="<?=$langValues['BEGIN_COMMENT_ADD_BUTTON_TITLE']?>"
-                    v-on:click="initCommentAdd" v-else></span>
+                <template v-else>
+                    <span class="rc-deal-detail-button rc-deal-detail-add-comment"
+                        title="<?=$langValues['BEGIN_COMMENT_ADD_BUTTON_TITLE']?>"
+                        v-on:click="initCommentAdd"></span>
+                    <duty-comments v-bind:dealindex="dealindex"></duty-comments>
+                </template>
             <template>
         </div>
     </div>

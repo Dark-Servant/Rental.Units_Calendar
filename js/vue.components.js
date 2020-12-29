@@ -391,10 +391,10 @@ var VueComponentParams = {
                             encodeURI(
                                 this.comments.map(comment => {
                                     var dateValue = new Date(comment['CREATED_AT'] * 1000);
-                                    return comment['VALUE'] + "->" + comment['USER_NAME']
+                                    return comment['VALUE'] + "BR" + comment['USER_NAME']
                                          + ' (' + dateValue.toLocaleDateString() + ' '
                                                 + dateValue.toLocaleTimeString() + ')';
-                                }).join("->")
+                                }).join("BR")
                             ) + '&'
                         + SERVER_CONSTANTS.CRM_USER_FIELD_START_DATE + '=' + dateValue + '&'
                         + SERVER_CONSTANTS.CRM_USER_FIELD_COMPLETION_DATE + '=' + dateValue + '">'

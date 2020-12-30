@@ -277,12 +277,13 @@ class Content extends InfoserviceModel
 
     /**
      * Обновленный метод сохранения данных в БД
-     * 
+     *
+     * @param $validate - параметр для родительского метода
      * @return mixed
      */
-    public function save()
+    public function save($validate = true)
     {
-        $result = parent::save();
+        $result = parent::save($validate);
         $this->correctNewComment();
         return $result;
     }

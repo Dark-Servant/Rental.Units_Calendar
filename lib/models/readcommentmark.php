@@ -11,10 +11,11 @@ class ReadCommentMark extends InfoserviceModel
 
     /**
      * Обновленный метод сохранения данных в БД
-     * 
+     *
+     * @param $validate - параметр для родительского метода
      * @return mixed
      */
-    function save()
+    public function save($validate = true)
     {
         if ($this->id || !$this->comment_id || !$this->user_id
             || (
@@ -25,7 +26,7 @@ class ReadCommentMark extends InfoserviceModel
                     ])
             )) return;
 
-        return parent::save();
+        return parent::save($validate);
     }
 
     /**

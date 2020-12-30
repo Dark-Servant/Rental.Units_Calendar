@@ -214,7 +214,7 @@ class InfoserviceModel extends ActiveRecord\Model
      * @param &$value - значение поля
      * @return void
      */
-    public function __set(string $name, $value)
+    public function __set($name, $value)
     {
         if (in_array(strtolower($name), ['id'])) return;
 
@@ -245,14 +245,15 @@ class InfoserviceModel extends ActiveRecord\Model
 
     /**
      * Обновленный метод сохранения данных в БД
-     * 
+     *
+     * @param $validate - параметр для родительского метода
      * @return mixed
      */
-    public function save()
+    public function save($validate = true)
     {
         $this->correctImortantFields();
         $this->oldParamData = [];
-        return parent::save();
+        return parent::save($validate);
     }
 
     /**
@@ -282,10 +283,10 @@ class InfoserviceModel extends ActiveRecord\Model
      * класса с помощью конструкции
      *     <экземпляр>-><поле>
      * 
-     * @param string $name - название поля
+     * @param $name - название поля
      * @return mixed
      */
-    public function __get(string $name)
+    public function &__get($name)
     {
         foreach (['getFieldByConditions'] as $methodName) {
             $result = $this->$methodName($name);

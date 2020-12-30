@@ -102,14 +102,15 @@ class Comment extends InfoserviceModel
 
     /**
      * Обновленный метод сохранения данных в БД
-     * 
+     *
+     * @param $validate - параметр для родительского метода
      * @return mixed
      */
-    public function save()
+    public function save($validate = true)
     {
         if (!$this->checkContentLink()) return;
         $isNew = !$this->id;
-        $result = parent::save();
+        $result = parent::save($validate);
         if ($isNew && $this->id) ReadCommentMark::setMark($this->user_id, $this->id);
         return $result;
     }

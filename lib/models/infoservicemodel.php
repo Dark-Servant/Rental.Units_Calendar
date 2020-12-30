@@ -166,7 +166,7 @@ class InfoserviceModel extends ActiveRecord\Model
 
         if (
             is_integer($value) && ($value > 0)
-            || is_string($value) && preg_match('/^[1-9]\d*&/', $value)
+            || is_string($value) && preg_match('/^[1-9]\d*$/', $value)
         ) {
             $value = intval($value);
 

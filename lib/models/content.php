@@ -132,10 +132,13 @@ class Content extends InfoserviceModel
      *         ],
      *         ...
      *     ]
+     *
+     * @param bool $throwAll - указывает брать ли все комментарии, по-умолчанию берутся те, что
+     * вне рамок дат контента
      * 
      * @return array
      */
-    protected function getThrownComments()
+    protected function getThrownComments(bool $throwAll = false)
     {
         $commentIds = array_map(
                             function($comment) { return $comment->id; },
@@ -143,15 +146,20 @@ class Content extends InfoserviceModel
                         );
         if (empty($commentIds)) return [];
 
-        $comments = Comment::all([
-                            'conditions' => [
-                                '(id IN (?)) AND ((technic_id <> ?) OR (content_date < ?) OR (content_date > ?))',
-                                $commentIds,
-                                $this->technic_id,
-                                $this->begin_date->format(Day::FORMAT),
-                                $this->finish_date->format(Day::FORMAT)
-                            ]
-                        ]);
+        if ($throwAll) {
+            $comments = Comment::all(['id' => $commentIds]);
+
+        } else {
+            $comments = Comment::all([
+                                'conditions' => [
+                                    '(id IN (?)) AND ((content_date < ?) OR (content_date > ?))',
+                                    $commentIds,
+                                    $this->begin_date->format(Day::FORMAT),
+                                    $this->finish_date->format(Day::FORMAT)
+                                ]
+                            ]);
+
+        }
         $commentIds = [];
         foreach ($comments as $comment) {
             $commentIds[$comment->technic_id][$comment->content_date->format(Day::FORMAT)][] = $comment->id;
@@ -174,14 +182,15 @@ class Content extends InfoserviceModel
      *         ...
      *     
      *     zeroCommentIds - массив идентификаторов комментариев, у которых надо обнулить связь с контентом
-     * 
+     *
+     * @param bool $throwAll - указывает на то, что надо все текущие комментарии контента бросить
      * @return array
      */
-    protected function getThrownCommentsWithNewRoles()
+    protected function getThrownCommentsWithNewRoles(bool $throwAll = false)
     {
         $contentCommentIds = [];
         $zeroCommentIds = [];
-        foreach ($this->getThrownComments() as $technicId => $comments) {
+        foreach ($this->getThrownComments($throwAll) as $technicId => $comments) {
             $technic = Technic::find($technicId);
             $technicIds = $technic->partner
                         ? array_map(
@@ -230,15 +239,19 @@ class Content extends InfoserviceModel
      * После изменения данных контента может получиться так, что некоторые комментарии перестанут
      * принадлежать контенту, их надо отдать другому контенту или обнулить связь с любым контентом.
      * Так же после изменения данных у контента могут появиться новые комментарии, которые раньше
-     * были там, куда был передвинут контент, и не были связаны ни с одним контентом
+     * не были связаны ни с одним контентом и находятся там, куда стал передвинут контент
+     *
+     * @param bool $throwAll - указывает на то, что надо все текущие комментарии контента бросить,
+     * по-умолчанию бросает только те, у которых дата не совпадает с интервалом контента
      * 
+     * @param bool $checkNew - указывает на то, что надо поискать новые комментарии
      * @return void
      */
-    protected function correctNewComment()
+    protected function correctOldComment(bool $throwAll = false, bool $checkNew = true)
     {
         if (!$this->id) return;
 
-        $thrownComments = $this->getThrownCommentsWithNewRoles();
+        $thrownComments = $this->getThrownCommentsWithNewRoles($throwAll);
 
         foreach ($thrownComments['contentCommentIds'] as $comment) {
             Comment::update_all([
@@ -252,6 +265,8 @@ class Content extends InfoserviceModel
 
         if (!empty($thrownComments['zeroCommentIds']))
             Comment::update_all(['set' => ['content_id' => 0], 'conditions' => ['id' => $thrownComments['zeroCommentIds']]]);
+
+        if (!$checkNew) return;
 
         $partner = $this->technic ? $this->technic->partner : null;
         $technicIds = $partner
@@ -284,7 +299,7 @@ class Content extends InfoserviceModel
     public function save($validate = true)
     {
         $result = parent::save($validate);
-        $this->correctNewComment();
+        $this->correctOldComment();
         return $result;
     }
 
@@ -295,8 +310,7 @@ class Content extends InfoserviceModel
      */
     public function delete()
     {
-        $this->technic_id = 0;
-        $this->correctNewComment();        
+        $this->correctOldComment(true, false);
         return parent::delete();
     }
 };

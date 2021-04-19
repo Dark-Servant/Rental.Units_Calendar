@@ -171,7 +171,7 @@ class InfoserviceModel extends ActiveRecord\Model
             $value = intval($value);
 
         } else {
-            $value = null;
+            $value = 0;
         }
         return true;
     }

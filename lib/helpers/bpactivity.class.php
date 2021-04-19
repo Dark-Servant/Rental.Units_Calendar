@@ -160,9 +160,12 @@ class BPActivity
      * с информацией об этом
      * 
      * @param BX24RestAPI $restAPIUnit - экземляр класса BX24RestAPI для работы с REST API Bitrix24
-     * @return void
+     * @param string $tokenValue - значение токена, который был передан в запросе в параметре event_token,
+     * оно будет использоваться при ответе действия
+     * 
+     * @return array
      */
-    public function run(BX24RestAPI $restAPIUnit = null)
+    public function run(BX24RestAPI $restAPIUnit = null, string $tokenValue = null)
     {
         global $langValues;
 
@@ -173,6 +176,13 @@ class BPActivity
         if (!file_exists($indexPath))
             throw new Exception(strtr($langValues['ERROR_NO_ACTIVITY_INDEX_FILE'], ['#ACTIVITY#' => $this->foundActivity['code']]));
 
-        require $indexPath;
+        $result = require $indexPath;
+        if (!$tokenValue) return;
+
+        $answer = ['EVENT_TOKEN' => $_REQUEST['event_token']];
+        if (is_array($result)) $answer['RETURN_VALUES'] = $result;
+
+        $restAPIUnit->callBizprocEventSend($answer);
+        return $result;
     }
 };

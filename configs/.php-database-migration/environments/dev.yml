@@ -1,7 +1,7 @@
 connection:
     host:     localhost
     driver:   mysql
-    port:     3307
+    port:     3306
     username: rentaluser
     password: 1xHBdAeX1F4p4Dox
     database: rental_calendar

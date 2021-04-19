@@ -15,34 +15,33 @@ define('FROM_HTTP_HOST', !empty($_SERVER['HTTP_HOST']));
 
 try {
 
-    $bpactivity = new BPActivity(strval($_REQUEST['code']));
-
+    $codeValue = strval($_REQUEST['code']) ?: '.empty';
     $dateLink = date('YmdHis');
     if (FROM_HTTP_HOST) {
-        $logFolder = __DIR__ . '/.log/' . $_REQUEST['code'] . '/';
+        $logFolder = __DIR__ . '/.log/' . $codeValue . '/';
         if (!file_exists($logFolder)) mkdir($logFolder, 0777, true);
 
-        file_put_contents($logFolder . '/' . $dateLink . '.request.txt', 
+        file_put_contents($logFolder . '/' . $dateLink . '.request.txt',
             print_r($_SERVER, true) . PHP_EOL .
             print_r($_REQUEST, true) . PHP_EOL
         );
+    }
+    $bpactivity = new BPActivity($codeValue);
+    if (FROM_HTTP_HOST) {
         $restAPIUnit = new BX24RestAPI($_REQUEST['auth'], $logFolder . '/' . $dateLink . '.log.txt');
 
     } else {
         $restAPIUnit = new BX24RestAPI($_REQUEST['auth']);
     }
 
-    $bpactivity->setParams($_REQUEST['properties'] ?? [])->run($restAPIUnit);
-
-    if (FROM_HTTP_HOST)
-        $restAPIUnit->callBizprocEventSend(['EVENT_TOKEN' => $_REQUEST['event_token']]);
+    $answer['answer'] = $bpactivity->setParams($_REQUEST['properties'] ?? [])->run($restAPIUnit, FROM_HTTP_HOST ? $_REQUEST['event_token'] : null);
 
 } catch (Exception $error) {
     $answer = array_merge($answer, ['result' => false, 'message' => $error->GetMessage()]);
 }
 
 if (FROM_HTTP_HOST) {
-    file_put_contents($logFolder . '/' . $dateLink . '.result.txt', 
+    file_put_contents($logFolder . '/' . $dateLink . ($answer['result'] ? '.result.txt' : '.error.txt'), 
         print_r($answer, true)
     );
 

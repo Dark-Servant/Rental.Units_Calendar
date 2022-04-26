@@ -329,7 +329,7 @@ class Technic extends InfoserviceModel
                         
                     } elseif (
                         ($dayContents[$dayTimestamp]['STATUS'] != CONTENT_REPAIR_DEAL_STATUS)
-                        && ($dayContents[$dayTimestamp]['STATUS'] != $content->status)
+                        && ($dayContents[$dayTimestamp]['STATUS'] != $contentStatus)
                     ) {
                         $dayContents[$dayTimestamp]['STATUS'] = CONTENT_MANY_DEAL_STATUS;
                         $dayContents[$dayTimestamp]['STATUS_CLASS'] = Content::CONTENT_DEAL_STATUS[CONTENT_MANY_DEAL_STATUS];

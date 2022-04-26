@@ -395,18 +395,18 @@ body {
 }
 
 .rc-content-waiting, .rc-content-waiting .rc-content-deal-responsible {
-    background-color: #F0F7FF;
-    border-color: #CBE3FF;
+    background-color: #CCE1FC;
+    border-color: #79B1F7;
 }
 
 .rc-content-process, .rc-content-process .rc-content-deal-responsible {
-    background-color: #ADCDF3;
-    border-color: #577BA7;
+    background-color: #8FBAEC;
+    border-color: #0A6ADF;
 }
 
 .rc-content-final, .rc-content-final .rc-content-deal-responsible {
-    background-color: rgba(163, 217, 140, 0.716);
-    border-color: #086A25;
+    background-color: #8FBAEC;
+    border-color: #0A6ADF;
 }
 
 .rc-content-closed, .rc-content-closed .rc-content-deal-responsible {
@@ -445,7 +445,7 @@ body {
 }
 
 .rc-content-waiting:hover {
-    box-shadow: 2px -2px 10px #CBE3FF, -2px 2px 10px #CBE3FF, -2px -2px 10px #CBE3FF, 2px 2px 10px #CBE3FF;
+    box-shadow: 2px -2px 10px #8ABDFB, -2px 2px 10px #CBE3FF, -2px -2px 10px #CBE3FF, 2px 2px 10px #CBE3FF;
 }
 
 .rc-content-process:hover {
@@ -483,7 +483,7 @@ body {
 .rc-content-many-deals {
     font-weight: bold;
     display: block;
-    margin: 45px 0;
+    margin: 10px 0;
 }
 
 .rc-content-deals > * {
@@ -515,8 +515,9 @@ body {
 .rc-content-deal-comment {
     max-height: 2em;
     font-size: 11px;
-    color: #1F04C2;
-    font-style: italic;
+    color: #C90000;
+    font-style: oblique;
+    font-weight: 600;
 }
 
 .rc-content-deal-responsible {

@@ -405,8 +405,8 @@ body {
 }
 
 .rc-content-final, .rc-content-final .rc-content-deal-responsible {
-    background-color: #8FBAEC;
-    border-color: #0A6ADF;
+    background-color: rgba(163, 217, 140, 0.716);
+    border-color: #086A25;
 }
 
 .rc-content-closed, .rc-content-closed .rc-content-deal-responsible {

@@ -92,7 +92,7 @@ class Technic extends InfoserviceModel
                                             (new DateTime)->setTimestamp(end($dayTimestamps)),
                                             (new DateTime)->setTimestamp(reset($dayTimestamps))
                                         ],
-                                        !empty($conditions['content']) && is_array($conditions['content']) ? $conditions['content'] : []
+                                        is_array($conditions['content']) ? $conditions['content'] : []
                                     );
 
         self::$contentOrders = is_string($orders['content']) ? $orders['content'] : '';
@@ -317,25 +317,35 @@ class Technic extends InfoserviceModel
                     ) as $dayTimestamp
                 ) {
                     if (!isset($dayContents[$dayTimestamp])) continue;
+
+                    /**
+                     * Проверка на то, был ли конкретный контент выведен в текущей ячейке. Если да, то он уже отметился
+                     * для текущей техники (партнера) и даты, поэтому устанавливается, что его не надо выводить.
+                     */
                     $cellData['CELL_SHOWING'] = empty($dayDealNames[$dayDealNamesCode][$dayTimestamp][$dealName]);
                     $dayDealNames[$dayDealNamesCode][$dayTimestamp][$dealName] = true;
 
-                    if (
-                        !isset($dayContents[$dayTimestamp]['STATUS'])
-                        || ($contentStatus == CONTENT_REPAIR_DEAL_STATUS)
-                    ) {
-                        $dayContents[$dayTimestamp]['STATUS'] = $contentStatus;
-                        $dayContents[$dayTimestamp]['STATUS_CLASS'] = Content::CONTENT_DEAL_STATUS[$contentStatus];
-                        
-                    } elseif (
-                        ($dayContents[$dayTimestamp]['STATUS'] != CONTENT_REPAIR_DEAL_STATUS)
-                        && ($dayContents[$dayTimestamp]['STATUS'] != $contentStatus)
-                    ) {
-                        $dayContents[$dayTimestamp]['STATUS'] = CONTENT_MANY_DEAL_STATUS;
-                        $dayContents[$dayTimestamp]['STATUS_CLASS'] = Content::CONTENT_DEAL_STATUS[CONTENT_MANY_DEAL_STATUS];
-                    }
-
+                    /**
+                     * Из-за бага с дублированнием контента, когда действие БП запускается параллельно несколько раз
+                     * при, возможно, нескольких раз обращений из шаблона БП, приходится делать проверку статуса контента
+                     * только для того контента, который еще не отметился для текущей даты и техники
+                     */
                     if ($cellData['CELL_SHOWING']) {
+                        if (
+                            !isset($dayContents[$dayTimestamp]['STATUS'])
+                            || ($contentStatus == CONTENT_REPAIR_DEAL_STATUS)
+                        ) {
+                            $dayContents[$dayTimestamp]['STATUS'] = $contentStatus;
+                            $dayContents[$dayTimestamp]['STATUS_CLASS'] = Content::CONTENT_DEAL_STATUS[$contentStatus];
+                            
+                        } elseif (
+                            ($dayContents[$dayTimestamp]['STATUS'] != CONTENT_REPAIR_DEAL_STATUS)
+                            && ($dayContents[$dayTimestamp]['STATUS'] != $contentStatus)
+                        ) {
+                            $dayContents[$dayTimestamp]['STATUS'] = CONTENT_MANY_DEAL_STATUS;
+                            $dayContents[$dayTimestamp]['STATUS_CLASS'] = Content::CONTENT_DEAL_STATUS[CONTENT_MANY_DEAL_STATUS];
+                        }
+
                         ++$dayContents[$dayTimestamp]['DEAL_COUNT'];
                         $dayContents[$dayTimestamp]['IS_ONE'] = $dayContents[$dayTimestamp]['DEAL_COUNT'] == self::MIN_DEAL_COUNT;
                         $dayContents[$dayTimestamp]['VERY_MANY'] = $dayContents[$dayTimestamp]['DEAL_COUNT'] > self::MAX_DEAL_COUNT;

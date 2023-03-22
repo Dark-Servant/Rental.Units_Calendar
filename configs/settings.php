@@ -16,7 +16,7 @@ function infoservice_auotload($className)
 
     if (($namespaces = ActiveRecord\get_namespaces($className))) {
         $className = array_pop($namespaces);
-        $root .= DIRECTORY_SEPARATOR . implode($namespaces, DIRECTORY_SEPARATOR);
+        $root .= DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, $namespaces);
     }
 
     $className = strtolower($className);    

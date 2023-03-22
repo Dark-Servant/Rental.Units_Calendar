@@ -200,10 +200,11 @@ class Technic extends InfoserviceModel
     {
         $filter = [
             '(technic_id IN (?)) AND (content_date >= ?) AND (content_date <= ?)',
-            array_keys($technicPartners),
+            array_keys($technicPartners) ?: null,
             (new DateTime)->setTimestamp(reset($dayTimestamps)),
             (new DateTime)->setTimestamp(end($dayTimestamps)),
         ];
+
         $comments = [];
         foreach (Comment::all(['conditions' => $filter, 'order' => 'id asc']) as $comment) {
             $partnerId = $technicPartners[$comment->technic_id];

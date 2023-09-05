@@ -64,7 +64,7 @@ try {
 
             $isNotPartner = $technic['IS_PARTNER'] == 'false';
             $className = $isNotPartner ? 'Technic' : 'Partner';
-            if (empty($className::find($technicId)))
+            if (empty($className::find_by_id($technicId)))
                  throw new Exception(
                             $isNotPartner ? $langValues['ERROR_BAD_TECHNIC_ID']
                                           : $langValues['ERROR_BAD_PARTNER_ID']
@@ -97,7 +97,7 @@ try {
 
             $commentId = intval($_POST['commentId']);
             if ($commentId) {
-                $comment = Comment::find($commentId);
+                $comment = Comment::find_by_id($commentId);
                 if (empty($comment))
                     throw new Exception($langValues['ERROR_EMPTY_COMMENT_BY_ID']);
 
@@ -139,7 +139,7 @@ try {
             ) throw new Exception($langValues['ERROR_EMPTY_USER_ID']);
 
             $commentId = intval($_POST['commentId']);
-            if (!$commentId || empty($comment = Comment::find($commentId)))
+            if (!$commentId || empty($comment = Comment::find_by_id($commentId)))
                 throw new Exception($langValues['ERROR_EMPTY_COMMENT_BY_ID']);
             
             if ($comment->user_id != $responsible->id)
@@ -166,7 +166,7 @@ try {
             ) throw new Exception($langValues['ERROR_EMPTY_USER_ID']);
 
             $commentId = intval($_POST['commentId']);
-            if (!$commentId || empty($comment = Comment::find($commentId)))
+            if (!$commentId || empty($comment = Comment::find_by_id($commentId)))
                 throw new Exception($langValues['ERROR_BAD_COMMENT_ID']);
 
             $startDate = $comment->content_date->getTimestamp();

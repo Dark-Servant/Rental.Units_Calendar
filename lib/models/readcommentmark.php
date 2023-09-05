@@ -19,7 +19,7 @@ class ReadCommentMark extends InfoserviceModel
     {
         if ($this->id || !$this->comment_id || !$this->user_id
             || (
-                $this_>toCheck
+                $this->toCheck
                 && static::first([
                        'comment_id' => $this->comment_id,
                        'user_id' => $this->user_id
@@ -39,7 +39,7 @@ class ReadCommentMark extends InfoserviceModel
      * 
      * @return void
      */
-    function setMark(int $userId, $commentIds)
+    public static function setMark(int $userId, $commentIds)
     {
         if (!is_array($commentIds)) $commentIds = [$commentIds];
 

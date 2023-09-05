@@ -320,6 +320,34 @@ var VueComponentParams = {
              */
             closeDetailModal() {
                 calendar.contentDetail = null;
+            },
+
+            /**
+             * Обработчик кнопки для удаления контента за конкретный день
+             * 
+             * @param dealIndex
+             * @return void
+             */
+            initDealRemoving(dealIndex) {
+                if (!confirm(LANG_VALUES.CONFIRM_DEAL_DELETING)) return;
+
+                var modalUnit = $(selector.contentDetailWindow);
+                modalUnit.addClass(classList.noReaction);
+
+                $.post(ajaxURL.replace(/#action#/i, 'removedeal'), {
+                    ID: calendar.contentDetail.ID,
+                    isPartner: calendar.contentDetail.IS_PARTNER,
+                    contentDate: calendar.contentDetail.CONTENT_DAY,
+                    startDate: Object.keys(calendar.technics[calendar.contentDetail.TECHNIC_INDEX].CONTENTS)[0],
+                    dealID: calendar.contentDetail.DEALS[dealIndex].ID,
+                    user: currentUserData
+                }, answer => {
+                    modalUnit.removeClass(classList.noReaction);
+                    if (!answer.result || !answer.data.length) return;
+
+                    Vue.set(calendar.technics, calendar.contentDetail.TECHNIC_INDEX, answer.data[0]);
+                    calendar.showContentDetails(calendar.contentDetail.TECHNIC_INDEX, calendar.contentDetail.CONTENT_DAY);
+                });
             }
         }
     },

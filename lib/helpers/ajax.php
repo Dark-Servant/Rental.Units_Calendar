@@ -88,6 +88,18 @@ try {
             }
             break;
 
+        // обработчик удаления контента за конкретный день
+        case 'removedeal':
+            Content::find_by_id($_POST['dealID'])
+                   ->cleanDataAtDay((new \DateTime)->setTimestamp($_POST['contentDate']));
+
+            $answer['data'] = Technic::getWithContentsByDayPeriod(
+                                    $_POST['user']['ID'],
+                                    Day::getPeriod(date(Day::FORMAT, $_POST['startDate']), 7),
+                                    [($_POST['isPartner'] == 'true' ? 'partner_id' : 'id') => $_POST['ID']]
+                                );
+            break;
+
         // обработчик добавления/изменения комментариев
         case 'addcomment':
             $responsible = Responsible::initialize($_POST['user']);

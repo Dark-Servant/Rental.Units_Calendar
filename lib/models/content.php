@@ -317,4 +317,62 @@ class Content extends InfoserviceModel
         $this->correctOldComment(true, false);
         return parent::delete();
     }
+
+    /**
+     * Удаление данных за конкретный день о контенте, включая и прикрепленные в
+     * этот день к нему комментарии.
+     * Если указанная дата находится между датами начала и конца контента, то
+     * будет создан новый контент, чьи даты начала и конца будут от СЛЕДУЮЩЕГО
+     * ДНЯ до ДНЯ ОКОНЧАНИЯ текущего контента, а дата окончания текущего контента
+     * станет датой, ИДУЩЕЙ за указанной.
+     * Если указанная дата совпадает с датой начала или конца, то в случае, если
+     * обе даты не равны, то та дата, что совпала, будет поправлена на значение
+     * близкое к значению другой даты.
+     * Если указанная дата совпадает с датой начала или конца, то в случае, если
+     * обе даты равны, то контент будет удален
+     *
+     * @param \DateTime $date - дата конкретного дня
+     * @return self
+     */
+    public function cleanDataAtDay(\DateTime $date): self
+    {
+        $this->deleteCommentsAtDay($date);
+
+        $currentDay = $date->format(Day::FORMAT);
+        if ($currentDay > $this->begin_date->format(Day::FORMAT)) {
+            if ($currentDay < $this->finish_date->format(Day::FORMAT)) {
+                $newContent = $this->getPreparedCopyWithoutFields(['begin_date', 'finish_date', 'sort']);
+                $newContent->sort = $this->sort;
+                $newContent->begin_date = $date->getTimestamp() + DAY_SECOND_COUNT;
+                $newContent->finish_date = $this->finish_date->getTimestamp();
+                $newContent->save();
+            }
+            $this->finish_date = $date->getTimestamp() - DAY_SECOND_COUNT;
+
+        } elseif ($currentDay < $this->finish_date->format(Day::FORMAT)) {
+            $this->begin_date = $date->getTimestamp() + DAY_SECOND_COUNT;
+
+        } else {
+            parent::delete();
+            return $this;
+        }
+        parent::save(true);
+        return $this;
+    }
+
+    /**
+     * Удаление комментариев за конкретный день у текущего контента
+     *
+     * @param \DateTime $date - дата конкретного дня
+     * @return self
+     */
+    public function deleteCommentsAtDay(\DateTime $date): self
+    {
+        $commentIDs = array_map(
+            function($comment) { return $comment->id; },
+            Comment::all(['conditions' => ['content_id' => $this->id, 'content_date' => $date]])
+        );
+        if (!empty($commentIDs)) Comment::delete_all(['conditions' => ['id' => $commentIDs]]);
+        return $this;
+    }
 };

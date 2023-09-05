@@ -43,6 +43,7 @@ $langValues['FILTER_MY_TECHNIC'] = 'Своя техника';
 $langValues['FILTER_QUARTER_BUTTON'] = 'Просмотр кварталами';
 $langValues['BIZ_PROC_ACTIVITY_LIST_TITLE'] = 'Перейти к списку действий Бизнес-процессов';
 $langValues['MANY_DEAL_STATUS'] = 'Техника работает на нескольких объектах';
+$langValues['CONFIRM_DEAL_DELETING'] = 'Удалить сделку?';
 $langValues['CONFIRM_MESSAGE_DELETING'] = 'Удалить комментарий?';
 
 /**
@@ -122,6 +123,7 @@ $langValues['BPA_CONTENT_ADD_PARAM_VISIBILITY'] = 'Видимость в кал�
 $langValues['MODAL_CONTENT_TECHNIC_CAPTION'] = 'Техника';
 $langValues['MODAL_CONTENT_RESPONSIBLE_CAPTION'] = 'Ответственный';
 $langValues['OPEN_URL_WITH_DEAL_ADD_TITLE'] = 'Открыть страницу с созданием CRM-сделки';
+$langValues['OPEN_URL_WITH_DEAL_REMOVE_TITLE'] = 'Удалить данные CRM-сделки';
 $langValues['BEGIN_COMMENT_ADD_BUTTON_TITLE'] = 'Начать добавление комментария';
 $langValues['BEGIN_DUTY_COMMENT_ADD_BUTTON_TITLE'] = 'Выбрать дежурный комментарий';
 $langValues['COMMENT_COPY_TITLE'] = 'Скопировать комментарий до другой даты';

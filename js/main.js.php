@@ -215,7 +215,7 @@ header('Content-Type: application/javascript; charset=utf-8');?>
             commentId: 0,
             isPartner: 0,
             contentDay: calendar.contentDetail.CONTENT_DAY,
-            user: {...currentUserData}
+            user: currentUserData
         };
 
         if (commentIndex !== false) {

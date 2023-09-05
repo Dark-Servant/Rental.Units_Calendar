@@ -30,7 +30,7 @@
 
     watch: {
         /**
-         * Следит за изменением переменной contentDetail. Когда она ициализирована как объект, то
+         * Следит за изменением переменной contentDetail. Когда она инициализирована как объект, то
          * появляется модальное окно с информацией о контенте, иначе окно исчезает. В случае сброса
          * переменной contentDetail этот метод сбрасывает значение в переменных, наличие в которых
          * значения отличного от false приводит к открытию поля ввода комментария
@@ -50,7 +50,7 @@
                 $.post(ajaxURL.replace(/#action#/i, 'readcomments'),
                     {
                         comment_ids: commentIds,
-                        user: {...currentUserData}
+                        user: currentUserData
                     }, answer => {
                         if (!answer.result) return;
 
@@ -265,7 +265,7 @@
 
             $.post(ajaxURL.replace(/#action#/i, 'setchosen'), {
                 technic: {...technic},
-                user: {...currentUserData}
+                user: currentUserData
             }, answer => {
                 cellUnit.removeClass(classList.noReaction);
                 if (!answer.result) return;

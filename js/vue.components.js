@@ -270,7 +270,7 @@ var VueComponentParams = {
                 var data = {
                     date: Math.floor(this.dateForCopyValue.getTime() / 1000),
                     commentId: calendar.contentDetail.COMMENTS[calendar.copyCommentIndex].ID,
-                    user: {...currentUserData}
+                    user: currentUserData
                 };
 
                 var modalUnit = $(selector.copyCommentModalWindow);
@@ -487,7 +487,7 @@ var VueComponentParams = {
 
                 $.post(ajaxURL.replace(/#action#/i, 'removecomment'), {
                     commentId: commentId,
-                    user: {...currentUserData}
+                    user: currentUserData
                 }, answer => {
                     modalUnit.removeClass(classList.noReaction);
                     if (!answer.result) return;

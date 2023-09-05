@@ -270,7 +270,6 @@ class InfoserviceModel extends ActiveRecord\Model
         if (!isset(static::FIELD_EXISTENCE_CONDITIONS[$name]))
             return;
 
-        $isSuccess = true;
         foreach (static::FIELD_EXISTENCE_CONDITIONS[$name] as $field => $value) {
             if ($this->$field == $value) continue;
 
@@ -310,5 +309,28 @@ class InfoserviceModel extends ActiveRecord\Model
             }
         }
         return parent::delete();
+    }
+
+    /**
+     * Создает копию объекта, используя те же значения полей, но исключая
+     * поля
+     *      'id', 'created_at'
+     * и дополнительно поля из параметра $excludedFields
+     * 
+     * @param array $excludedFields - дополнительные поля, значения которых не
+     * надо копировать в новый объект класса
+     *
+     * @return self
+     */
+    public function getPreparedCopyWithoutFields(array $excludedFields = [])
+    {
+        $newContent = new static;
+        array_push($excludedFields, 'id', 'created_at');
+        foreach ($this->attributes() as $attribute => $value) {
+            if (in_array($attribute, $excludedFields)) continue;
+        
+            $newContent->$attribute = $value;
+        }
+        return $newContent;
     }
 };

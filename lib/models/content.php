@@ -299,6 +299,10 @@ class Content extends InfoserviceModel
     public function save($validate = true)
     {
         $result = parent::save($validate);
+        if (empty($this->sort)) {
+            $this->sort = $this->id;
+            $result = parent::save($validate);
+        }
         $this->correctOldComment();
         return $result;
     }

@@ -124,7 +124,7 @@ class Technic extends InfoserviceModel
             Content::all(
                 [
                     'conditions' => self::getWithAddedConditions(self::$contentConditions ?? [], ['technic_id' => $technicId]),
-                    'order' => 'id ASC'
+                    'order' => 'sort ASC'
                 ]
             ) as $content
         ) {

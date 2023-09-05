@@ -152,8 +152,8 @@ try {
         case 'readcomments':
             $responsible = Responsible::initialize($_POST['user']);
             if (!is_array($_POST['comment_ids']))
-                throw new Exception($langValues['ERROR_EMPTY_COMMENT_BY_ID']);
-                
+                break;
+                            
             ReadCommentMark::setMark($responsible->id, $_POST['comment_ids']);
             break;
 

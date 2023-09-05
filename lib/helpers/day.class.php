@@ -19,7 +19,7 @@ class Day
      * @param int $nextDayCount - количество после даты в значении $startDay
      * @return array
      */
-    public static function getPeriod(string $startDay, int $nextDayCount)
+    public static function getPeriod(string $startDay, int $nextDayCount = 0)
     {
         global $langValues;
 

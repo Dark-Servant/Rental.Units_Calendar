@@ -17,7 +17,6 @@ class Technic extends InfoserviceModel
     const MAX_DEAL_COUNT = 3;
 
     protected static $contentConditions;
-    protected static $contentOrders;
 
     /**
      * По данным экземпляра класса Technic делает инициализацию элемента с кратким
@@ -75,12 +74,7 @@ class Technic extends InfoserviceModel
      * работе с методом как генератором он использовался в методе contentsWithInitedFilter,
      * после этот фильтр будет сброшен
      * 
-     * @param array $orders - данные по сортировке. Если указан ключ "content", то значение
-     * под этим ключом будет установлено для сортировки данных, получаемых через метод
-     * contentsWithInitedFilter. Только будет использоваться эта сортировка по контенту,
-     * если в процессе работы с методом как генератором, будет использоваться и метод
-     * contentsWithInitedFilter. После работы метода visibilityUnits данные о сортировке
-     * контента сбрасываются
+     * @param array $orders - данные по сортировке
      * 
      * @yield
      */
@@ -94,8 +88,6 @@ class Technic extends InfoserviceModel
                                         ],
                                         is_array($conditions['content']) ? $conditions['content'] : []
                                     );
-
-        self::$contentOrders = is_string($orders['content']) ? $orders['content'] : '';
         foreach (
             self::all(
                 [
@@ -105,20 +97,14 @@ class Technic extends InfoserviceModel
                                             function($key) { return !in_array($key, ['content'], true); },
                                             ARRAY_FILTER_USE_KEY
                                         )
-                                   ),
-                    'order' => implode(
-                                    ', ',
-                                    array_filter($orders,
-                                        function($key) { return !in_array($key, ['content'], true); },
-                                        ARRAY_FILTER_USE_KEY
-                                    )
-                                )
+                                    ),
+                    'order' => implode(', ', $orders)
                 ]
             ) as $technic 
         ) {
             yield $technic;
         }
-        self::$contentConditions = self::$contentOrders = null;
+        self::$contentConditions = null;
     }
 
     /**
@@ -138,7 +124,7 @@ class Technic extends InfoserviceModel
             Content::all(
                 [
                     'conditions' => self::getWithAddedConditions(self::$contentConditions ?? [], ['technic_id' => $technicId]),
-                    'order' => self::$contentOrders ?? ''
+                    'order' => 'id ASC'
                 ]
             ) as $content
         ) {

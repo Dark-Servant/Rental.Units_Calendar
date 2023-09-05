@@ -138,7 +138,7 @@ class Content extends InfoserviceModel
      * 
      * @return array
      */
-    protected function getThrownComments(bool $throwAll = false)
+    protected function getThrownTechnicComments(bool $throwAll = false)
     {
         $commentIds = array_map(
                             function($comment) { return $comment->id; },
@@ -190,8 +190,8 @@ class Content extends InfoserviceModel
     {
         $contentCommentIds = [];
         $zeroCommentIds = [];
-        foreach ($this->getThrownComments($throwAll) as $technicId => $comments) {
-            $technic = Technic::find($technicId);
+        foreach ($this->getThrownTechnicComments($throwAll) as $technicId => $comments) {
+            $technic = Technic::find_by_id($technicId);
             $technicIds = $technic->partner
                         ? array_map(
                                 function($technic) { return $technic->id; },

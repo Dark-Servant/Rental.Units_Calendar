@@ -5,7 +5,9 @@ error_reporting(E_ERROR);
 
 define('PHP_ACTIVERECORD_AUTOLOAD_DISABLE', true);
 
-require_once dirname(__DIR__) . '/vendor/autoload.php';
+if (empty($_SERVER['DOCUMENT_ROOT'])) $_SERVER['DOCUMENT_ROOT'] = dirname(__DIR__);
+
+require_once $_SERVER['DOCUMENT_ROOT'] . '/vendor/autoload.php';
 
 spl_autoload_register('infoservice_auotload', false, true);
 
@@ -22,8 +24,8 @@ function infoservice_auotload($className)
     $className = strtolower($className);    
     foreach ([
             $root . '/#classname#.php',
-            dirname(__DIR__) . '/lib/models/#classname#.php',
-            dirname(__DIR__) . '/lib/helpers/#classname#.class.php'
+            $_SERVER['DOCUMENT_ROOT'] . '/lib/models/#classname#.php',
+            $_SERVER['DOCUMENT_ROOT'] . '/lib/helpers/#classname#.class.php'
         ] as $unitPath)  {
 
         $file = str_replace('#classname#', $className, $unitPath);
@@ -35,7 +37,7 @@ function infoservice_auotload($className)
 }
 
 require_once __DIR__ . '/consts.php';
-require_once dirname(__DIR__) . '/lang/' . LANG . '.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/lang/' . LANG . '.php';
 
 ActiveRecord\Config::initialize(
     function($cfg) {

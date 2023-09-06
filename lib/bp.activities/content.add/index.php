@@ -31,4 +31,5 @@ $content->customer_id = $customer->id;
 $content->work_address = $this->values['WORK_ADDRESS'];
 $content->status = $this->values['STATUS'];
 $content->is_closed = $this->values['IS_CLOSED'];
-$content->save();
+$content->saveAsUnique();
+

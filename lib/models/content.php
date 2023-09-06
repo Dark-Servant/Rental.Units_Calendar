@@ -203,7 +203,6 @@ class Content extends InfoserviceModel
                 self::all([
                     'conditions' => [
                         '(id <> ?) AND (technic_id IN (?)) AND (begin_date <= ?) AND (finish_date >= ?)',
-
                         $this->id, $technicIds, max($dates), min($dates)
                     ],
                     'order' => 'id asc'
@@ -291,7 +290,77 @@ class Content extends InfoserviceModel
     }
 
     /**
-     * Обновленный метод сохранения данных в БД
+     * Сохраняет данные, как и метод save, но дополнительно после сохранения
+     * находит контент с таким значением спецификации (specification), забирает
+     * себе комментарии найденного контента, чья дата находится в пределах
+     * дат начала и конца текущего контента, затем удаляет найденный контент
+     * через поправленный метод delete, где используется логика смены контента
+     * у комментариев
+     *
+     * @param $validate - параметр для родительского метода save
+     * @return void
+     */
+    public function saveAsUnique($validate = true)
+    {
+        $this->save($validate);
+        $otherIDs = $this->getOtherIDsWithSameSpecification();
+        $this->addCommentsFromIDs($otherIDs);
+        if (empty($otherIDs)) return;
+
+        foreach (static::all(['conditions' => ['id' => $otherIDs]]) as $content) {
+            $content->delete();
+        }
+    }
+
+    /**
+     * Возвращает идентификаторы контента, чье значение спецификации (specification)
+     * такое же, как у текущего контента
+     *
+     * @return void
+     */
+    public function getOtherIDsWithSameSpecification()
+    {
+        if (!$this->id) return [];
+
+        return array_map(
+            function($content) { return $content->id; },
+            static::all([
+                'conditions' => [
+                    '(specification_id = ?) AND (id <> ?)',
+                    $this->specification_id,
+                    $this->id
+                ]
+            ])
+        );
+    }
+
+    /**
+     * Для текущего контента забираются комментарии, принадлежащих контенту с
+     * указанными идентификаторами и чья дата находится в пределах дат начала
+     * и окончания текущего контента
+     *
+     * @param array $IDs - список идентификаторов контента
+     * @return void
+     */
+    public function addCommentsFromIDs(array $IDs)
+    {
+        if (!$this->id || empty($IDs)) return;
+
+        Comment::update_all([
+                'set' => ['content_id' => $this->id],
+                'conditions' => [
+                    '(content_id <> ?) AND (content_id IN (?)) AND (content_date >= ?) AND (content_date <= ?)',
+                    $this->id,
+                    $IDs,
+                    $this->begin_date->format(Day::FORMAT),
+                    $this->finish_date->format(Day::FORMAT)
+                ]
+            ]);
+    }
+
+    /**
+     * Обновленный метод сохранения данных в БД, дополнитльно работает
+     * с комментариями, принадлежащих текущего контенту
      *
      * @param $validate - параметр для родительского метода
      * @return mixed
@@ -308,7 +377,8 @@ class Content extends InfoserviceModel
     }
 
     /**
-     * Обновленный метод удаления данных в БД
+     * Обновленный метод удаления данных в БД, дополнитльно работает
+     * с комментариями, принадлежащих текущего контенту
      * 
      * @return mixed
      */
@@ -323,8 +393,8 @@ class Content extends InfoserviceModel
      * этот день к нему комментарии.
      * Если указанная дата находится между датами начала и конца контента, то
      * будет создан новый контент, чьи даты начала и конца будут от СЛЕДУЮЩЕГО
-     * ДНЯ до ДНЯ ОКОНЧАНИЯ текущего контента, а дата окончания текущего контента
-     * станет датой, ИДУЩЕЙ за указанной.
+     * ДНЯ до ДНЯ ОКОНЧАНИЯ текущего контента, а дата ОКОНЧАНИЯ текущего контента
+     * станет датой, ИДУЩЕЙ до указанной.
      * Если указанная дата совпадает с датой начала или конца, то в случае, если
      * обе даты не равны, то та дата, что совпала, будет поправлена на значение
      * близкое к значению другой даты.
@@ -336,26 +406,23 @@ class Content extends InfoserviceModel
      */
     public function cleanDataAtDay(\DateTime $date): self
     {
-        $this->deleteCommentsAtDay($date);
-
-        $currentDay = $date->format(Day::FORMAT);
-        if ($currentDay > $this->begin_date->format(Day::FORMAT)) {
-            if ($currentDay < $this->finish_date->format(Day::FORMAT)) {
-                $newContent = $this->getPreparedCopyWithoutFields(['begin_date', 'finish_date', 'sort']);
-                $newContent->sort = $this->sort;
-                $newContent->begin_date = $date->getTimestamp() + DAY_SECOND_COUNT;
-                $newContent->finish_date = $this->finish_date->getTimestamp();
-                $newContent->save();
+        $this->deleteCommentsAtDay($date);        
+        if ($this->begin_date->format(Day::FORMAT) == $date) {
+            if ($this->begin_date->format(Day::FORMAT) != $this->finish_date->format(Day::FORMAT)) {
+                $this->begin_date = $date->getTimestamp() + DAY_SECOND_COUNT;
+    
+            } else {
+                parent::delete();
+                return $this;
             }
+        
+        } elseif (($this->finish_date->format(Day::FORMAT) == $date) || $this->createCopyViaSplitingByDate($date)) {
             $this->finish_date = $date->getTimestamp() - DAY_SECOND_COUNT;
 
-        } elseif ($currentDay < $this->finish_date->format(Day::FORMAT)) {
-            $this->begin_date = $date->getTimestamp() + DAY_SECOND_COUNT;
-
         } else {
-            parent::delete();
             return $this;
         }
+
         parent::save(true);
         return $this;
     }
@@ -373,6 +440,77 @@ class Content extends InfoserviceModel
             Comment::all(['conditions' => ['content_id' => $this->id, 'content_date' => $date]])
         );
         if (!empty($commentIDs)) Comment::delete_all(['conditions' => ['id' => $commentIDs]]);
+        return $this;
+    }
+
+    /**
+     * Если переданная дата находится между датами начала и конца текущего
+     * контента, но не равна ни одной из них, то будет СОЗДАН объект с данными
+     * текущего контента с тем же значением сортировки, но датой начала, идущей
+     * после указанной даты, и датой окончания, как у текущего контента. Так же
+     * новому контенту будут переданы все комментарии текущего контента в пределах
+     * от даты начала до даты окончания нового контента
+     *
+     * @param \DateTime $date - дата конкретного дня
+     * @return Content|boolean
+     */
+    public function createCopyViaSplitingByDate(\DateTime $date)
+    {
+        $content = $this->prepareCopyAfterDay($date);
+        if (!$content) return false;
+
+        $content->save();
+        $this->setHostForComments($content);
+        return $content;
+    }
+
+    /**
+     * Если переданная дата находится между датами начала и конца текущего
+     * контента, но не равна ни одной из них, то будет ПОДГОТОВЛЕН (без
+     * сохранения в БД) объект с данными текущего контента с тем же значением
+     * сортировки, но датой начала, идущей после указанной даты, и датой
+     * окончания, как у текущего контента
+     *
+     * @param \DateTime $date - дата конкретного дня
+     * @return Content|boolean
+     */
+    public function prepareCopyAfterDay(\DateTime $date)
+    {
+        $currentDay = $date->format(Day::FORMAT);
+        if (
+            ($currentDay <= $this->begin_date->format(Day::FORMAT))
+            || ($currentDay >= $this->finish_date->format(Day::FORMAT))
+        ) return false;
+
+        $content = $this->getPreparedCopyWithoutFields(['begin_date', 'finish_date', 'sort']);
+        $content->sort = $this->sort;
+        $content->begin_date = $date->getTimestamp() + DAY_SECOND_COUNT;
+        $content->finish_date = $this->finish_date->getTimestamp();
+        return $content;
+    }
+
+    /**
+     * Для указанного контента забираются комментарии текущего контента,
+     * чье даты находятся в пределах дат начала и конца указанного контента
+     *
+     * @param Content $content - какой-то контент
+     * @return self
+     */
+    public function setHostForComments(Content $content): self
+    {
+        if (!$content->id || !$this->id) return $this;
+
+        Comment::update_all([
+            'set' => [
+                'content_id' => $content->id
+            ],
+            'conditions' => [
+                '(content_id = ?) AND (content_date >= ?) AND (content_date <= ?)',
+                $this->id,
+                $content->begin_date->format(Day::FORMAT),
+                $content->finish_date->format(Day::FORMAT),
+            ]
+        ]);
         return $this;
     }
 };

@@ -322,7 +322,7 @@ class InfoserviceModel extends ActiveRecord\Model
      *
      * @return self
      */
-    public function getPreparedCopyWithoutFields(array $excludedFields = [])
+    public function getPreparedCopyWithoutFields(array $excludedFields = []): self
     {
         $newContent = new static;
         array_push($excludedFields, 'id', 'created_at');

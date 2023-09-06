@@ -229,10 +229,14 @@
                 <span class="rc-deal-detail-responsible-caption"><?=$langValues['MODAL_CONTENT_RESPONSIBLE_CAPTION']?></span>
                 <span class="rc-deal-detail-responsible-value">{{deal.RESPONSIBLE_NAME}}</span>
             </div>
+            <span class="rc-calendar-button rc-calendar-remove-deal-button"
+                title="<?=$langValues['OPEN_URL_WITH_DEAL_REMOVE_TITLE']?>"
+                v-on:click="$emit('init-deal-removing', dealindex)"
+                v-if="bx24inited"></span>
         </template>
         <span class="rc-calendar-button rc-calendar-add-deal-button"
             title="<?=$langValues['OPEN_URL_WITH_DEAL_ADD_TITLE']?>"
-            v-on:click="openDealCreating()"
+            v-on:click="openDealCreating"
             v-else-if="bx24inited"></span>
         <div class="rc-deal-detail-comments">
             <comment-unit
@@ -282,19 +286,18 @@
                 <span class="rc-content-detail-title-date">{{content.DATE}}</span><!--
                 --><span class="rc-content-detail-title-value">{{content.NAME}}</span>
             </div>
-            <div class="rc-modal-details rc-deal-details">  
+            <div class="rc-modal-details rc-deal-details">
                 <deal-detail-modal
                     v-bind:deal="deal"
                     v-bind:dealindex="dealIndex"
                     v-bind:newcomment="newcommentdealindex === dealIndex"
                     v-bind:bx24inited="bx24inited"
                     v-bind:comments="content.COMMENTS"
+                    v-on:init-deal-removing="initDealRemoving"
                     v-for="(deal, dealIndex) in content.DEALS"></deal-detail-modal>
-            </div>               
+            </div>
         </div>
-
         <copy-comment-modal v-if="isCopyProcess"></copy-comment-modal>
-
     </div>
 </script>
 

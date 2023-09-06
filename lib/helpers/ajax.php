@@ -64,7 +64,7 @@ try {
 
             $isNotPartner = $technic['IS_PARTNER'] == 'false';
             $className = $isNotPartner ? 'Technic' : 'Partner';
-            if (empty($className::find($technicId)))
+            if (empty($className::find_by_id($technicId)))
                  throw new Exception(
                             $isNotPartner ? $langValues['ERROR_BAD_TECHNIC_ID']
                                           : $langValues['ERROR_BAD_PARTNER_ID']
@@ -88,6 +88,18 @@ try {
             }
             break;
 
+        // обработчик удаления контента за конкретный день
+        case 'removedeal':
+            Content::find_by_id($_POST['dealID'])
+                   ->cleanDataAtDay((new \DateTime)->setTimestamp($_POST['contentDate']));
+
+            $answer['data'] = Technic::getWithContentsByDayPeriod(
+                                    $_POST['user']['ID'],
+                                    Day::getPeriod(date(Day::FORMAT, $_POST['startDate']), 7),
+                                    [($_POST['isPartner'] == 'true' ? 'partner_id' : 'id') => $_POST['ID']]
+                                );
+            break;
+
         // обработчик добавления/изменения комментариев
         case 'addcomment':
             $responsible = Responsible::initialize($_POST['user']);
@@ -97,7 +109,7 @@ try {
 
             $commentId = intval($_POST['commentId']);
             if ($commentId) {
-                $comment = Comment::find($commentId);
+                $comment = Comment::find_by_id($commentId);
                 if (empty($comment))
                     throw new Exception($langValues['ERROR_EMPTY_COMMENT_BY_ID']);
 
@@ -139,7 +151,7 @@ try {
             ) throw new Exception($langValues['ERROR_EMPTY_USER_ID']);
 
             $commentId = intval($_POST['commentId']);
-            if (!$commentId || empty($comment = Comment::find($commentId)))
+            if (!$commentId || empty($comment = Comment::find_by_id($commentId)))
                 throw new Exception($langValues['ERROR_EMPTY_COMMENT_BY_ID']);
             
             if ($comment->user_id != $responsible->id)
@@ -152,8 +164,8 @@ try {
         case 'readcomments':
             $responsible = Responsible::initialize($_POST['user']);
             if (!is_array($_POST['comment_ids']))
-                throw new Exception($langValues['ERROR_EMPTY_COMMENT_BY_ID']);
-                
+                break;
+                            
             ReadCommentMark::setMark($responsible->id, $_POST['comment_ids']);
             break;
 
@@ -166,7 +178,7 @@ try {
             ) throw new Exception($langValues['ERROR_EMPTY_USER_ID']);
 
             $commentId = intval($_POST['commentId']);
-            if (!$commentId || empty($comment = Comment::find($commentId)))
+            if (!$commentId || empty($comment = Comment::find_by_id($commentId)))
                 throw new Exception($langValues['ERROR_BAD_COMMENT_ID']);
 
             $startDate = $comment->content_date->getTimestamp();

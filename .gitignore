@@ -1,0 +1,14 @@
+/*
+!index.php
+!*.json
+!*.lock
+!.gitignore
+!README.md
+*.txt
+!/configs/*/*php
+!/css
+!/js
+!/lang
+!/lib
+!/configs/.php-database-migration/environments
+!/configs/.php-database-migration/migrations

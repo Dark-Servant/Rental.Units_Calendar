@@ -1,6 +1,11 @@
 <?
-define('URL_SCRIPT_START', '//' . $_SERVER['HTTP_HOST'] . APPPATH);
+use Frontend\AutoLoader\{Base, Path};
 
+$loader = new Base([
+                Path::AJAX => [
+                    'xmlhttprequest.event.js'
+                ]
+            ]);
 ?><!DOCTYPE html>
 <html lang="ru">
     <head>
@@ -27,7 +32,7 @@ define('URL_SCRIPT_START', '//' . $_SERVER['HTTP_HOST'] . APPPATH);
         <link rel="icon" type="image/vnd.microsoft.icon" href="index.php">
         <link rel="shortcut icon" href="index.php">
         <link rel="apple-touch-icon" href="index.php">
-
+        
         <link rel="stylesheet" href="<?=URL_SCRIPT_START?>css/style.css?<?=URL_SCRIPT_FINISH?>">
         <link rel="stylesheet" href="<?=URL_SCRIPT_START?>css/style.media.css?<?=URL_SCRIPT_FINISH?>">
         <link rel="stylesheet" href="<?=URL_SCRIPT_START?>node_modules/js-datepicker/dist/datepicker.min.css?<?=URL_SCRIPT_FINISH?>">
@@ -35,11 +40,12 @@ define('URL_SCRIPT_START', '//' . $_SERVER['HTTP_HOST'] . APPPATH);
         <script src="<?=URL_SCRIPT_START?>node_modules/vue/dist/vue.min.js?<?=URL_SCRIPT_FINISH?>"></script>
         <script src="<?=URL_SCRIPT_START?>node_modules/jquery/dist/jquery.min.js?<?=URL_SCRIPT_FINISH?>"></script>
         <script src="<?=URL_SCRIPT_START?>node_modules/js-datepicker/dist/datepicker.min.js?<?=URL_SCRIPT_FINISH?>"></script><?
-        
         if (defined('DOMAIN')):?>
         <script src="//api.bitrix24.com/api/v1/"></script><?
         endif;?>
+        <?=$loader->prepareFiles()?>
         <script src="<?=URL_SCRIPT_START?>js/main.js.php?<?=URL_SCRIPT_FINISH?>"></script>
+        <?require_once __DIR__ . '/xmlhttprequest.php';?>
     </head>
     <body><?
     include_once __DIR__ . '/' . SHOW_VIEW . '.php'; ?>

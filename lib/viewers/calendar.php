@@ -89,11 +89,7 @@
             v-bind:title="'<?=$langValues['FILTER_QUARTER_BUTTON']?>'">
             <input type="checkbox" v-on:change="showQuarters">
             <span></span>
-        </label><!--
-        --><span class="rc-activity-list-back"
-                title="<?=$langValues['BIZ_PROC_ACTIVITY_LIST_TITLE']?>"
-                v-on:click="$emit('show-activities')"
-                v-if="backtoactivities"></span>
+        </label>
     </div>
 </script>
 
@@ -104,8 +100,7 @@
                 v-bind:calendardate="calendardate"
                 v-bind:quarter="quarter"
                 v-on:init-calendar="$emit('init-calendar')"
-                v-on:show-data="$emit('show-data')"
-                v-on:show-activities="$emit('show-activities')"></calendar-filter><!--
+                v-on:show-data="$emit('show-data')"></calendar-filter><!--
             --><template v-if="quarter"><!--
                 --><div class="rc-month" v-bind:data-day-count="month.dayCount" v-for="month in months">
                         <div class="rc-month-name">
@@ -341,7 +336,6 @@
         <calendar-table
             v-on:init-calendar="initCalendar"
             v-on:show-data="showData"
-            v-on:show-activities="showActivities"
             v-on:set-chosen="setChosen"
             v-on:show-content-details="showContentDetails"
             v-on:start-waiting-hint-window="startWaitingHintWindow"

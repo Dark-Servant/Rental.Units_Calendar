@@ -1,5 +1,7 @@
 <?
-
+/**
+ * Undocumented class
+ */
 class Day
 {
     const SECOND_COUNT = DAY_SECOND_COUNT;
@@ -15,20 +17,17 @@ class Day
      *     VALUE. Дата в формате, указанный в константе Day::CALENDAR_FORMAT;
      *     WEEK_DAY_NAME. Название дня недели для даты.
      * 
-     * @param string $startDay - начальное число, должно иметь формат Y-m-d
-     * @param int $nextDayCount - количество после даты в значении $startDay
+     * @param string $startTimeStamp -
+     * @param int $nextDayCount -
      * @return array
      */
-    public static function getPeriod(string $startDay, int $nextDayCount = 0)
+    public static function getIntervalFromTimeByDayCount(int $startTimeStamp, int $nextDayCount = 0)
     {
         global $langValues;
 
-        $currentTime = strtotime($startDay);
-        if (!$currentTime) return [];
-
         $dayFullNames = array_values($langValues['DATE_CHOOOSING']['DAYS']['FULL']);
         $days = [];
-        foreach (range($currentTime, $currentTime + self::SECOND_COUNT * $nextDayCount, self::SECOND_COUNT) as $dateValue) {
+        foreach (range($startTimeStamp, $startTimeStamp + self::SECOND_COUNT * $nextDayCount, self::SECOND_COUNT) as $dateValue) {
             $days[$dateValue] = [
                 'VALUE' => date(self::CALENDAR_FORMAT, $dateValue),
                 'WEEK_DAY_NAME' => $dayFullNames[date('w', $dateValue)]

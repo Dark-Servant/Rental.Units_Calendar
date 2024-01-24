@@ -10,6 +10,11 @@ set_time_limit(0);
 try {
     switch ($action) {
 
+        //
+        case 'getactivities':
+            $answer['data'] = $activities = BPActivity::getUnits();
+            break;
+
         // Обработчик получения данных техники согласно фильтру в календаре
         case 'getcontents';
             $startDate = date_create_from_format(Day::CALENDAR_FORMAT, $_REQUEST['date']);

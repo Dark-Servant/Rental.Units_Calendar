@@ -1,4 +1,7 @@
 <?
+use Frontend\AutoLoader\{File, Path};
+use Types\StringType;
+
 if (!isset($_REQUEST['ajaxaction'])) return;
 error_reporting(E_ERROR);
 
@@ -13,6 +16,14 @@ try {
         //
         case 'getactivities':
             $answer['data'] = $activities = BPActivity::getUnits();
+            break;
+
+        //
+        case 'loadvuecomponents':
+            $path = (new File('*.js'))->getFilePathValueViaTemplate(Path::getBaseTemplates()[Path::SOLUTION_VUE_COMPONENTS]);
+            foreach (glob($_SERVER['DOCUMENT_ROOT'] . '/' . $path->getValue()) as $componentFile) {
+                $answer['data'][StringType::getCamelCaseFileName($componentFile)] = file_get_contents($componentFile);
+            }
             break;
 
         // Обработчик получения данных техники согласно фильтру в календаре

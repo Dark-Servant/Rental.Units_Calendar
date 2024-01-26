@@ -50,14 +50,14 @@
 <script id="calendar-filter-component" data-props="calendardate, quarter" type="text/vue-component">
     <div class="rc-filter">
         <template v-if="quarter"><!--
-            --><select name="quarter-year" title="<?=$langValues['FILTER_YEAR_CHOSING']?>"
+            --><select name="quarterYear" title="<?=$langValues['FILTER_YEAR_CHOSING']?>"
                 v-model="chosenYear"
                 v-on:change="changeQuarterParams">
                 <option
                     v-bind:value="year"
                     v-for="year in yearList">{{year}}</option>
             </select><!--
-            --><select name="quarter-number" title="<?=$langValues['FILTER_QUARTER_CHOSING']?>"
+            --><select name="quarterNumber" title="<?=$langValues['FILTER_QUARTER_CHOSING']?>"
                 v-model="quarter"
                 v-on:change="changeQuarterParams">
                 <option

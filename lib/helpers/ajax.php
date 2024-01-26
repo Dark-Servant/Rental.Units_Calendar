@@ -1,6 +1,7 @@
 <?
 use Frontend\AutoLoader\{File, Path};
 use Types\StringType;
+use REST\Day as RestDay;
 
 if (!isset($_REQUEST['ajaxaction'])) return;
 error_reporting(E_ERROR);
@@ -28,45 +29,39 @@ try {
 
         // Обработчик получения данных техники согласно фильтру в календаре
         case 'getcontents';
-            $startDate = date_create_from_format(Day::CALENDAR_FORMAT, $_REQUEST['date']);
-            if ($startDate === false) throw new Exception($langValues['ERROR_DATE_VALUE']);
-
+            $startDate = isset($_REQUEST['date'])
+                       ? (new DateTime)->setTimestamp(intval($_REQUEST['date']))->setTime(0, 0)
+                       : false;
             if (!empty($_REQUEST['user'])) {
                 $responsible = Responsible::initialize($_REQUEST['user']);
 
-                if (empty($_REQUEST['quarter-number']))
-                    $responsible->calendar_date = $_REQUEST['date'];
+                if (empty($_REQUEST['quarterNumber'])) {
+                    if (!$startDate)
+                        $startDate = ($responsible->calendar_date ?: new DateTime)->setTime(0, 0);
 
-                $responsible->save();
+                    if (
+                        !$responsible->calendar_date
+                        || ($responsible->calendar_date->format(\Day::FORMAT) != $startDate->format(\Day::FORMAT))
+                    ) {
+                        $responsible->calendar_date = $startDate;
+                        $responsible->save();
+                    }
+                }
             }
+            if ($startDate === false) throw new Exception($langValues['ERROR_DATE_VALUE']);
+
             $filter = [];
             if ($_REQUEST['my-technic'] == 'true') $filter['IS_MY'] = 1;
 
-            $dayCount = 7;
-            if (!empty($_REQUEST['quarter-number'])) {
-                /**
-                 * везде берется на один день меньше, чем есть в квартале, так как первый день уже учтен
-                 * в $startDate
-                 *
-                 * В 3м и 4м кварталах одинаковое количество дней
-                 */
-                if ($_REQUEST['quarter-number'] > 2) {
-                    $dayCount = 91;
-
-                // Во 2м квартале столько же дней, как и в 1м, если год высокосный
-                } elseif (($_REQUEST['quarter-number'] > 1) || !(intval($_REQUEST['quarter-year']) & 3)) {
-                    $dayCount = 90;
-
-                } else {
-                    $dayCount = 89;
-                }
-            }
-            $days = Day::getPeriod(date(Day::FORMAT, $startDate->getTimestamp()), $dayCount);
             $user = $_REQUEST['user'];
+            $restDay = new RestDay($startDate->getTimestamp());
             $answer['data'] = [
-                'days' => $days,
+                'days' => $restDay->getIntervalWithDays(),
                 'technics' => Technic::getWithContentsByDayPeriod(
-                                    empty($user) ? 0 : intval($user['ID']), $days, $filter, TECHNIC_SORTING
+                                    empty($user) ? 0 : intval($user['ID']),
+                                    $restDay->getIntervalWithDayTimeStamps(),
+                                    $filter,
+                                    TECHNIC_SORTING
                                 ),
             ];
             break;
@@ -111,8 +106,8 @@ try {
 
             $answer['data'] = Technic::getWithContentsByDayPeriod(
                                     $_POST['user']['ID'],
-                                    Day::getPeriod(date(Day::FORMAT, $_POST['startDate']), 7),
-                                    [($_POST['isPartner'] == 'true' ? 'partner_id' : 'id') => $_POST['ID']]
+                                    (new RestDay)->getIntervalWithDayTimeStamps(),
+                                    [($_POST['isPartner'] == 'true' ? 'partner_id' : 'id') => $_POST['technicID']]
                                 );
             break;
 

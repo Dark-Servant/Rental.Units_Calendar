@@ -234,8 +234,22 @@ try {
                     'value' => $comment->value,
                     'duty_status' => $comment->duty_status,
                 ]);
-                $answer['data'][$dayTime] = $commentUnit->getData(true);
             }
+
+            $filter = [];
+            $technic = $comment->technic;
+            if ($technic->partner_id) {
+                $filter = ['partner_id' => $technic->partner_id];
+
+            } else {
+                $filter = ['id' => $technic->id];
+            }
+                
+            $answer['data'] = Technic::getWithContentsByDayPeriod(
+                                    $_POST['user']['ID'],
+                                    (new RestDay)->getIntervalWithDayTimeStamps(),
+                                    $filter
+                                );
             break;
 
         default:

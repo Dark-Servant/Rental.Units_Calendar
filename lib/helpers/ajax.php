@@ -178,7 +178,14 @@ try {
             if ($comment->user_id != $responsible->id)
                 throw new Exception($langValues['ERROR_COMMENT_AUTHOR_EDITING']);
             
+            $contentDay = $comment->content_date->getTimestamp();
+            $technic = $comment->technic;
+            $contentsByDayFilter = $technic->partner_id
+                                 ? ['partner_id' => $technic->partner_id]
+                                 : ['id' => $technic->id];
             $comment->delete();
+
+            $answer['data'] = Technic::getWithContentsByDayPeriod($_POST['user']['ID'], [$contentDay], $contentsByDayFilter);
             break;
 
         // обработчик отметки, что комментарии были прочитаны пользователем

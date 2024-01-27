@@ -119,6 +119,7 @@ try {
                 throw new Exception($langValues['ERROR_EMPTY_COMMENT_VALUE']);
 
             $commentId = intval($_POST['commentId']);
+            $contentsByDayFilter = [];
             if ($commentId) {
                 $comment = Comment::find_by_id($commentId);
                 if (empty($comment))
@@ -126,6 +127,12 @@ try {
 
                 if ($comment->user_id != $responsible->id)
                     throw new Exception($langValues['ERROR_COMMENT_AUTHOR_EDITING']);
+
+                $technic = $comment->technic;
+                $contentDay = $comment->content_date->getTimestamp();
+                $contentsByDayFilter = $technic->partner_id
+                                     ? ['partner_id' => $technic->partner_id]
+                                     : ['id' => $technic->id];
 
             } else {
                 $technicId = intval($_POST['technicId']);
@@ -135,22 +142,25 @@ try {
                     $technic = Technic::find_by_partner_id($technicId);
                     if (empty($technic)) throw new Exception($langValues['ERROR_EMPTY_PARTNER_TECHNIC_LIST']);
 
+                    $contentsByDayFilter = ['partner_id' => $technicId];
                     $technicId = $technic->id;
+
+                } else {
+                    $contentsByDayFilter = ['id' => $technicId];
                 }
 
-                $day = date(Day::FORMAT, intval($_POST['contentDay']));
+                $contentDay = intval($_POST['contentDay']);
                 $comment = new Comment;
+                $comment->content_date = $contentDay;
                 $comment->technic_id = $technicId;
-                $comment->content_date = $day;
                 $comment->content_id = intval($_POST['contentId']);
                 $comment->user_id = $responsible->id;
                 if (isset($_POST['code'])) $comment->duty_status = intval($_POST['code']);
             }
-
             $comment->value = $commentValue;
             $comment->save();
 
-            $answer['data'] = $comment->getData(true);
+            $answer['data'] = Technic::getWithContentsByDayPeriod($_POST['user']['ID'], [$contentDay], $contentsByDayFilter);
             break;
 
         // обработчик удаления комментария

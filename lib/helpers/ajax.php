@@ -191,10 +191,10 @@ try {
         // обработчик отметки, что комментарии были прочитаны пользователем
         case 'readcomments':
             $responsible = Responsible::initialize($_POST['user']);
-            if (!is_array($_POST['comment_ids']))
+            if (!is_array($_POST['commentIDs']))
                 break;
                             
-            ReadCommentMark::setMark($responsible->id, $_POST['comment_ids']);
+            ReadCommentMark::setMark($responsible->id, $_POST['commentIDs']);
             break;
 
         // обработчик копирования комментария

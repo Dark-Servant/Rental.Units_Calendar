@@ -36,6 +36,7 @@ $langValues['CONTENT_REPAIR_STATUS_TITLE'] = 'Ремонт';
 $langValues['ERROR_EMPTY_USER_ID'] = 'В параметре user не указан ID';
 
 // lib/viewers/calendar.php
+$langValues['ERROR_JS_SHOWAPPLICATION_REPLACING'] = 'Ошибка! Не заменен метод showApplication в JS-коде';
 $langValues['FILTER_YEAR_CHOSING'] = 'Выбор года';
 $langValues['FILTER_QUARTER_CHOSING'] = 'Выбор квартала';
 $langValues['FILTER_TODAY_BUTTON'] = 'Сегодня';

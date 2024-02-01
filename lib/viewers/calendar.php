@@ -211,7 +211,7 @@
     </template>
 </script>
 
-<script id="deal-detail-modal-component" data-props="deal, dealindex, newcomment, bx24inited, comments" type="text/vue-component">
+<script id="deal-detail-modal-component" data-props="deal, dealindex, newcomment, bx24inited, userdata, comments" type="text/vue-component">
     <div class="rc-deal-detail">
         <template v-if="!deal.IS_EMPTY">
             <a class="rc-deal-detail-customer-url" v-bind:href="deal.DEAL_URL">{{deal.CUSTOMER_NAME}}</a>
@@ -227,7 +227,7 @@
             <span class="rc-calendar-button rc-calendar-remove-deal-button"
                 title="<?=$langValues['OPEN_URL_WITH_DEAL_REMOVE_TITLE']?>"
                 v-on:click="$emit('init-deal-removing', dealindex)"
-                v-if="bx24inited"></span>
+                v-if="userdata.IS_ADMIN"></span>
         </template>
         <span class="rc-calendar-button rc-calendar-add-deal-button"
             title="<?=$langValues['OPEN_URL_WITH_DEAL_ADD_TITLE']?>"
@@ -273,7 +273,7 @@
     </div>
 </script>
 
-<script id="content-detail-modal-component" data-props="content, bx24inited, newcommentdealindex" type="text/vue-component">
+<script id="content-detail-modal-component" data-props="content, bx24inited, userdata, newcommentdealindex" type="text/vue-component">
     <div class="rc-modal rc-content-detail-modal">
         <div class="rc-window rc-content-detail-window rc-no-visivility" v-bind:class="{'rc-no-reaction': isCopyProcess}">
             <span class="rc-content-detail-close" v-on:click="closeDetailModal"></span>
@@ -287,6 +287,7 @@
                     v-bind:dealindex="dealIndex"
                     v-bind:newcomment="newcommentdealindex === dealIndex"
                     v-bind:bx24inited="bx24inited"
+                    v-bind:userdata="userdata"
                     v-bind:comments="content.COMMENTS"
                     v-on:init-deal-removing="initDealRemoving"
                     v-for="(deal, dealIndex) in content.DEALS"></deal-detail-modal>
@@ -350,6 +351,7 @@
         <content-detail-modal
             v-bind:content="contentDetail"
             v-bind:bx24inited="bx24inited"
+            v-bind:userdata="userData"
             v-bind:newcommentdealindex="newCommentDealIndex"
             v-if="contentDetail"></content-detail-modal>
 

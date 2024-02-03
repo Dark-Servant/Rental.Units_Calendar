@@ -13,9 +13,6 @@ class Technic extends InfoserviceModel
     ];
     const CHILD_NAMES_FOR_DELETING = ['contents', 'comments', 'userchoice'];
 
-    const MIN_DEAL_COUNT = 1;
-    const MAX_DEAL_COUNT = 3;
-
     protected static $contentConditions;
 
     /**
@@ -67,7 +64,8 @@ class Technic extends InfoserviceModel
     /**
      * Функция-генератор для получения данных по ВИДИМОЙ технике
      * 
-     * @param array $dayTimestamps - массив unix-меток времени
+     * @param int $startDayTimestamp -
+     * @param int $finishDayTimestamp -
      * @param array $conditions - дополнительный фильтр по технике. Может содержать данные
      * для фильтра по контенту. Для этого надо указать массив с фильтром к контенту в значении
      * под ключом с именем "content". Фильтр для контента будет сохранен, чтобы при
@@ -78,13 +76,13 @@ class Technic extends InfoserviceModel
      * 
      * @yield
      */
-    protected static function visibilityUnits(array $dayTimestamps, array $conditions, array $orders)
+    protected static function visibilityUnits(int $startDayTimestamp, int $finishDayTimestamp, array $conditions, array $orders)
     {
         self::$contentConditions = self::getWithAddedConditions(
                                         [
                                             '(begin_date <= ?) AND (finish_date >= ?)',
-                                            (new DateTime)->setTimestamp(end($dayTimestamps)),
-                                            (new DateTime)->setTimestamp(reset($dayTimestamps))
+                                            (new DateTime)->setTimestamp($finishDayTimestamp),
+                                            (new DateTime)->setTimestamp($startDayTimestamp)
                                         ],
                                         is_array($conditions['content']) ? $conditions['content'] : []
                                     );
@@ -172,23 +170,24 @@ class Technic extends InfoserviceModel
     /**
      * Загружает данные комментариев к каждой техники или парнерам
      * 
+     * @param int $userId - идентификатор пользователя
      * @param array $technicPartners - массив связей техники и парнеров. В "ключе" указан идентификатор техники,
      * а в "значении" идентификатор партнера или нуль, если техника сама по себе
      *
-     * @param int $userId - идентификатор пользователя
-     * @param array $dayTimestamps - массив unix-меток времени от меньшего к большему
+     * @param int $startDayTimestamp -
+     * @param int $finishDayTimestamp -
      * @param array &$technics - массив с загруженными данными единиц техники
      * @param array &$partners - массив с загруженными данными парнеров
      * 
      * @return void
      */
-    protected static function loadComments(int $userId, array $technicPartners, array $dayTimestamps, array&$technics, array&$partners)
+    protected static function loadComments(int $userId, array $technicPartners, int $startDayTimestamp, int $finishDayTimestamp, array&$technics, array&$partners)
     {
         $filter = [
             '(technic_id IN (?)) AND (content_date >= ?) AND (content_date <= ?)',
             array_keys($technicPartners) ?: null,
-            (new DateTime)->setTimestamp(reset($dayTimestamps)),
-            (new DateTime)->setTimestamp(end($dayTimestamps)),
+            (new DateTime)->setTimestamp($startDayTimestamp),
+            (new DateTime)->setTimestamp($finishDayTimestamp),
         ];
 
         $comments = [];
@@ -242,7 +241,7 @@ class Technic extends InfoserviceModel
      *             - LAST_COMMENT. последний комментарий.
      * 
      * @param int $externalUserId - идентификатор пользователя на портале
-     * @param array $dayPeriod - данные, полученные от метода getPeriod у класса Day
+     * @param array $dayTimestamps -
      * @param array $conditions - дополнительные условия для фильтра данных из БД. Если указан
      * параметр с ключом "content", то он будет восприниматься как фильтр для контента, остальные
      * параметры и ключи будут считаться как фильтр для техники
@@ -253,108 +252,33 @@ class Technic extends InfoserviceModel
      * 
      * @return array
      */
-    public static function getWithContentsByDayPeriod(int $externalUserId, array $dayPeriod, array $conditions = [], array $orders = [])
+    public static function getWithContentsByDayPeriod(int $externalUserId, array $dayTimestamps, array $conditions = [], array $orders = [])
     {
-        if (!is_array($dayPeriod) || empty($dayPeriod)) return [];
-        $dayTimestamps = array_keys($dayPeriod);
-
         $technicPartners = [];
         $technics = [];
         $partners = [];
+        $startDayTimestamp = reset($dayTimestamps);
+        $finishDayTimestamp = end($dayTimestamps);
 
         /**
          * dayDealNames нужна, чтобы в ячейках, куда попадают несколько элементов из контента, не выводились
          * более одного раза те элементы, у которых одинаковые ссылки или имена, если ссылок нет
          */
         $dayDealNames = [];
-        foreach (self::visibilityUnits($dayTimestamps, $conditions, $orders) as $technic) {
+        foreach (self::visibilityUnits($startDayTimestamp, $finishDayTimestamp, $conditions, $orders) as $technic) {
             $technicData = &self::getInitedUnitWithContents($technic, $dayTimestamps, $technics, $partners);
             $dayContents = &$technicData['CONTENTS'];
             $dayDealNamesCode = ($technicData['IS_PARTNER'] ? 'P' : 'T') . $technicData['ID'];
             $technicPartners[$technic->id] = $technic->partner_id;
 
             foreach (self::contentsWithInitedFilter($technic->id) as $content) {
-                $cellData = $content->getCellData();
-                /**
-                 * Устанавливаем параметр $dealName, чтобы потом проверить не выводился ли этот контент
-                 * в той же ячейке
-                 */
-                if (empty($cellData['DEAL_URL']) || !preg_match('/\/(\d+)/', $cellData['DEAL_URL'], $URLParts)) {
-                    $dealName = 'n:' . trim(strtolower($cellData['CUSTOMER_NAME']));
-
-                } else {
-                    $dealName = 'u:' . $URLParts[1];
-                }
-                
-                if ($cellData['IS_REPAIR']) {
-                    $contentStatus = CONTENT_REPAIR_DEAL_STATUS;
-
-                } elseif ($content->is_closed) {
-                    $contentStatus = CONTENT_CLOSED_DEAL_STATUS;
-
-                } else {
-                    $contentStatus = $content->status >= CONTENT_MAX_DEAL_STATUS
-                                   ? CONTENT_MAX_DEAL_STATUS
-                                   : $content->status;
-                }
-
-                foreach (
-                    range(
-                        $content->begin_date->getTimestamp(), $content->finish_date->getTimestamp(), Day::SECOND_COUNT
-                    ) as $dayTimestamp
-                ) {
-                    if (!isset($dayContents[$dayTimestamp])) continue;
-
-                    /**
-                     * Проверка на то, был ли конкретный контент выведен в текущей ячейке. Если да, то он уже отметился
-                     * для текущей техники (партнера) и даты, поэтому устанавливается, что его не надо выводить.
-                     */
-                    $cellData['CELL_SHOWING'] = empty($dayDealNames[$dayDealNamesCode][$dayTimestamp][$dealName]);
-                    $dayDealNames[$dayDealNamesCode][$dayTimestamp][$dealName] = true;
-
-                    /**
-                     * Из-за бага с дублированнием контента, когда действие БП запускается параллельно несколько раз
-                     * при, возможно, нескольких раз обращений из шаблона БП, приходится делать проверку статуса контента
-                     * только для того контента, который еще не отметился для текущей даты и техники
-                     */
-                    if ($cellData['CELL_SHOWING']) {
-                        if (
-                            !isset($dayContents[$dayTimestamp]['STATUS'])
-                            || ($contentStatus == CONTENT_REPAIR_DEAL_STATUS)
-                        ) {
-                            $dayContents[$dayTimestamp]['STATUS'] = $contentStatus;
-                            $dayContents[$dayTimestamp]['STATUS_CLASS'] = Content::CONTENT_DEAL_STATUS[$contentStatus];
-                            
-                        } elseif (
-                            ($dayContents[$dayTimestamp]['STATUS'] != CONTENT_REPAIR_DEAL_STATUS)
-                            && ($dayContents[$dayTimestamp]['STATUS'] != $contentStatus)
-                        ) {
-                            $dayContents[$dayTimestamp]['STATUS'] = CONTENT_MANY_DEAL_STATUS;
-                            $dayContents[$dayTimestamp]['STATUS_CLASS'] = Content::CONTENT_DEAL_STATUS[CONTENT_MANY_DEAL_STATUS];
-                        }
-
-                        ++$dayContents[$dayTimestamp]['DEAL_COUNT'];
-                        $dayContents[$dayTimestamp]['IS_ONE'] = $dayContents[$dayTimestamp]['DEAL_COUNT'] == self::MIN_DEAL_COUNT;
-                        $dayContents[$dayTimestamp]['VERY_MANY'] = $dayContents[$dayTimestamp]['DEAL_COUNT'] > self::MAX_DEAL_COUNT;
-                    }
-
-                    if (!isset($dayContents[$dayTimestamp]['DEALS']))
-                        $dayContents[$dayTimestamp]['DEALS'] = [];
-
-                    // необходимо, чтобы контент на ремонте был всегда в начале списка
-                    if ($cellData['IS_REPAIR']) {
-                        array_unshift($dayContents[$dayTimestamp]['DEALS'], $cellData);
-
-                    } else {
-                        $dayContents[$dayTimestamp]['DEALS'][] = $cellData;
-                    }
-                }
+                $content->fillDayTimeStampWithShowingSetting($dayContents, $dayDealNames[$dayDealNamesCode]);
             }
         }
         $userId = $externalUserId && !empty($user = Responsible::find_by_external_id($externalUserId))
                 ? $user->id : 0;
         if ($userId) self::setChosenStatus($userId, $technics, $partners);
-        self::loadComments($userId, $technicPartners, $dayTimestamps, $technics, $partners);
+        self::loadComments($userId, $technicPartners, $startDayTimestamp, $finishDayTimestamp, $technics, $partners);
 
         $technicResult = array_values($technics);
         if (!empty($partners)) {

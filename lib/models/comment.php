@@ -87,7 +87,7 @@ class Comment extends InfoserviceModel
                             '(technic_id IN (?)) AND (begin_date <= ?) AND (finish_date >= ?)',
                             $technicIds, $contentDate, $contentDate,
                         ],
-                        'order' => 'id ASC'
+                        'order' => 'sort ASC'
                     ]);
 
         if (empty($content)) {

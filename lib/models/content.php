@@ -46,6 +46,12 @@ class Content extends InfoserviceModel
     const CONTENT_REPAIR_STATUS_REGEX = '/\bремонт +техники\b/iu';
 
     /**
+     * 
+     */
+    const MIN_DEAL_COUNT = 1;
+    const MAX_DEAL_COUNT = 3;
+
+    /**
      * Обработчик изменения параметра status. Если параметр будет иметь строковое значение,
      * то благодаря константе CONTENT_DEAL_STATUS_REGEX будет заменено на числовое
      * 
@@ -86,6 +92,74 @@ class Content extends InfoserviceModel
     }
 
     /**
+     * Undocumented function
+     *
+     * @param array& $dayTimeStamps
+     * @param array&|null $dayShowing
+     * @return self
+     */
+    public function fillDayTimeStampWithShowingSetting(array&$dayTimeStamps, array&$dayShowing=null): self
+    {
+        $cellData = $this->getCellData();
+        $uniqueCode = static::getUniqueCodeByCellData($cellData);
+        $contentStatus = $this->getTrueStatus();
+        foreach (
+            range(
+                $this->begin_date->getTimestamp(), $this->finish_date->getTimestamp(), Day::SECOND_COUNT
+            ) as $timeStamp
+        ) {
+            if (!isset($dayTimeStamps[$timeStamp])) continue;
+
+            /**
+             * Проверка на то, был ли конкретный контент выведен в текущей ячейке. Если да, то он уже отметился
+             * для текущей техники (партнера) и даты, поэтому устанавливается, что его не надо выводить.
+             */
+            $cellData['CELL_SHOWING'] = empty($dayShowing[$timeStamp][$uniqueCode]);
+            $dayShowing[$timeStamp][$uniqueCode] = true;
+
+            /**
+             * Из-за бага с дублированнием контента, когда действие БП запускается параллельно несколько раз
+             * при, возможно, нескольких раз обращений из шаблона БП, приходится делать проверку статуса контента
+             * только для того контента, который еще не отметился для текущей даты и техники
+             */
+            if ($cellData['CELL_SHOWING']) 
+                $this->setDayStatusAtCellByContentStatus($dayTimeStamps[$timeStamp], $contentStatus);
+
+            if (!isset($dayTimeStamps[$timeStamp]['DEALS']))
+                $dayTimeStamps[$timeStamp]['DEALS'] = [];
+
+            // необходимо, чтобы контент на ремонте был всегда в начале списка
+            if ($cellData['IS_REPAIR']) {
+                array_unshift($dayTimeStamps[$timeStamp]['DEALS'], $cellData);
+
+            } else {
+                $dayTimeStamps[$timeStamp]['DEALS'][] = $cellData;
+            }
+        }
+        return $this;
+    }
+
+    /**
+     * Undocumented function
+     *
+     * @param array $data
+     * @return string
+     */
+    protected static function getUniqueCodeByCellData(array $data): string
+    {
+        /**
+         * Устанавливаем параметр $dealName, чтобы потом проверить не выводился ли этот контент
+         * в той же ячейке
+         */
+        if (empty($data['DEAL_URL']) || !preg_match('/\/(\d+)/', $data['DEAL_URL'], $URLParts)) {
+            return 'n:' . trim(strtolower($data['CUSTOMER_NAME']));
+
+        } else {
+            return 'u:' . $URLParts[1];
+        }
+    }
+
+    /**
      * Возвращает массив с данными контента, которые надо использовать
      * при выводе в календаре
      * 
@@ -110,7 +184,7 @@ class Content extends InfoserviceModel
                 'TECHNIC_NAME' => $this->technic->name
             ];
 
-        if (preg_match(self::CONTENT_REPAIR_STATUS_REGEX, $data['WORK_ADDRESS'])) {
+        if ($this->isRepair()) {
             $data['DEAL_URL'] = 
             $data['RESPONSIBLE_NAME'] =
             $data['WORK_ADDRESS'] = '';
@@ -119,6 +193,64 @@ class Content extends InfoserviceModel
         }
 
         return $data;
+    }
+
+    /**
+     * Undocumented function
+     *
+     * @return integer
+     */
+    public function getTrueStatus(): int
+    {
+        if ($this->isRepair()) {
+            return CONTENT_REPAIR_DEAL_STATUS;
+
+        } elseif ($content->is_closed) {
+            return CONTENT_CLOSED_DEAL_STATUS;
+
+        } else {
+            return $this->status >= CONTENT_MAX_DEAL_STATUS
+                 ? CONTENT_MAX_DEAL_STATUS
+                 : $this->status;
+        }
+    }
+
+    /**
+     * Undocumented function
+     *
+     * @return boolean
+     */
+    public function isRepair(): bool
+    {
+        return preg_match(self::CONTENT_REPAIR_STATUS_REGEX, $this->work_address);
+    }
+
+    /**
+     * Undocumented function
+     *
+     * @param array $dayCell
+     * @return void
+     */
+    protected function setDayStatusAtCellByContentStatus(&$dayCell, int $statusValue)
+    {
+        if (
+            !isset($dayCell['STATUS'])
+            || ($statusValue == CONTENT_REPAIR_DEAL_STATUS)
+        ) {
+            $dayCell['STATUS'] = $statusValue;
+            $dayCell['STATUS_CLASS'] = self::CONTENT_DEAL_STATUS[$statusValue];
+            
+        } elseif (
+            ($dayCell['STATUS'] != CONTENT_REPAIR_DEAL_STATUS)
+            && ($dayCell['STATUS'] != $statusValue)
+        ) {
+            $dayCell['STATUS'] = CONTENT_MANY_DEAL_STATUS;
+            $dayCell['STATUS_CLASS'] = self::CONTENT_DEAL_STATUS[CONTENT_MANY_DEAL_STATUS];
+        }
+
+        ++$dayCell['DEAL_COUNT'];
+        $dayCell['IS_ONE'] = $dayCell['DEAL_COUNT'] == self::MIN_DEAL_COUNT;
+        $dayCell['VERY_MANY'] = $dayCell['DEAL_COUNT'] > self::MAX_DEAL_COUNT;
     }
 
     /**
@@ -302,7 +434,7 @@ class Content extends InfoserviceModel
      */
     public function saveAsUnique($validate = true)
     {
-        $this->save($validate);
+        $result = $this->save($validate);
         $otherIDs = $this->getOtherIDsWithSameSpecification();
         $this->addCommentsFromIDs($otherIDs);
         if (empty($otherIDs)) return;
@@ -310,15 +442,16 @@ class Content extends InfoserviceModel
         foreach (static::all(['conditions' => ['id' => $otherIDs]]) as $content) {
             $content->delete();
         }
+        return $result;
     }
 
     /**
      * Возвращает идентификаторы контента, чье значение спецификации (specification)
      * такое же, как у текущего контента
      *
-     * @return void
+     * @return array
      */
-    public function getOtherIDsWithSameSpecification()
+    public function getOtherIDsWithSameSpecification(): array
     {
         if (!$this->id) return [];
 
@@ -407,7 +540,7 @@ class Content extends InfoserviceModel
     public function cleanDataAtDay(\DateTime $date): self
     {
         $this->deleteCommentsAtDay($date);        
-        if ($this->begin_date->format(Day::FORMAT) == $date) {
+        if ($this->begin_date->format(Day::FORMAT) == $date->format(Day::FORMAT)) {
             if ($this->begin_date->format(Day::FORMAT) != $this->finish_date->format(Day::FORMAT)) {
                 $this->begin_date = $date->getTimestamp() + DAY_SECOND_COUNT;
     
@@ -416,7 +549,10 @@ class Content extends InfoserviceModel
                 return $this;
             }
         
-        } elseif (($this->finish_date->format(Day::FORMAT) == $date) || $this->createCopyViaSplitingByDate($date)) {
+        } elseif (
+            ($this->finish_date->format(Day::FORMAT) == $date->format(Day::FORMAT))
+            || $this->createCopyViaSplitingByDate($date)
+        ) {
             $this->finish_date = $date->getTimestamp() - DAY_SECOND_COUNT;
 
         } else {
@@ -454,10 +590,10 @@ class Content extends InfoserviceModel
      * @param \DateTime $date - дата конкретного дня
      * @return Content|boolean
      */
-    public function createCopyViaSplitingByDate(\DateTime $date)
+    public function createCopyViaSplitingByDate(\DateTime $date): ?self
     {
         $content = $this->prepareCopyAfterDay($date);
-        if (!$content) return false;
+        if (!$content) return null;
 
         $content->save();
         $this->setHostForComments($content);
@@ -474,13 +610,13 @@ class Content extends InfoserviceModel
      * @param \DateTime $date - дата конкретного дня
      * @return Content|boolean
      */
-    public function prepareCopyAfterDay(\DateTime $date)
+    public function prepareCopyAfterDay(\DateTime $date): ?self
     {
         $currentDay = $date->format(Day::FORMAT);
         if (
             ($currentDay <= $this->begin_date->format(Day::FORMAT))
             || ($currentDay >= $this->finish_date->format(Day::FORMAT))
-        ) return false;
+        ) return null;
 
         $content = $this->getPreparedCopyWithoutFields(['begin_date', 'finish_date', 'sort']);
         $content->sort = $this->sort;

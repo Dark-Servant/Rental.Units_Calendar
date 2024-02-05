@@ -1,14 +1,12 @@
 <?
-define('SESSION_CONTANTS', false);
-
 /**
  * Из-за использования прокси может случиться, что скрипты *.js.php
  * будут использовать другие сессии
  */
-if (SESSION_CONTANTS && !empty($_REQUEST['sid'])) session_id($_REQUEST['sid']);
+if (!empty($_SERVER['HTTP_INFOSERVICE_AJAX'])) session_id($_SERVER['HTTP_INFOSERVICE_AJAX']);
 session_start();
 
-if (!SESSION_CONTANTS || empty($_SESSION['CONST_LIST'])) {
+if (empty($_SERVER['HTTP_INFOSERVICE_AJAX']) || empty($_SESSION['CONST_LIST'])) {
     $_SESSION['CONST_LIST'] = array_keys(get_defined_constants());
 
     define('APPPATH', preg_replace('/[\/\\\\][^\/\\\\]*$/', '/', $_SERVER['SCRIPT_NAME']));
@@ -31,6 +29,7 @@ if (!SESSION_CONTANTS || empty($_SESSION['CONST_LIST'])) {
     define('ENV_CODE', 'dev');
     define('SHOW_VIEW', 'calendar');
     define('DAY_SECOND_COUNT', 86400);
+    define('WEEK_DAY_COUNT', 7);
     define('CONTENT_CLOSED_DEAL_STATUS', array_search('closed', Content::CONTENT_DEAL_STATUS));
     define('CONTENT_MAX_DEAL_STATUS', CONTENT_CLOSED_DEAL_STATUS - 1);
     define('CONTENT_MANY_DEAL_STATUS', CONTENT_CLOSED_DEAL_STATUS + 1);

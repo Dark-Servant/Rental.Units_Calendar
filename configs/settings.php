@@ -5,7 +5,7 @@ error_reporting(E_ERROR);
 
 define('PHP_ACTIVERECORD_AUTOLOAD_DISABLE', true);
 
-if (empty($_SERVER['DOCUMENT_ROOT'])) $_SERVER['DOCUMENT_ROOT'] = dirname(__DIR__);
+$_SERVER['DOCUMENT_ROOT'] = dirname(__DIR__);
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/vendor/autoload.php';
 
@@ -16,18 +16,24 @@ function infoservice_auotload($className)
     $path = ActiveRecord\Config::instance()->get_model_directory();
     $root = realpath(isset($path) ? $path : '.');
 
+    $classPlaces = [
+        $_SERVER['DOCUMENT_ROOT'] . '/lib/models/#classname#.php'
+    ];
+
+    $specialNameSpaces = $_SERVER['DOCUMENT_ROOT'] . '/lib/helpers';
     if (($namespaces = ActiveRecord\get_namespaces($className))) {
         $className = array_pop($namespaces);
-        $root .= DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, $namespaces);
+        $specialNameSpaces .= '/' . strtolower(implode('/', $namespaces));
     }
-
-    $className = strtolower($className);    
-    foreach ([
-            $root . '/#classname#.php',
-            $_SERVER['DOCUMENT_ROOT'] . '/lib/models/#classname#.php',
-            $_SERVER['DOCUMENT_ROOT'] . '/lib/helpers/#classname#.class.php'
-        ] as $unitPath)  {
-
+    $specialNameSpaces .= '/#classname#.class.php';
+    if (empty($namespaces)) {
+        $classPlaces[] = $specialNameSpaces;
+        
+    } else {
+        $classPlaces = [$specialNameSpaces];
+    }
+    $className = strtolower($className);
+    foreach ($classPlaces as $unitPath)  {
         $file = str_replace('#classname#', $className, $unitPath);
         if (!file_exists($file)) continue;
 

@@ -36,6 +36,7 @@ $langValues['CONTENT_REPAIR_STATUS_TITLE'] = 'Ремонт';
 $langValues['ERROR_EMPTY_USER_ID'] = 'В параметре user не указан ID';
 
 // lib/viewers/calendar.php
+$langValues['ERROR_JS_SHOWAPPLICATION_REPLACING'] = 'Ошибка! Не заменен метод showApplication в JS-коде';
 $langValues['FILTER_YEAR_CHOSING'] = 'Выбор года';
 $langValues['FILTER_QUARTER_CHOSING'] = 'Выбор квартала';
 $langValues['FILTER_TODAY_BUTTON'] = 'Сегодня';
@@ -43,8 +44,6 @@ $langValues['FILTER_MY_TECHNIC'] = 'Своя техника';
 $langValues['FILTER_QUARTER_BUTTON'] = 'Просмотр кварталами';
 $langValues['BIZ_PROC_ACTIVITY_LIST_TITLE'] = 'Перейти к списку действий Бизнес-процессов';
 $langValues['MANY_DEAL_STATUS'] = 'Техника работает на нескольких объектах';
-$langValues['CONFIRM_DEAL_DELETING'] = 'Удалить сделку?';
-$langValues['CONFIRM_MESSAGE_DELETING'] = 'Удалить комментарий?';
 
 /**
  * Настройки выбора даты
@@ -130,6 +129,8 @@ $langValues['COMMENT_COPY_TITLE'] = 'Скопировать комментари
 $langValues['COMMENT_COPY_BUTTON_TITLE'] = 'Скопировать в другие даты';
 $langValues['COMMENT_EDIT_BUTTON_TITLE'] = 'Редактировать';
 $langValues['COMMENT_REMOVE_BUTTON_TITLE'] = 'Удалить';
+$langValues['CONFIRM_DEAL_DELETING'] = 'Удалить сделку за выбранный день?';
+$langValues['CONFIRM_MESSAGE_DELETING'] = 'Удалить комментарий?';
 
 // Значения дежурных комментариев
 $langValues['DUTY_COMMENT_REPAIR_STATUS'] = 'Ремонт';

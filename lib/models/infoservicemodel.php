@@ -94,7 +94,7 @@ class InfoserviceModel extends ActiveRecord\Model
      * @param &$value - значение поля
      * @return boolean
      */
-    protected function correctBooleanValue(string $name, &$value)
+    public static function correctBooleanValue(string $name, &$value)
     {
         if (preg_match('/^is_/i', $name)) {
             $value = intval(is_string($value) ? preg_match('/^(?:y(?:es)?|true|\-? *[1-9]\d*)$/i', $value) : $value);
@@ -111,7 +111,7 @@ class InfoserviceModel extends ActiveRecord\Model
      * @param &$value - значение поля
      * @return boolean
      */
-    protected function correctURLValue(string $name, &$value)
+    public static function correctURLValue(string $name, &$value)
     {
         if (preg_match('/_url$/i', $name)) {
             $value = preg_match('/^https?:\/\//', $value) ? $value : '';
@@ -130,7 +130,7 @@ class InfoserviceModel extends ActiveRecord\Model
      * @param &$value - значение поля
      * @return boolean
      */
-    protected function correctDateValue(string $name, &$value)
+    public static function correctDateValue(string $name, &$value)
     {
         if (!preg_match('/_date$/i', $name)) return false;
 
@@ -160,7 +160,7 @@ class InfoserviceModel extends ActiveRecord\Model
      * @param &$value - значение поля
      * @return boolean
      */
-    protected function correctIDValue(string $name, &$value)
+    public static function correctIDValue(string $name, &$value)
     {
         if (!preg_match('/_id$/i', $name)) return false;
 
@@ -174,32 +174,6 @@ class InfoserviceModel extends ActiveRecord\Model
             $value = 0;
         }
         return true;
-    }
-
-    /**
-     * Для класса, в экземпляре которого была вызвана эта функция, метод сначала собирает и
-     * сохраняет в статической переменной все методы для проверки значений по каждому полю,
-     * если еще не делал это для этого класса. При следующих вызовах для того же класса поиск
-     * и сохранение подходящих методов больше не будет происходить. Далее метод возвращает по
-     * одному названия собранных методов для класса, из которого его вызвали. Возвращаемые названия
-     * методов используются для проверки значения каждого поля экземпляра класса
-     * 
-     * @yield
-     */
-    protected function correctionMethods()
-    {
-        $className = get_called_class();
-        if (empty(self::$correctionMethods[$className])) {
-            self::$correctionMethods[$className] = [];
-            foreach (get_class_methods($this) as $method) {
-                if (!preg_match('/^correct\w+value$/i', $method)) continue;
-
-                self::$correctionMethods[$className][] = $method;
-            }
-        }
-        foreach (self::$correctionMethods[$className] as $method) {
-            yield $method;
-        }
     }
 
     /**
@@ -218,14 +192,53 @@ class InfoserviceModel extends ActiveRecord\Model
     {
         if (in_array(strtolower($name), ['id'])) return;
 
-        foreach ($this->correctionMethods() as $method) {
-            if ($this->$method($name, $value)) break;
+        foreach (static::correctionMethods() as $method) {
+            if (forward_static_call_array([static::class, $method], [$name, &$value]))
+                break;
         }
 
         if ($this->id  && !isset($this->oldParamData[$name]))
             $this->oldParamData[$name] = ['value' => $this->$name]; // иначе не будет работать со значением null
 
         parent::__set($name, $value);
+    }
+
+    /**
+     * Для класса, в экземпляре которого была вызвана эта функция, метод сначала собирает и
+     * сохраняет в статической переменной все методы для проверки значений по каждому полю,
+     * если еще не делал это для этого класса. При следующих вызовах для того же класса поиск
+     * и сохранение подходящих методов больше не будет происходить. Далее метод возвращает по
+     * одному названия собранных методов для класса, из которого его вызвали. Возвращаемые названия
+     * методов используются для проверки значения каждого поля экземпляра класса
+     * 
+     * @yield
+     */
+    protected static function correctionMethods()
+    {
+        if (empty(self::$correctionMethods[static::class])) {
+            self::$correctionMethods[static::class] = [];
+            foreach (get_class_methods(static::class) as $method) {
+                if (!preg_match('/^correct\w+value$/i', $method)) continue;
+
+                self::$correctionMethods[static::class][] = $method;
+            }
+        }
+        foreach (self::$correctionMethods[static::class] as $method) {
+            yield $method;
+        }
+    }
+
+    /**
+     * Обновленный метод сохранения данных в БД
+     *
+     * @param $validate - параметр для родительского метода
+     * @return mixed
+     */
+    public function save($validate = true)
+    {
+        $this->correctImortantFields();
+        $this->oldParamData = [];
+        return parent::save($validate);
     }
 
     /**
@@ -241,19 +254,6 @@ class InfoserviceModel extends ActiveRecord\Model
 
             $this->$fieldName = $this->oldParamData[$fieldName]['value'];
         }
-    }
-
-    /**
-     * Обновленный метод сохранения данных в БД
-     *
-     * @param $validate - параметр для родительского метода
-     * @return mixed
-     */
-    public function save($validate = true)
-    {
-        $this->correctImortantFields();
-        $this->oldParamData = [];
-        return parent::save($validate);
     }
 
     /**

@@ -1,0 +1,17 @@
+/sql.dumps/*
+/configs/*
+!/configs/*.php
+!/configs/.php-database-migration
+/configs/.php-database-migration/migrations.*
+/js/external/node_modules/*
+/js/external/package-lock.json
+/vendor/*
+/composer.lock
+*.7z
+*.sh
+*.txt
+*.bat
+/*.php
+!/index.php
+.gitignore*
+!.gitignore

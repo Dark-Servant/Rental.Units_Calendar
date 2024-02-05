@@ -94,130 +94,6 @@ class Content extends InfoserviceModel
     /**
      * Undocumented function
      *
-     * @param array& $dayTimeStamps
-     * @param array&|null $dayShowing
-     * @return self
-     */
-    public function fillDayTimeStampWithShowingSetting(array&$dayTimeStamps, array&$dayShowing=null): self
-    {
-        $cellData = $this->getCellData();
-        $uniqueCode = static::getUniqueCodeByCellData($cellData);
-        $contentStatus = $this->getTrueStatus();
-        foreach (
-            range(
-                $this->begin_date->getTimestamp(), $this->finish_date->getTimestamp(), Day::SECOND_COUNT
-            ) as $timeStamp
-        ) {
-            if (!isset($dayTimeStamps[$timeStamp])) continue;
-
-            /**
-             * Проверка на то, был ли конкретный контент выведен в текущей ячейке. Если да, то он уже отметился
-             * для текущей техники (партнера) и даты, поэтому устанавливается, что его не надо выводить.
-             */
-            $cellData['CELL_SHOWING'] = empty($dayShowing[$timeStamp][$uniqueCode]);
-            $dayShowing[$timeStamp][$uniqueCode] = true;
-
-            /**
-             * Из-за бага с дублированнием контента, когда действие БП запускается параллельно несколько раз
-             * при, возможно, нескольких раз обращений из шаблона БП, приходится делать проверку статуса контента
-             * только для того контента, который еще не отметился для текущей даты и техники
-             */
-            if ($cellData['CELL_SHOWING']) 
-                $this->setDayStatusAtCellByContentStatus($dayTimeStamps[$timeStamp], $contentStatus);
-
-            if (!isset($dayTimeStamps[$timeStamp]['DEALS']))
-                $dayTimeStamps[$timeStamp]['DEALS'] = [];
-
-            // необходимо, чтобы контент на ремонте был всегда в начале списка
-            if ($cellData['IS_REPAIR']) {
-                array_unshift($dayTimeStamps[$timeStamp]['DEALS'], $cellData);
-
-            } else {
-                $dayTimeStamps[$timeStamp]['DEALS'][] = $cellData;
-            }
-        }
-        return $this;
-    }
-
-    /**
-     * Undocumented function
-     *
-     * @param array $data
-     * @return string
-     */
-    protected static function getUniqueCodeByCellData(array $data): string
-    {
-        /**
-         * Устанавливаем параметр $dealName, чтобы потом проверить не выводился ли этот контент
-         * в той же ячейке
-         */
-        if (empty($data['DEAL_URL']) || !preg_match('/\/(\d+)/', $data['DEAL_URL'], $URLParts)) {
-            return 'n:' . trim(strtolower($data['CUSTOMER_NAME']));
-
-        } else {
-            return 'u:' . $URLParts[1];
-        }
-    }
-
-    /**
-     * Возвращает массив с данными контента, которые надо использовать
-     * при выводе в календаре
-     * 
-     * @return array
-     */
-    public function getCellData()
-    {
-        global $langValues;
-        $dealURL = $this->deal_url;
-        $this->correctURLValue('deal_url', $dealURL);
-
-        $data = [
-            'ID' => $this->id,
-            'DEAL_URL' => $dealURL,
-            'RESPONSIBLE_NAME' => $this->responsible->name,
-            'CUSTOMER_NAME' => $this->customer->name,
-            'WORK_ADDRESS' => $this->work_address
-        ];
-        if (!$this->technic->is_my)
-            $data += [
-                'TECHNIC_ID' => $this->technic_id,
-                'TECHNIC_NAME' => $this->technic->name
-            ];
-
-        if ($this->isRepair()) {
-            $data['DEAL_URL'] = 
-            $data['RESPONSIBLE_NAME'] =
-            $data['WORK_ADDRESS'] = '';
-            $data['CUSTOMER_NAME'] = $langValues['CONTENT_REPAIR_STATUS_TITLE'];
-            $data['IS_REPAIR'] = true;
-        }
-
-        return $data;
-    }
-
-    /**
-     * Undocumented function
-     *
-     * @return integer
-     */
-    public function getTrueStatus(): int
-    {
-        if ($this->isRepair()) {
-            return CONTENT_REPAIR_DEAL_STATUS;
-
-        } elseif ($content->is_closed) {
-            return CONTENT_CLOSED_DEAL_STATUS;
-
-        } else {
-            return $this->status >= CONTENT_MAX_DEAL_STATUS
-                 ? CONTENT_MAX_DEAL_STATUS
-                 : $this->status;
-        }
-    }
-
-    /**
-     * Undocumented function
-     *
      * @return boolean
      */
     public function isRepair(): bool
@@ -226,77 +102,112 @@ class Content extends InfoserviceModel
     }
 
     /**
-     * Undocumented function
+     * Обновленный метод сохранения данных в БД, дополнитльно работает
+     * с комментариями, принадлежащих текущего контенту
      *
-     * @param array $dayCell
+     * @param $validate - параметр для родительского метода
+     * @return mixed
+     */
+    public function save($validate = true)
+    {
+        $result = parent::save($validate);
+        if (empty($this->sort)) {
+            $this->sort = $this->id;
+            $result = parent::save($validate);
+        }
+        $this->correctOldComment();
+        return $result;
+    }
+    
+    /**
+     * Сохраняет данные, как и метод save, но дополнительно после сохранения
+     * находит контент с таким значением спецификации (specification), забирает
+     * себе комментарии найденного контента, чья дата находится в пределах
+     * дат начала и конца текущего контента, затем удаляет найденный контент
+     * через поправленный метод delete, где используется логика смены контента
+     * у комментариев
+     *
+     * @param $validate - параметр для родительского метода save
      * @return void
      */
-    protected function setDayStatusAtCellByContentStatus(&$dayCell, int $statusValue)
+    public function saveAsUnique($validate = true)
     {
-        if (
-            !isset($dayCell['STATUS'])
-            || ($statusValue == CONTENT_REPAIR_DEAL_STATUS)
-        ) {
-            $dayCell['STATUS'] = $statusValue;
-            $dayCell['STATUS_CLASS'] = self::CONTENT_DEAL_STATUS[$statusValue];
-            
-        } elseif (
-            ($dayCell['STATUS'] != CONTENT_REPAIR_DEAL_STATUS)
-            && ($dayCell['STATUS'] != $statusValue)
-        ) {
-            $dayCell['STATUS'] = CONTENT_MANY_DEAL_STATUS;
-            $dayCell['STATUS_CLASS'] = self::CONTENT_DEAL_STATUS[CONTENT_MANY_DEAL_STATUS];
-        }
+        $result = $this->save($validate);
+        $otherIDs = $this->getOtherIDsWithSameSpecification();
+        $this->addCommentsFromIDs($otherIDs);
+        if (empty($otherIDs)) return;
 
-        ++$dayCell['DEAL_COUNT'];
-        $dayCell['IS_ONE'] = $dayCell['DEAL_COUNT'] == self::MIN_DEAL_COUNT;
-        $dayCell['VERY_MANY'] = $dayCell['DEAL_COUNT'] > self::MAX_DEAL_COUNT;
+        foreach (static::all(['conditions' => ['id' => $otherIDs]]) as $content) {
+            $content->delete();
+        }
+        return $result;
     }
 
     /**
-     * Возвращает массив комментариев, которые привязаны к контенту, но таковыми быть
-     * не должны из-за связи с другой техникой или датой вывода в календаре, которая не
-     * попадает в интервал между начальной и конечной датами контента.
-     * Возвращаемый результат будет иметь вид
-     *     [
-     *         <ID техники> => [
-     *             <дата вывода как ГГГГ-ММ-ДД> => [<ID комментария-1>, <ID комментария-2>, ..., <ID комментария-N>]
-     *         ],
-     *         ...
-     *     ]
-     *
-     * @param bool $throwAll - указывает брать ли все комментарии, по-умолчанию берутся те, что
-     * вне рамок дат контента
+     * Обновленный метод удаления данных в БД, дополнитльно работает
+     * с комментариями, принадлежащих текущего контенту
      * 
-     * @return array
+     * @return mixed
      */
-    protected function getThrownTechnicComments(bool $throwAll = false)
+    public function delete()
     {
-        $commentIds = array_map(
+        $this->correctOldComment(true, false);
+        return parent::delete();
+    }
+
+    /**
+     * После изменения данных контента может получиться так, что некоторые комментарии перестанут
+     * принадлежать контенту, их надо отдать другому контенту или обнулить связь с любым контентом.
+     * Так же после изменения данных у контента могут появиться новые комментарии, которые раньше
+     * не были связаны ни с одним контентом и находятся там, куда стал передвинут контент
+     *
+     * @param bool $throwAll - указывает на то, что надо все текущие комментарии контента бросить,
+     * по-умолчанию бросает только те, у которых дата не совпадает с интервалом контента
+     * 
+     * @param bool $checkNew - указывает на то, что надо поискать новые комментарии
+     * @return void
+     */
+    protected function correctOldComment(bool $throwAll = false, bool $checkNew = true)
+    {
+        if (!$this->id) return;
+
+        $thrownComments = $this->getThrownCommentsWithNewRoles($throwAll);
+
+        foreach ($thrownComments['contentCommentIds'] as $comment) {
+            Comment::update_all([
+                'set' => [
+                    'content_id' => $comment['contentId'],
+                    'technic_id' => $comment['technicId']
+                ],
+                'conditions' => ['id' => $comment['ids']]
+            ]);
+        }
+
+        if (!empty($thrownComments['zeroCommentIds']))
+            Comment::update_all(['set' => ['content_id' => 0], 'conditions' => ['id' => $thrownComments['zeroCommentIds']]]);
+
+        if (!$checkNew) return;
+
+        $partner = $this->technic ? $this->technic->partner : null;
+        $technicIds = $partner
+                    ? array_map(
+                            function($technic) { return $technic->id; },
+                            $partner->technics
+                        )
+                    : [$this->technic_id];
+        $newCommentIds = array_map(
                             function($comment) { return $comment->id; },
-                            $this->comments
-                        );
-        if (empty($commentIds)) return [];
-
-        if ($throwAll) {
-            $comments = Comment::all(['id' => $commentIds]);
-
-        } else {
-            $comments = Comment::all([
+                            Comment::all([
                                 'conditions' => [
-                                    '(id IN (?)) AND ((content_date < ?) OR (content_date > ?))',
-                                    $commentIds,
+                                    '(technic_id IN (?)) AND (content_id = 0) AND (content_date >= ?) AND (content_date <= ?)',
+                                    $technicIds,
                                     $this->begin_date->format(Day::FORMAT),
                                     $this->finish_date->format(Day::FORMAT)
                                 ]
-                            ]);
-
-        }
-        $commentIds = [];
-        foreach ($comments as $comment) {
-            $commentIds[$comment->technic_id][$comment->content_date->format(Day::FORMAT)][] = $comment->id;
-        }
-        return $commentIds;
+                            ])
+                        );
+        if (!empty($newCommentIds))
+            Comment::update_all(['set' => ['content_id' => $this->id], 'conditions' => ['id' => $newCommentIds]]);
     }
 
     /**
@@ -367,82 +278,49 @@ class Content extends InfoserviceModel
     }
 
     /**
-     * После изменения данных контента может получиться так, что некоторые комментарии перестанут
-     * принадлежать контенту, их надо отдать другому контенту или обнулить связь с любым контентом.
-     * Так же после изменения данных у контента могут появиться новые комментарии, которые раньше
-     * не были связаны ни с одним контентом и находятся там, куда стал передвинут контент
+     * Возвращает массив комментариев, которые привязаны к контенту, но таковыми быть
+     * не должны из-за связи с другой техникой или датой вывода в календаре, которая не
+     * попадает в интервал между начальной и конечной датами контента.
+     * Возвращаемый результат будет иметь вид
+     *     [
+     *         <ID техники> => [
+     *             <дата вывода как ГГГГ-ММ-ДД> => [<ID комментария-1>, <ID комментария-2>, ..., <ID комментария-N>]
+     *         ],
+     *         ...
+     *     ]
      *
-     * @param bool $throwAll - указывает на то, что надо все текущие комментарии контента бросить,
-     * по-умолчанию бросает только те, у которых дата не совпадает с интервалом контента
+     * @param bool $throwAll - указывает брать ли все комментарии, по-умолчанию берутся те, что
+     * вне рамок дат контента
      * 
-     * @param bool $checkNew - указывает на то, что надо поискать новые комментарии
-     * @return void
+     * @return array
      */
-    protected function correctOldComment(bool $throwAll = false, bool $checkNew = true)
+    protected function getThrownTechnicComments(bool $throwAll = false): array
     {
-        if (!$this->id) return;
-
-        $thrownComments = $this->getThrownCommentsWithNewRoles($throwAll);
-
-        foreach ($thrownComments['contentCommentIds'] as $comment) {
-            Comment::update_all([
-                'set' => [
-                    'content_id' => $comment['contentId'],
-                    'technic_id' => $comment['technicId']
-                ],
-                'conditions' => ['id' => $comment['ids']]
-            ]);
-        }
-
-        if (!empty($thrownComments['zeroCommentIds']))
-            Comment::update_all(['set' => ['content_id' => 0], 'conditions' => ['id' => $thrownComments['zeroCommentIds']]]);
-
-        if (!$checkNew) return;
-
-        $partner = $this->technic ? $this->technic->partner : null;
-        $technicIds = $partner
-                    ? array_map(
-                            function($technic) { return $technic->id; },
-                            $partner->technics
-                        )
-                    : [$this->technic_id];
-        $newCommentIds = array_map(
+        $commentIds = array_map(
                             function($comment) { return $comment->id; },
-                            Comment::all([
+                            $this->comments
+                        );
+        if (empty($commentIds)) return [];
+
+        if ($throwAll) {
+            $comments = Comment::all(['id' => $commentIds]);
+
+        } else {
+            $comments = Comment::all([
                                 'conditions' => [
-                                    '(technic_id IN (?)) AND (content_id = 0) AND (content_date >= ?) AND (content_date <= ?)',
-                                    $technicIds,
+                                    '(id IN (?)) AND ((content_date < ?) OR (content_date > ?))',
+                                    $commentIds,
                                     $this->begin_date->format(Day::FORMAT),
                                     $this->finish_date->format(Day::FORMAT)
                                 ]
-                            ])
-                        );
-        if (!empty($newCommentIds))
-            Comment::update_all(['set' => ['content_id' => $this->id], 'conditions' => ['id' => $newCommentIds]]);
-    }
+                            ]);
 
-    /**
-     * Сохраняет данные, как и метод save, но дополнительно после сохранения
-     * находит контент с таким значением спецификации (specification), забирает
-     * себе комментарии найденного контента, чья дата находится в пределах
-     * дат начала и конца текущего контента, затем удаляет найденный контент
-     * через поправленный метод delete, где используется логика смены контента
-     * у комментариев
-     *
-     * @param $validate - параметр для родительского метода save
-     * @return void
-     */
-    public function saveAsUnique($validate = true)
-    {
-        $result = $this->save($validate);
-        $otherIDs = $this->getOtherIDsWithSameSpecification();
-        $this->addCommentsFromIDs($otherIDs);
-        if (empty($otherIDs)) return;
-
-        foreach (static::all(['conditions' => ['id' => $otherIDs]]) as $content) {
-            $content->delete();
         }
-        return $result;
+        $commentIds = [];
+        foreach ($comments as $comment) {
+            $commentIds[$comment->technic_id][$comment->content_date->format(Day::FORMAT)][] = $comment->id;
+        }
+        return $commentIds;
     }
 
     /**
@@ -489,36 +367,6 @@ class Content extends InfoserviceModel
                     $this->finish_date->format(Day::FORMAT)
                 ]
             ]);
-    }
-
-    /**
-     * Обновленный метод сохранения данных в БД, дополнитльно работает
-     * с комментариями, принадлежащих текущего контенту
-     *
-     * @param $validate - параметр для родительского метода
-     * @return mixed
-     */
-    public function save($validate = true)
-    {
-        $result = parent::save($validate);
-        if (empty($this->sort)) {
-            $this->sort = $this->id;
-            $result = parent::save($validate);
-        }
-        $this->correctOldComment();
-        return $result;
-    }
-
-    /**
-     * Обновленный метод удаления данных в БД, дополнитльно работает
-     * с комментариями, принадлежащих текущего контенту
-     * 
-     * @return mixed
-     */
-    public function delete()
-    {
-        $this->correctOldComment(true, false);
-        return parent::delete();
     }
 
     /**

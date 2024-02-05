@@ -19,30 +19,6 @@ class Comment extends InfoserviceModel
     const DUTY_STATUS = [1 => 'repair', 'on-road', 'based-on'];
 
     /**
-     * Возвращает данные комментария, которые используются при выводе
-     * в календаре
-     * 
-     * @param bool $isRead - отметка, что комментарий прочитан
-     * @return array
-     */
-    function getData(bool $isRead = false)
-    {
-        return [
-            'ID' => $this->id,
-            'TECHNIC_ID' => $this->technic_id,
-            'CONTENT_ID' => $this->content_id,
-            'USER_ID' => $this->user->external_id,
-            'USER_NAME' => $this->user->name,
-            'VALUE' => $this->value,
-            'READ' => $isRead,
-            'DUTY_STATUS_NAME' => $this->duty_status
-                                ? self::DUTY_STATUS[$this->duty_status]
-                                : '',
-            'CREATED_AT' => $this->created_at->getTimestamp(),
-        ];
-    }
-
-    /**
      * Проверяет правильность значения поля content_id, это поле должно быть
      * равно нулю, иначе проверкой поля займется метод correctIDValue
      * 

@@ -59,7 +59,7 @@ class Content extends InfoserviceModel
      * @param &$value - значение поля
      * @return boolean
      */
-    protected function correctStatusValue($name, &$value)
+    public static function correctStatusValue($name, &$value): bool
     {
         if (strtolower($name) != 'status') return false;
 
@@ -318,7 +318,7 @@ class Content extends InfoserviceModel
      * @param bool $throwAll - указывает на то, что надо все текущие комментарии контента бросить
      * @return array
      */
-    protected function getThrownCommentsWithNewRoles(bool $throwAll = false)
+    protected function getThrownCommentsWithNewRoles(bool $throwAll = false): array
     {
         $contentCommentIds = [];
         $zeroCommentIds = [];

@@ -109,7 +109,7 @@
             contentDetail() {
                 if (this.contentDetail) {
                     this.hideHintWindow();
-                    InfoserviceCalendar.showContentDetailModal();
+                    InfoserviceCalendar.setContentDetailModalAtCenter();
     
                     var commentIds = [];
                     if (this.contentDetail.COMMENTS)
@@ -139,7 +139,7 @@
              * @return void
              */
             newCommentDealIndex() {
-                if (this.contentDetail) InfoserviceCalendar.showContentDetailModal();
+                if (this.contentDetail) InfoserviceCalendar.setContentDetailModalAtCenter();
                 if (this.newCommentDealIndex === false) return;
     
                 this.copyCommentIndex = false;
@@ -152,7 +152,7 @@
              * @return void
              */
             editCommentIndex() {
-                if (this.contentDetail) InfoserviceCalendar.showContentDetailModal();
+                if (this.contentDetail) InfoserviceCalendar.setContentDetailModalAtCenter();
                 if (this.editCommentIndex === false) return;
     
                 this.copyCommentIndex = false;
@@ -165,7 +165,7 @@
              * @return void
              */
             copyCommentIndex() {
-                InfoserviceCalendar.showContentDetailModal();
+                InfoserviceCalendar.setContentDetailModalAtCenter();
                 if (this.copyCommentIndex === false) return;
     
                 this.newCommentDealIndex =

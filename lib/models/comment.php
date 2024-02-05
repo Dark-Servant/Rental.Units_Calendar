@@ -50,7 +50,7 @@ class Comment extends InfoserviceModel
      * @param &$value - значение поля
      * @return boolean
      */
-    protected function correctContentIdValue(string $name, &$value)
+    public static function correctContentIdValue(string $name, &$value)
     {
         return ($name === 'content_id') && ($value === 0);
     }

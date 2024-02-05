@@ -25,7 +25,13 @@ function infoservice_auotload($className)
         $className = array_pop($namespaces);
         $specialNameSpaces .= '/' . strtolower(implode('/', $namespaces));
     }
-    $classPlaces[] = $specialNameSpaces . '/#classname#.class.php';
+    $specialNameSpaces .= '/#classname#.class.php';
+    if (empty($namespaces)) {
+        $classPlaces[] = $specialNameSpaces;
+        
+    } else {
+        $classPlaces = [$specialNameSpaces];
+    }
     $className = strtolower($className);
     foreach ($classPlaces as $unitPath)  {
         $file = str_replace('#classname#', $className, $unitPath);

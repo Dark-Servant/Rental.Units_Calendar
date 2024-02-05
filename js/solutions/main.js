@@ -140,7 +140,7 @@
             /**
              * 
              */
-            showContentDetailModal() {
+            setContentDetailModalAtCenter() {
                 this.verticalCenterWindow(this._selector.contentDetailModal);
             },
 

@@ -67,17 +67,20 @@ class Technic
      */
     public function addAsParnerAtList(array&$data): self
     {
-        if (isset($data[$this->modelUnit->partner_id])) return $this;
+        if (isset($data[$this->modelUnit->partner_id])) {
+            $this->lastListData = &$data[$this->modelUnit->partner_id];
 
-        $this->lastListData = [
-            'ID' => $this->modelUnit->partner_id,
-            'EXTERNAL_ID' => $this->modelUnit->external_id,
-            'IS_PARTNER' => true,
-            'IS_CHOSEN' => false,
-            'CONTENTS' => array_fill_keys($this->dateStamps, false)
-        ];
+        } else {
+            $this->lastListData = [
+                'ID' => $this->modelUnit->partner_id,
+                'EXTERNAL_ID' => $this->modelUnit->external_id,
+                'IS_PARTNER' => true,
+                'IS_CHOSEN' => false,
+                'CONTENTS' => array_fill_keys($this->dateStamps, false)
+            ];
+            $data[$this->modelUnit->partner_id] = &$this->lastListData;
+        }
         $this->contentDayShowingCode = self::PARTNER_CONTENT_DAY_SHOWING . $this->lastListData['ID'];
-        $data[$this->modelUnit->partner_id] = &$this->lastListData;
         return $this;
     }
 

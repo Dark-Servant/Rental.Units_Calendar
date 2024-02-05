@@ -5,7 +5,7 @@ error_reporting(E_ERROR);
 
 define('PHP_ACTIVERECORD_AUTOLOAD_DISABLE', true);
 
-if (empty($_SERVER['DOCUMENT_ROOT'])) $_SERVER['DOCUMENT_ROOT'] = dirname(__DIR__);
+$_SERVER['DOCUMENT_ROOT'] = dirname(__DIR__);
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/vendor/autoload.php';
 

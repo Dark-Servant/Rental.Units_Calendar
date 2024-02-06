@@ -1,6 +1,7 @@
 <?
+namespace Models;
 
-class InfoserviceModel extends ActiveRecord\Model
+class InfoserviceBase extends \ActiveRecord\Model
 {
     protected static $correctionMethods = null;
     protected $oldParamData = [];
@@ -140,7 +141,7 @@ class InfoserviceModel extends ActiveRecord\Model
             if (!$newValue) $newValue = date_create_from_format(Day::FORMAT, $value);
         
         } elseif (is_integer($value) || is_string($value)) {
-            $newValue = new DateTime();
+            $newValue = new \DateTime;
             $newValue->setTimestamp(intval($value));
         }
 

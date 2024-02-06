@@ -1,6 +1,6 @@
 <?
 
-class Content extends InfoserviceModel
+class Content extends Models\InfoserviceBase
 {
     static $belongs_to = [
         ['technic'],
@@ -134,9 +134,9 @@ class Content extends InfoserviceModel
     {
         $result = $this->save($validate);
         $otherIDs = $this->getOtherIDsWithSameSpecification();
-        $this->addCommentsFromIDs($otherIDs);
         if (empty($otherIDs)) return;
 
+        $this->addCommentsFromIDs($otherIDs);
         foreach (static::all(['conditions' => ['id' => $otherIDs]]) as $content) {
             $content->delete();
         }

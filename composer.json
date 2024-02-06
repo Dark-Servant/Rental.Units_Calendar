@@ -8,6 +8,7 @@
     ],
     "require": {
         "php-activerecord/php-activerecord": "^1.2",
-        "php-database-migration/php-database-migration": "^3.8"
+        "php-database-migration/php-database-migration": "^3.8",
+        "phpmailer/phpmailer": "^6.9"
     }
 }

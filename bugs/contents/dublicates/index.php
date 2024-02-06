@@ -9,8 +9,6 @@ use SQL\Query;
 use SQL\Models\Relative\Belonging;
 use Log\Base as Logger;
 
-require __DIR__ . '/../../../configs/settings.php';
-
 if (!defined('NOT_CHANGE_DUBLICATES')) define('NOT_CHANGE_DUBLICATES', false);
 
 $mainLogger = Logger::getMainInstance();
@@ -34,6 +32,10 @@ if ($outer->getCountOfGroups()) {
     $outer->sendToLog()->replaceDublicates();
     
     Query::activateSending();
+    $logFiles['contents_dublicates.txt'] = [
+        'title' => 'Дубликаты в данных',
+        'path' => $logger->getFilePath()
+    ];
 
 } else {
 	$logger->deleteFilePath();

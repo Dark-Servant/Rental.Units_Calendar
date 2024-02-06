@@ -40,9 +40,10 @@ class Value
 
     public function getResultForField(string $fieldCode): ?string
     {
-        if (!isset($this->value)) return null;
+        if (!isset($this->value)) {
+            return $fieldCode . ' IS NULL';
 
-        if (is_array($this->value)) {
+        } elseif (is_array($this->value)) {
             return $fieldCode . ' IN ("' . implode('", "', $this->value) . '")';
             
         } else {

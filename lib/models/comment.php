@@ -1,6 +1,6 @@
 <?
 
-class Comment extends InfoserviceModel
+class Comment extends Models\InfoserviceBase
 {
     static $belongs_to = [
         ['user', 'foreign_key' => 'user_id', 'class_name' => 'Responsible'],

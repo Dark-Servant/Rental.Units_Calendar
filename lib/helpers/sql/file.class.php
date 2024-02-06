@@ -1,9 +1,7 @@
 <?
-namespace Bugs;
+namespace SQL;
 
-use ActiveRecord\ConnectionManager;
-
-class SQLFile
+class File
 {
     protected $fileName;
     protected $sqlList = [];
@@ -61,10 +59,10 @@ class SQLFile
                 );
         if (empty($this->sqlList[$code])) return null;
 
-        return static::getQuery(static::getQueryCodeByTemplateWithParams($this->sqlList[$code], $params));
+        return static::getQueryByTemplateWithParams($this->sqlList[$code], $params);
     }
 
-    public static function getQueryCodeByTemplateWithParams(string $queryCode, array $params): string
+    public static function getQueryByTemplateWithParams(string $template, array $params): ?\PDOStatement
     {
         $preparedParams = array_map(
                                 function($value) {
@@ -80,14 +78,7 @@ class SQLFile
                                 },
                                 $params
                             );
-        return strtr($queryCode, $preparedParams);
-    }
 
-    public static function getQuery(string $queryCode): \PDOStatement
-    {
-        static $connection = false;
-        if (!$connection) $connection = ConnectionManager::get_connection();
-
-        return $connection->query($queryCode);
+        return (new Query(strtr($template, $preparedParams)))->send();
     }
 }

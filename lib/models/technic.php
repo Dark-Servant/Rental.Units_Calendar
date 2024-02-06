@@ -1,7 +1,7 @@
 <?
 use Frontend\MainTable\RowData\TechnicInterval;
 
-class Technic extends InfoserviceModel
+class Technic extends Models\InfoserviceBase
 {
     static $belongs_to = [
         ['partner'],

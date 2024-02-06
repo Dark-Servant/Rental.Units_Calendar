@@ -1,6 +1,6 @@
 <?
 
-class Customer extends InfoserviceModel
+class Customer extends Models\InfoserviceBase
 {
     static $has_many = [
         ['contents']

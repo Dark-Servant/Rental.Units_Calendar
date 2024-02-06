@@ -1,6 +1,6 @@
 <?
 
-class Partner extends InfoserviceModel
+class Partner extends Models\InfoserviceBase
 {
     static $has_many = [
         ['technics'],

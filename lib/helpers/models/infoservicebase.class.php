@@ -1,6 +1,7 @@
 <?
+namespace Models;
 
-class InfoserviceModel extends ActiveRecord\Model
+class InfoserviceBase extends \ActiveRecord\Model
 {
     protected static $correctionMethods = null;
     protected $oldParamData = [];
@@ -123,7 +124,7 @@ class InfoserviceModel extends ActiveRecord\Model
     /**
      * Проверяет название поля. Если оно оканчивается на *_date, то значение заменяется
      * экземпляром класса DateTime. Само значение для этого должно быть строкового типа
-     * и иметь значние даты в формате, описанном в константах Day::CALENDAR_FORMAT или
+     * и иметь значние даты в формате, описанном в константах \Day::CALENDAR_FORMAT или
      * Day::FORMAT, или быть меткой времени
      * 
      * @param string $name - название поля
@@ -136,11 +137,11 @@ class InfoserviceModel extends ActiveRecord\Model
 
         $newValue = null;
         if (is_string($value) && !preg_match('/^\d+$/', $value)) {
-            $newValue = date_create_from_format(Day::CALENDAR_FORMAT, $value);
-            if (!$newValue) $newValue = date_create_from_format(Day::FORMAT, $value);
+            $newValue = date_create_from_format(\Day::CALENDAR_FORMAT, $value);
+            if (!$newValue) $newValue = date_create_from_format(\Day::FORMAT, $value);
         
         } elseif (is_integer($value) || is_string($value)) {
-            $newValue = new DateTime();
+            $newValue = new \DateTime;
             $newValue->setTimestamp(intval($value));
         }
 

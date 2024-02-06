@@ -1,25 +1,15 @@
 <?
-namespace Bugs\Comments;
+namespace Bugs\Models\Solutions\BadHost\Comments;
 
-use Bugs\SQLFile;
-use Bugs\Comments\BadHost\PartnerContent;
+use SQL\FileByLastFolderIniting;
 
-class BadHost
+class Base
 {
-    protected $sqlCode;
+    use FileByLastFolderIniting;
+
     protected $zeroContentCommentIDs = false;
     protected $myTechnicContentCommentIDs = [];
     protected $partnerContentCommentIDs = [];
-
-    public function __construct(SQLFile $sqlCode = null)
-    {
-        $this->sqlCode = static::getRealSQLFile($sqlCode);
-    }
-
-    public static function getRealSQLFile(SQLFile $sqlCode = null): SQLFile
-    {
-        return isset($sqlCode) ? $sqlCode : new SQLFile(__DIR__ . '/comments.sql');
-    }
 
     public function initMyTechnicData(): self
     {
@@ -44,9 +34,12 @@ class BadHost
     {
         $this->partnerContentCommentIDs = [];
         foreach ($this->getPartnerCommentData() as $partnerID => $comments) {
-            $partnerContent = new PartnerContent($this->sqlCode->queryPartnerTechincContents([':PARTNER_ID:' => $partnerID]));
-            $this->partnerContentCommentIDs += $partnerContent->takeAwayOwnDataFromComments($comments)->getContentTechnicComments();
-            $this->removeFromZeroContentCommentThisIDs($partnerContent->getCommentIDs());
+            $this->removeFromZeroContentCommentThisIDs(
+                    (new PartnerContent($this->sqlCode->queryPartnerTechincContents([':PARTNER_ID:' => $partnerID])))
+                        ->takeAwayOwnDataFromComments($comments)
+                        ->addTechnicContentCommentsToList($this->partnerContentCommentIDs)
+                        ->getCommentIDs()
+                );
         }
         return $this;
     }
@@ -127,8 +120,8 @@ class BadHost
     {
         if (empty($this->partnerContentCommentIDs)) return $this;
         
-        foreach ($this->partnerContentCommentIDs as $contentID => $technicCommentIDs) {
-            foreach ($technicCommentIDs as $technicID => $commentIDs) {
+        foreach ($this->partnerContentCommentIDs as $technicID => $contentCommentIDs) {
+            foreach ($contentCommentIDs as $contentID => $commentIDs) {
                 $this->sqlCode->queryUpdatePartnerComment([
                             ':CONTENT_ID:' => $contentID,
                             ':TECHNIC_ID:' => $technicID,

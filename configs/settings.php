@@ -13,9 +13,6 @@ spl_autoload_register('infoservice_auotload', false, true);
 
 function infoservice_auotload($className)
 {
-    $path = ActiveRecord\Config::instance()->get_model_directory();
-    $root = realpath(isset($path) ? $path : '.');
-
     $classPlaces = [
         $_SERVER['DOCUMENT_ROOT'] . '/lib/models/#classname#.php'
     ];
@@ -25,12 +22,15 @@ function infoservice_auotload($className)
         $className = array_pop($namespaces);
         $specialNameSpaces .= '/' . strtolower(implode('/', $namespaces));
     }
-    $specialNameSpaces .= '/#classname#.class.php';
+    $specialClassNameTemplates = [
+        $specialNameSpaces . '/#classname#.class.php',
+        $specialNameSpaces . '/#classname#.trait.php',
+    ];
     if (empty($namespaces)) {
-        $classPlaces[] = $specialNameSpaces;
+        array_push($classPlaces, ...$specialClassNameTemplates);
         
     } else {
-        $classPlaces = [$specialNameSpaces];
+        $classPlaces = $specialClassNameTemplates;
     }
     $className = strtolower($className);
     foreach ($classPlaces as $unitPath)  {

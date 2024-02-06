@@ -1,6 +1,6 @@
 <?
 
-class Responsible extends InfoserviceModel
+class Responsible extends Models\InfoserviceBase
 {
     static $has_many = [
         ['contents'],

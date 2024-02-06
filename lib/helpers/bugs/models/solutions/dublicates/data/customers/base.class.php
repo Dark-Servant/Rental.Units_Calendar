@@ -13,12 +13,12 @@ class Base extends BaseDublicates
         return $this->sqlCode->queryGetCustomerDublicates();
     }
 
-    public static function getModelName(): string
+    public function getModelName(): string
     {
         return \Customer::class;
     }
 
-    public static function getGroupCodeByRecord(array $record): string
+    public function getGroupCodeByRecord(array $record): string
     {
         return md5(mb_strtolower(preg_replace('/[^\wа-я]+/ui', ' ', $record['name'])));
     }

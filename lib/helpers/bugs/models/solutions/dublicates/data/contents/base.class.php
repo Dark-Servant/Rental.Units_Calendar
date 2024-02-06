@@ -32,12 +32,12 @@ class Base extends BaseDublicates
         );
     }
 
-    public static function getModelName(): string
+    public function getModelName(): string
     {
         return \Content::class;
     }
 
-    public static function getGroupCodeByRecord(array $record): string
+    public function getGroupCodeByRecord(array $record): string
     {
         return $record['specification_id'];
     }

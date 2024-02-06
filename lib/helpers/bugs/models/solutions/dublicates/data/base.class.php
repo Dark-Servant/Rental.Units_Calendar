@@ -16,8 +16,8 @@ abstract class Base
     abstract public function getDataViaQuery(): \PDOStatement;
     abstract public function checkAsOriginalAtRecordForGroupData(array $record, array $groupData = null): bool;
 
-    abstract public static function getGroupCodeByRecord(array $record): string;
-    abstract public static function getModelName(): string;
+    abstract public function getGroupCodeByRecord(array $record): string;
+    abstract public function getModelName(): string;
 
     public function loadData(): self
     {
@@ -105,9 +105,11 @@ abstract class Base
 
         $badIDs = [];
         foreach ($this->data as $dublicate) {
+            if (empty($dublicate['FROM'])) continue;
+
             array_push($badIDs, ...$dublicate['FROM']);
-            foreach (static::getBelonging()->getGeneratorOfTableSetByValue($dublicate['FROM']) as $TableSet) {
-                $TableSet->updateFieldsByValues([$dublicate['ID']]);
+            foreach (static::getBelonging()->getGeneratorOfTableSetByValue($dublicate['FROM']) as $tableSet) {
+                $tableSet->updateFieldsByValues([$dublicate['ID']]);
             }
         }
 

@@ -8,23 +8,45 @@ class Base extends BaseDublicates
 {
     use FileByLastFolderIniting;
 
+    protected $groupCodeResult = [];
+
     public function getDataViaQuery(): \PDOStatement
     {
         return $this->sqlCode->queryGetResponsibleDublicates();
     }
 
-    public static function getModelName(): string
+    public function getModelName(): string
     {
         return \Responsible::class;
     }
 
-    public static function getGroupCodeByRecord(array $record): string
+    public function getGroupCodeByRecord(array $record): string
     {
-        return md5(mb_strtolower(preg_replace('/[^\wа-я]+/ui', ' ', $record['name'])));
+        $name = mb_strtolower(preg_replace('/[^\wа-я]+/ui', ' ', $record['name']));
+        $code = md5($name);
+        if (
+            $this->groupCodeResult[$code]
+            && (
+                empty($record['external_id'])
+                || ($this->groupCodeResult[$code] === true)
+                || ($this->groupCodeResult[$code] === $record['external_id'])
+            )
+        ) {
+            if (!empty($record['external_id']))
+                $this->groupCodeResult[$code] = $record['external_id'];
+            return $code;
+
+        } elseif (empty($record['external_id'])) {
+            $this->groupCodeResult[$code] = true;
+            return $code;
+
+        } else {
+            return md5($name . $record['external_id']);
+        }
     }
 
     public function checkAsOriginalAtRecordForGroupData(array $record, array $groupData = null): bool
     {
-        return !empty($record['external_id']) && empty($groupData['ID']);
+        return empty($groupData['ID']) && !empty($record['external_id']);
     }
 }

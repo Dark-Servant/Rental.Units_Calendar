@@ -16,7 +16,7 @@ class Comment extends Models\InfoserviceBase
     const CHILD_NAMES_FOR_DELETING = ['readmarks'];
 
     // Классы дежурных комментариев
-    const DUTY_STATUS = [1 => 'repair', 'on-road', 'based-on'];
+    const DUTY_STATUS = [1 => 'repair', 'on-road', 'based-on', 'weekend'];
 
     /**
      * Проверяет правильность значения поля content_id, это поле должно быть

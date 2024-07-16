@@ -22,7 +22,7 @@ if (empty($_SERVER['HTTP_INFOSERVICE_AJAX']) || empty($_SESSION['CONST_LIST'])) 
         define('AUTH_ID', $_REQUEST['AUTH_ID']);
     }
 
-    define('VERSION', '1.4.0');
+    define('VERSION', '1.5.0');
     define('URL_SCRIPT_FINISH', 'sid=' . session_id() . '&' . VERSION);
 
     define('LANG', 'ru');
@@ -49,7 +49,8 @@ if (empty($_SERVER['HTTP_INFOSERVICE_AJAX']) || empty($_SESSION['CONST_LIST'])) 
     define('DUTY_COMMENT_REPAIR_STATUS', 1); // комментарий "Ремонт"
     define('DUTY_COMMENT_ON_ROAD_STATUS', 2); // комментарий "В дороге"
     define('DUTY_COMMENT_BASED_ON_STATUS', 3); // комментарий "На базе "
-
+    define('DUTY_COMMENT_WEEKEND_STATUS', 4); // комментарий "Выходной"
+    
     $_SESSION['CONST_LIST'] = array_filter(
                     get_defined_constants(),
                     function($key) {

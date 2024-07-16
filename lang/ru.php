@@ -136,3 +136,4 @@ $langValues['CONFIRM_MESSAGE_DELETING'] = 'Удалить комментарий
 $langValues['DUTY_COMMENT_REPAIR_STATUS'] = 'Ремонт';
 $langValues['DUTY_COMMENT_ON_ROAD_STATUS'] = 'В дороге';
 $langValues['DUTY_COMMENT_BASED_ON_STATUS'] = 'На базе';
+$langValues['DUTY_COMMENT_WEEKEND_STATUS'] = 'Выходной';

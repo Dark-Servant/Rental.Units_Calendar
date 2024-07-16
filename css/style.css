@@ -413,6 +413,11 @@ body {
     border-color: #FFC7C7;
 }
 
+.rc-content-weekend, .rc-content-weekend .rc-content-deal-responsible {
+    background-color: #FFE3E3;
+    border-color: #FFC7C7;
+}
+
 .rc-content-area:hover {
     cursor: pointer;
     z-index: 1;
@@ -451,6 +456,10 @@ body {
 }
 
 .rc-content-based-on:hover {
+    box-shadow: 2px -2px 10px #FFC7C7, -2px 2px 10px #FFC7C7, -2px -2px 10px #FFC7C7, 2px 2px 10px #FFC7C7;
+}
+
+.rc-content-weekend:hover {
     box-shadow: 2px -2px 10px #FFC7C7, -2px 2px 10px #FFC7C7, -2px -2px 10px #FFC7C7, 2px 2px 10px #FFC7C7;
 }
 

@@ -36,15 +36,6 @@ if (empty($_SERVER['HTTP_INFOSERVICE_AJAX']) || empty($_SESSION['CONST_LIST'])) 
     define('CONTENT_REPAIR_DEAL_STATUS', CONTENT_CLOSED_DEAL_STATUS + 2);
     define('TECHNIC_SORTING', ['IS_MY DESC, LOADING_CAPACITY ASC']);
 
-    // Символьный код пользовательского поля для CRM-сделок "ID техники"
-    define('CRM_USER_FIELD_TECHNIC_ID', 'UF_CRM_1604312301');
-
-    // Символьный код пользовательского поля для CRM-сделок "Дата начала работ"
-    define('CRM_USER_FIELD_START_DATE', 'UF_CRM_1571574579');
-
-    // Символьный код пользовательского поля для CRM-сделок "Дата окончания работ"
-    define('CRM_USER_FIELD_COMPLETION_DATE', 'UF_CRM_1571574620');
-
     // Коды дежурных комментариев
     define('DUTY_COMMENT_REPAIR_STATUS', 1); // комментарий "Ремонт"
     define('DUTY_COMMENT_ON_ROAD_STATUS', 2); // комментарий "В дороге"

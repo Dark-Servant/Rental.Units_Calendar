@@ -6,6 +6,8 @@ namespace Frontend\MainTable\CellData;
  */
 class Content
 {
+    const TECHNIC_RESULT_DATA_CODE = 'CONTENTS';
+
     const CUSTOMER_PREFIX_UNIQUE_CODE = 'n:';
     const URL_PREFIX_UNIQUE_CODE = 'u:';
 

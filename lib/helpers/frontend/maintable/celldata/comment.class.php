@@ -6,6 +6,8 @@ namespace Frontend\MainTable\CellData;
  */
 class Comment
 {
+    const TECHNIC_RESULT_DATA_CODE = 'COMMENTS';
+
     protected $modelUnit = false;
     protected $data = [];
 
@@ -29,9 +31,9 @@ class Comment
     {
         $dayTimestamp = $this->modelUnit->content_date->getTimestamp();
 
-        $data['COMMENTS'][$dayTimestamp][] = &$this->getCellData();
+        $data[self::TECHNIC_RESULT_DATA_CODE][$dayTimestamp][] = &$this->getCellData();
         if ($this->modelUnit->duty_status)
-            $data['CONTENTS'][$dayTimestamp]['STATUS_CLASS'] = \Comment::DUTY_STATUS[$this->modelUnit->duty_status];
+            $data[Content::TECHNIC_RESULT_DATA_CODE][$dayTimestamp]['STATUS_CLASS'] = \Comment::DUTY_STATUS[$this->modelUnit->duty_status];
         return $this;
     }
 

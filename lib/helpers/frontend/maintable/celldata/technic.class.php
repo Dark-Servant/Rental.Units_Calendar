@@ -71,12 +71,14 @@ class Technic
             $this->lastListData = &$data[$this->modelUnit->partner_id];
 
         } else {
+            $intervalEmptyValues = array_fill_keys($this->dateStamps, false);
             $this->lastListData = [
                 'ID' => $this->modelUnit->partner_id,
                 'EXTERNAL_ID' => $this->modelUnit->external_id,
                 'IS_PARTNER' => true,
                 'IS_CHOSEN' => false,
-                'CONTENTS' => array_fill_keys($this->dateStamps, false)
+                Content::TECHNIC_RESULT_DATA_CODE => $intervalEmptyValues,
+                Comment::TECHNIC_RESULT_DATA_CODE => $intervalEmptyValues,
             ];
             $data[$this->modelUnit->partner_id] = &$this->lastListData;
         }
@@ -94,6 +96,7 @@ class Technic
     {
         if (isset($data[$this->modelUnit->id])) return $this;
 
+        $intervalEmptyValues = array_fill_keys($this->dateStamps, false);
         $this->lastListData = [
             'ID' => $this->modelUnit->id,
             'NAME' => $this->modelUnit->name,
@@ -101,7 +104,8 @@ class Technic
             'IS_PARTNER' => false,
             'STATE_NUMBER' => $this->modelUnit->state_number,
             'IS_CHOSEN' => false,
-            'CONTENTS' => array_fill_keys($this->dateStamps, false)
+            Content::TECHNIC_RESULT_DATA_CODE => $intervalEmptyValues,
+            Comment::TECHNIC_RESULT_DATA_CODE => $intervalEmptyValues,
         ];
         $this->contentDayShowingCode = self::TECHNIC_CONTENT_DAY_SHOWING . $this->lastListData['ID'];
         $data[$this->modelUnit->id] = &$this->lastListData;
@@ -118,7 +122,10 @@ class Technic
     {
         if (empty($this->lastListData)) return $this;
 
-        (new Content($content))->fillDayTimeStampWithShowingSetting($this->lastListData['CONTENTS'], $this->contentDayShowing[$this->contentDayShowingCode]);
+        (new Content($content))->fillDayTimeStampWithShowingSetting(
+                                    $this->lastListData[Content::TECHNIC_RESULT_DATA_CODE],
+                                    $this->contentDayShowing[$this->contentDayShowingCode]
+                                );
         return $this;
     }
 }

@@ -74,52 +74,6 @@ class TechnicInterval
     /**
      * Undocumented function
      *
-     * @param integer $userID
-     * @return self
-     */
-    public function loadChoicesForUserID(int $userID): self
-    {
-        $values = [];
-        $conditions = '';
-        foreach ([$this->getSimpleTechnicIDs(), $this->getPartnerIDs()] as $number => $IDs) {
-            if (empty($IDs)) continue;
-
-            $conditions .= ($conditions ? ' OR ' : '') . '((is_partner = ' . $number . ') AND (entity_id IN (?)))';
-            $values[] = $IDs;
-        }
-        $conditions = '(' . $conditions . ') AND (is_active = 1) AND (user_id = ?)';
-        $values[] = $userID;
-
-        foreach (
-            \ChosenTechnic::all(['conditions' => array_merge([$conditions], $values)]) as $choice
-        ) {
-            $this->addChoice($choice);
-        }
-
-        return $this;
-    }
-
-    /**
-     * Undocumented function
-     *
-     * @param \ChosenTechnic $choice
-     * @return void
-     */
-    public function addChoice(\ChosenTechnic $choice): self
-    {
-        $choice = new CellChosenTechnic($choice);
-        if ($choice->isPartner()) {
-            $choice->setChoiceToList($this->partners);
-
-        } else {
-            $choice->setChoiceToList($this->technics);
-        }
-        return $this;
-    }
-
-    /**
-     * Undocumented function
-     *
      * @return self
      */
     public function loadComments(): self
@@ -165,9 +119,68 @@ class TechnicInterval
      * @param integer $userID
      * @return self
      */
+    public function prepareReadyDataForUserID(int $userID): self
+    {
+        return $this->loadChoicesForUserID($userID)->setCommentReadMarkForUserID($userID);
+    }
+
+    /**
+     * Undocumented function
+     *
+     * @param integer $userID
+     * @return self
+     */
+    public function loadChoicesForUserID(int $userID): self
+    {
+        if ($userID < 1) return $this;
+
+        $values = [];
+        $conditions = '';
+        foreach ([$this->getSimpleTechnicIDs(), $this->getPartnerIDs()] as $number => $IDs) {
+            if (empty($IDs)) continue;
+
+            $conditions .= ($conditions ? ' OR ' : '') . '((is_partner = ' . $number . ') AND (entity_id IN (?)))';
+            $values[] = $IDs;
+        }
+        $conditions = '(' . $conditions . ') AND (is_active = 1) AND (user_id = ?)';
+        $values[] = $userID;
+
+        foreach (
+            \ChosenTechnic::all(['conditions' => array_merge([$conditions], $values)]) as $choice
+        ) {
+            $this->addChoice($choice);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Undocumented function
+     *
+     * @param \ChosenTechnic $choice
+     * @return void
+     */
+    public function addChoice(\ChosenTechnic $choice): self
+    {
+        $choice = new CellChosenTechnic($choice);
+        if ($choice->isPartner()) {
+            $choice->setChoiceToList($this->partners);
+
+        } else {
+            $choice->setChoiceToList($this->technics);
+        }
+        return $this;
+    }
+
+    /**
+     * Undocumented function
+     *
+     * @param integer $userID
+     * @return self
+     */
     public function setCommentReadMarkForUserID(int $userID): self
     {
-        if (!count($this->comments)) return $this;
+        if (!count($this->comments) || ($userID < 1)) return $this;
 
         foreach (
             \ReadCommentMark::all([

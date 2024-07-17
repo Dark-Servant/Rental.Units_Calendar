@@ -136,7 +136,7 @@ class Technic extends Models\InfoserviceBase
         $userId = $externalUserId && !empty($user = Responsible::find_by_external_id($externalUserId))
                 ? $user->id : 0;
 
-        if ($userId) $result->loadChoicesForUserID($userId)->loadComments()->setCommentReadMarkForUserID($userId);
+        if ($userId) $result->loadComments()->prepareReadyDataForUserID($userId);
 
         return $result->getResult();
     }

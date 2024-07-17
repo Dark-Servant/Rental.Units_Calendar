@@ -26,18 +26,15 @@
      * @param {*} technicIndex 
      */
     window.InfoserviceCalendar.updateTechnicPeriodPropertyFromDataByIndex = function(propertyCode, data, technicIndex) {
-        if (data[propertyCode] instanceof Object) {
-            if (typeof(this.mainArea.technics[technicIndex]) == 'undefined') return;
-            if (typeof(this.mainArea.technics[technicIndex][propertyCode]) == 'undefined')
-                Vue.set(this.mainArea.technics[technicIndex], propertyCode, {});
+        if (!(data[propertyCode] instanceof Object)) return;
 
-            Object.keys(data[propertyCode]).forEach(dayTimestamp => {
-                Vue.set(this.mainArea.technics[technicIndex][propertyCode], dayTimestamp, data[propertyCode][dayTimestamp]);
-            });
-            
-        } else {
-            Vue.del(this.mainArea.technics[technicIndex], propertyCode);
-        }
+        if (typeof(this.mainArea.technics[technicIndex]) == 'undefined') return;
+        if (typeof(this.mainArea.technics[technicIndex][propertyCode]) == 'undefined')
+            Vue.set(this.mainArea.technics[technicIndex], propertyCode, {});
+
+        Object.keys(data[propertyCode]).forEach(dayTimestamp => {
+            Vue.set(this.mainArea.technics[technicIndex][propertyCode], dayTimestamp, data[propertyCode][dayTimestamp]);
+        });
     }
 
     /**
